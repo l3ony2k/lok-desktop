@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Polkit
 
 Singleton {
@@ -43,6 +44,23 @@ Singleton {
         // ASUS fingerprint: only accept input once PAM actually asks for it
         function onIsResponseRequiredChanged() {
             root.interactionAvailable = root.flow?.isResponseRequired ?? false;
+        }
+    }
+
+    // ASUS fingerprint (parallel-polkit): PAM shows the password prompt and
+    // waits for a finger at the same time. When rust-fp reports a match,
+    // answer the open prompt with an empty response so the module can
+    // return; the module's own match result decides, not this answer.
+    Process {
+        id: fpMatchWatcher
+        running: root.active
+        command: ["gdbus", "monitor", "--system", "--dest", "org.rust_fp.RustFp",
+            "--object-path", "/org/rust_fp/RustFp"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.indexOf("org.rust_fp.RustFp.MatchSucceeded") === -1) return;
+                if (root.flow && root.flow.isResponseRequired) root.submit("");
+            }
         }
     }
 

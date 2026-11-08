@@ -36,6 +36,12 @@ use rust_fp_common::rust_fp_dbus::RustFpProxyBlocking;
 use rust_fp_common::template::Templates;
 
 const PAM_CONV_ITEM: c_int = 5;
+const PAM_AUTHTOK_ITEM: c_int = 6;
+const PAM_PROMPT_ECHO_OFF: c_int = 1;
+/// parallel-polkit: how long an empty answer waits for the match thread
+/// (the daemon signals the agent before the thread hears back).
+const SIGNAL_GRACE: Duration = Duration::from_millis(1500);
+const MAX_PROMPTS: u32 = 20;
 const PAM_TEXT_INFO: c_int = 4;
 const PAM_ERROR_MSG: c_int = 3;
 const DEFAULT_TIMEOUT_SECS: u64 = 10;
@@ -70,6 +76,53 @@ extern "C" {
     fn pam_get_item(pamh: *const PamHandle, item_type: c_int, item: *mut *const c_void) -> c_int;
     fn pam_get_user(pamh: *const PamHandle, user: *mut *const c_char, prompt: *const c_char) -> c_int;
     fn free(ptr: *mut c_void);
+    fn pam_set_item(pamh: *mut PamHandle, item_type: c_int, item: *const c_void) -> c_int;
+}
+
+/// Ask one question through the conversation and return the answer
+/// (parallel-polkit). None when the conversation fails or is cancelled.
+/// The C copy of the answer is wiped before it is freed.
+fn ask(pamh: &PamHandle, style: c_int, text: &str) -> Option<String> {
+    let ctext = CString::new(text).ok()?;
+    unsafe {
+        let mut item: *const c_void = std::ptr::null();
+        if pam_get_item(pamh as *const PamHandle, PAM_CONV_ITEM, &mut item) != 0 || item.is_null() {
+            return None;
+        }
+        let conv = &*(item as *const RawPamConv);
+        let f = conv.conv?;
+        let msg = RawPamMessage { msg_style: style, msg: ctext.as_ptr() };
+        let msg_ptr: *const RawPamMessage = &msg;
+        let mut resp: *mut RawPamResponse = std::ptr::null_mut();
+        let rc = f(1, &msg_ptr, &mut resp, conv.appdata_ptr);
+        if resp.is_null() {
+            return None;
+        }
+        let mut answer = None;
+        let r = (*resp).resp;
+        if !r.is_null() {
+            if rc == 0 {
+                answer = Some(CStr::from_ptr(r).to_string_lossy().into_owned());
+            }
+            let len = libc::strlen(r);
+            std::ptr::write_bytes(r, 0, len);
+            free(r as *mut c_void);
+        }
+        free(resp as *mut c_void);
+        answer
+    }
+}
+
+/// Hand a typed password to the next module (pam_unix try_first_pass).
+fn set_authtok(pamh: &mut PamHandle, password: &str) -> bool {
+    let Ok(c) = CString::new(password) else { return false };
+    let rc = unsafe { pam_set_item(pamh as *mut PamHandle, PAM_AUTHTOK_ITEM, c.as_ptr() as *const c_void) };
+    // pam_set_item copies the string; wipe ours.
+    let mut bytes = c.into_bytes();
+    for b in bytes.iter_mut() {
+        *b = 0;
+    }
+    rc == 0
 }
 
 /// pam-bindings 0.1.1 get_user() is unsound (passes `&ptr` to a C out-param
@@ -181,6 +234,7 @@ fn authenticate(pamh: &mut PamHandle, args: &[&CStr]) -> PamResultCode {
     let mut quiet = false;
     let mut debug = false;
     let mut retry = false;
+    let mut parallel = false;
     for a in args {
         let a = a.to_string_lossy();
         if let Some(v) = a.strip_prefix("timeout=") {
@@ -193,6 +247,8 @@ fn authenticate(pamh: &mut PamHandle, args: &[&CStr]) -> PamResultCode {
             debug = true;
         } else if a == "retry" {
             retry = true;
+        } else if a == "parallel" {
+            parallel = true;
         }
     }
     let dbg = |pamh: &PamHandle, m: String| {
@@ -223,6 +279,9 @@ fn authenticate(pamh: &mut PamHandle, args: &[&CStr]) -> PamResultCode {
     let mut templates: Vec<(String, Vec<u8>)> = templates.into_iter().collect();
     templates.sort_by(|a, b| a.0.cmp(&b.0));
 
+    if parallel {
+        return authenticate_parallel(pamh, templates);
+    }
     if !quiet {
         say(
             pamh,
@@ -264,6 +323,64 @@ fn authenticate(pamh: &mut PamHandle, args: &[&CStr]) -> PamResultCode {
             if retry { PAM_AUTHINFO_UNAVAIL } else { PAM_AUTH_ERR }
         }
     };
+    cancel.store(true, Ordering::SeqCst);
+    result
+}
+
+/// parallel-polkit: password prompt and finger wait at the same time.
+fn authenticate_parallel(pamh: &mut PamHandle, templates: Vec<(String, Vec<u8>)>) -> PamResultCode {
+    let cancel = Arc::new(AtomicBool::new(false));
+    let (tx, rx) = channel();
+    {
+        let cancel = cancel.clone();
+        thread::spawn(move || {
+            let r = catch_unwind(AssertUnwindSafe(|| match_loop(templates, cancel)))
+                .unwrap_or(Outcome::Failed);
+            let _ = tx.send(r);
+        });
+    }
+    // finger_done: the thread has finished without a match (no match 3x or
+    // error); from then on this is a plain password prompt.
+    let mut finger_done = false;
+    let mut matched = |wait: Duration, finger_done: &mut bool| -> bool {
+        if *finger_done {
+            return false;
+        }
+        match rx.recv_timeout(wait) {
+            Ok(Outcome::Matched(_)) => true,
+            Ok(_) | Err(RecvTimeoutError::Disconnected) => {
+                *finger_done = true;
+                false
+            }
+            Err(RecvTimeoutError::Timeout) => false,
+        }
+    };
+    let mut result = PAM_AUTH_ERR;
+    for _ in 0..MAX_PROMPTS {
+        let prompt = if finger_done { "Password: " } else { "Password or fingerprint: " };
+        let answer = ask(pamh, PAM_PROMPT_ECHO_OFF, prompt);
+        let fp = matched(Duration::ZERO, &mut finger_done);
+        match answer {
+            _ if fp => {
+                result = PAM_SUCCESS;
+                break;
+            }
+            None => break,
+            Some(a) if a.is_empty() => {
+                // Probably the agent answering MatchSucceeded before the
+                // thread heard back from the daemon.
+                if matched(SIGNAL_GRACE, &mut finger_done) {
+                    result = PAM_SUCCESS;
+                    break;
+                }
+            }
+            Some(a) => {
+                // A password: let pam_unix (try_first_pass) check it.
+                let _ = set_authtok(pamh, &a);
+                break;
+            }
+        }
+    }
     cancel.store(true, Ordering::SeqCst);
     result
 }

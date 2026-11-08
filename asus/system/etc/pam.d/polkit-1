@@ -1,7 +1,7 @@
 #%PAM-1.0
-# 2026-11-08: fingerprint first (10 s, any failure falls through to password).
+# 2026-11-08: password prompt and fingerprint at the same time (parallel); a typed password goes to pam_unix.
 # Overrides /usr/lib/pam.d/polkit-1; delete this file to revert.
-auth       sufficient   pam_rust_fp_safe.so timeout=10
+auth       sufficient   pam_rust_fp_safe.so parallel
 auth       include      system-auth
 account    include      system-auth
 password   include      system-auth
