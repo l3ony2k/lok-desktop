@@ -18,8 +18,14 @@ can touch and how to check it afterwards.
 | Running kernel vs installed kernel | Mismatch until reboot | **Reboot before any hibernate** (S4 needs identical kernel + cmdline) |
 
 ### Procedure
-1. Optional but recommended: read-only btrfs snapshot of root first (no snapper installed):
-   `sudo mkdir -p /.snapshots && sudo btrfs subvolume snapshot -r / /.snapshots/pre-update-$(date +%F)`
+1. No root snapshot is possible right now: the 32 GiB hibernate /swapfile lives
+   in the root subvolume @. `btrfs subvolume snapshot` fails with "Text file busy";
+   after `swapoff` the snapshot works but then `swapon` fails ("Invalid argument",
+   extents shared with the snapshot) until the snapshot is deleted and
+   `btrfs subvolume sync /` finishes (learned 2026-11-08). Fallbacks instead: the
+   linux-lts UKI in the boot menu, and old packages in /var/cache/pacman/pkg
+   (`pacman -U` to downgrade). Future fix: move the swapfile to its own subvolume
+   (@swap) — changes resume_offset, needs cmdline + UKI rebuild + reboot.
 2. Save work, close Brave (big upgrades can restart it).
 3. `sudo pacman -Syu` — read the output for `.pacnew` files and mkinitcpio/DKMS errors.
 4. `dkms status` → `e820-hibfix/1.2, <new kernel>: installed`.
@@ -30,10 +36,13 @@ can touch and how to check it afterwards.
    - `cat /sys/kernel/debug/pmc_core/package_cstate_show` (as root) → Package C10 > 0 at idle.
    - Fingerprint: `sudo -k; sudo true` → fingerprint prompt; lock screen unlock by finger.
    - Power button → session menu; lid close → suspend.
-7. If the kernel changed: optionally re-test the known S4 issue (media GT stays RC0
-   after hibernate) — hibernate, resume, then
-   `grep "Current RC state" /sys/kernel/debug/dri/0000:00:02.0/gt1/drpc` should be RC6.
-   If fixed, consider restoring lid suspend-then-hibernate (see lid-suspend-only entry).
+7. GPU driver is **xe** since 2026-11-08 (`/etc/modprobe.d/xe-driver.conf`). After a kernel
+   update check: `lspci -k -s 00:02.0` → `driver in use: xe`; no new `xe 0000` errors in dmesg;
+   `cat /sys/class/drm/card0/device/tile0/gt1/gtidle/idle_status` → gt-c6. The old i915 path
+   `/sys/kernel/debug/dri/0000:00:02.0/gt1/drpc` does not exist under xe.
+   If the kernel changed, hibernate once and re-check gt1 (gt-c6) + an s2idle S0ix test after it.
+   Watch for `drm_WARN_ON_ONCE(ret == -110)` in mcr_lock (seen once, harmless so far).
+   Lid = suspend-then-hibernate after 3 h; image_size 4 GiB (tmpfiles).
 
 ### If something breaks
 - Boot the other UKI (linux-lts) from the boot menu, or roll back with the snapshot.
