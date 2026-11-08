@@ -1,0 +1,12 @@
+[Unit]
+Description=Delay sleep 1.5 s so the lock screen animation finishes
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/sleep-lock-delay
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

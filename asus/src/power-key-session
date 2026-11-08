@@ -1,0 +1,12 @@
+#!/bin/sh
+# Power button -> toggle the Quickshell session menu, debounced: one press can
+# arrive twice (ACPI "Power Button" and "cros_ec_buttons" both report KEY_POWER),
+# which opened and immediately closed the menu. Ignore repeats within 800 ms.
+d=${XDG_RUNTIME_DIR:-/tmp}
+exec 9>"$d/power-key-session.lock"
+flock -x 9
+now=$(date +%s%3N)
+last=$(cat "$d/power-key-session.last" 2>/dev/null || echo 0)
+[ $((now - last)) -lt 800 ] && exit 0
+echo "$now" > "$d/power-key-session.last"
+exec hyprctl dispatch 'hl.dsp.global("quickshell:sessionToggle")'

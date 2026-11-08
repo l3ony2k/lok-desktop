@@ -1,0 +1,1 @@
+root=PARTUUID=d5510277-07ff-4f29-a3ec-be758605ea2e zswap.enabled=0 rootflags=subvol=@ rw rootfstype=btrfs resume=UUID=5c5e86dc-b8a2-4cdd-9c97-aa8d090b252b resume_offset=3744005 memmap=0x1b000$0x661a0000

@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Hold a logind *delay* sleep inhibitor and release it DELAY seconds after
+PrepareForSleep(true), so the lock-screen animation can finish before the
+system freezes (hypridle releases its inhibitor as soon as the session is
+locked, i.e. at the start of the animation). logind caps any delay at
+InhibitDelayMaxSec (default 5 s), so a stuck process can not block sleep."""
+import subprocess, time, signal, sys, os, glob
+
+# Also turn the panel off (DPMS) right before sleep, so it stays dark while the
+# kernel thaws devices to write the hibernate image and while devices restore
+# on resume, instead of showing a frozen frame. Turned back on after wake.
+# Fail-safe: dots-hyprland sets misc.key_press_enables_dpms/mouse_move_enables_dpms.
+DPMS_OFF = "hl.dsp.dpms({ action = \"disable\" })"
+DPMS_ON = "hl.dsp.dpms({ action = \"enable\" })"
+
+def hyprctl(arg):
+    rt = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+    socks = sorted(glob.glob(f"{rt}/hypr/*/.socket.sock"), key=os.path.getmtime)
+    if not socks:
+        return
+    env = dict(os.environ, HYPRLAND_INSTANCE_SIGNATURE=socks[-1].split("/")[-2])
+    try:
+        subprocess.run(["hyprctl", "dispatch", arg], env=env, timeout=3,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+DELAY = 1.5
+INHIBIT = ["systemd-inhibit", "--what=sleep", "--mode=delay",
+           "--who=sleep-lock-delay", "--why=Let the lock screen animation finish",
+           "sleep", "infinity"]
+MONITOR = ["gdbus", "monitor", "--system", "--dest", "org.freedesktop.login1",
+           "--object-path", "/org/freedesktop/login1"]
+
+inhibitor = None
+
+def take():
+    global inhibitor
+    if inhibitor is None or inhibitor.poll() is not None:
+        inhibitor = subprocess.Popen(INHIBIT)
+
+def release():
+    global inhibitor
+    if inhibitor is not None and inhibitor.poll() is None:
+        inhibitor.terminate()
+        inhibitor.wait()
+    inhibitor = None
+
+def stop(*_):
+    release()
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+
+mon = subprocess.Popen(MONITOR, stdout=subprocess.PIPE, text=True, bufsize=1)
+take()
+for line in mon.stdout:
+    if "PrepareForSleep" not in line:
+        continue
+    if "(true" in line:
+        time.sleep(DELAY)
+        hyprctl(DPMS_OFF)
+        time.sleep(0.3)
+        release()
+    elif "(false" in line:
+        take()
+        hyprctl(DPMS_ON)
+release()
+sys.exit(1)  # monitor died; systemd restarts us

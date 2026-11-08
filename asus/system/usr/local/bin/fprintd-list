@@ -1,0 +1,13 @@
+#!/bin/sh
+# fprintd-list compatible check for Quickshell's lock screen (LockContext.qml
+# looks for "Fingerprints for user"). Reads rust-fp templates, not fprintd.
+# usage: fprintd-list <user>   (installed as /usr/local/bin/fprintd-list)
+u=${1:-$(id -un)}
+h=$(getent passwd "$u" | cut -d: -f6)
+f="$h/.var/cros-fp-templates"
+if [ -s "$f" ]; then
+    echo "Fingerprints for user $u on rust-fp (ChromeOS FPMCU):"
+    exit 0
+fi
+echo "User $u has no fingerprints enrolled for rust-fp."
+exit 1
