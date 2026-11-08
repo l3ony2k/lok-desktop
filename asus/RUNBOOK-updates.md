@@ -41,24 +41,38 @@ can touch and how to check it afterwards.
 - sudo broken: log in as root over SSH from the Mac (`ssh asus-root`) and restore
   /root/hibfix-backup-20261108/pam.d-sudo.before-fingerprint.
 
-## B. dots-hyprland update (`cd ~/dots-hyprland && git pull && ./setup exp-update`)
+## B. dots-hyprland update (private fork, set up 2026-11-08)
 
-`exp-update` deletes everything under ~/.config/hypr except `custom/`, and
-re-installs dots-owned files elsewhere. After it:
-1. Re-apply the lock-screen fingerprint PAM file (dots-owned):
-   `~/.config/quickshell/ii/modules/common/panels/lock/pam/fprintd.conf` →
-   `auth    [success=done default=die]    pam_rust_fp_safe.so timeout=30 quiet retry`
-2. Run the scripted customisations: `python3 ~/.local/share/ii-customizations/fonts-and-icons/apply.py`,
-   `ii-rounding-customize`, `system-font --apply` (close Brave first), restart Quickshell
-   (`qs -c ii kill`, then check `pgrep -a -x qs` shows one instance).
-3. `~/.local/share/claude/asus-arch-ops/audit.sh` → review AT RISK / modified lines.
-4. Test: Super-tap search (upstream 457ef250 changed this; the custom workaround
-   in custom/keybinds.lua may now be redundant), power button, Ctrl+RightAlt+top-row VT switch.
-`custom/` (keybinds incl. power button, general.lua incl. vrr = 2) survives.
+~/dots-hyprland: `origin` = github.com/l3ony2k/dots-hyprland-asus (PRIVATE),
+`upstream` = end-4/dots-hyprland. `main` = upstream + this machine's commits
+("asus: this machine's dotfile customisations", "asus: system config snapshot…").
+`./setup exp-update` pulls `origin`, so the customisations install with it.
 
-## C. Keeping customisations in a private fork (not set up yet)
-Idea discussed 2026-11-08: private GitHub repo holding end-4/dots-hyprland plus
-this machine's changes as commits, so updates become `git fetch upstream && git
-rebase upstream/main` with visible conflicts instead of re-applying by hand.
-GitHub forks of public repos cannot be private, so it would be a new private repo
-with an `upstream` remote. Not done; ask the user before creating anything on GitHub.
+### Sync with upstream and update
+    cd ~/dots-hyprland
+    git fetch upstream
+    git rebase upstream/main          # conflicts = upstream touched a file we customised
+    git push --force-with-lease origin main
+    ./setup exp-update -s --non-interactive keep
+Remaining "conflicts" after that are only generated/unused files kept local on
+purpose: matugen colours (hypr/hyprland/colors.lua, hyprlock/colors.conf,
+fuzzel_theme.ini, kdeglobals) and fish files.
+
+### When you change a dots-owned file on the machine
+Copy it into dots/ and commit, otherwise the next exp-update reports a conflict:
+    cp ~/.config/<path> ~/dots-hyprland/dots/.config/<path>
+    cd ~/dots-hyprland && git commit -am "asus: <what>" && git push
+
+### Upstream changes that touch our custom behaviour (watch on rebase)
+- Overview.qml: Super-tap = search box only; F4 (XF86LaunchA) = full overview.
+  Since upstream 457ef250 Super-tap calls `qs ipc call search toggle` (release
+  bind), so our IpcHandler `search.toggle()` sets showOverviewWidget = false.
+- hyprland/general.lua: local `scale = 1.25` (custom/general.lua overrides the monitor anyway).
+- lock/pam/fprintd.conf: rust-fp PAM line (see fingerprint entry).
+
+### After an update
+1. `qs -c ii kill` and check `pgrep -a -x qs` shows one instance (kill the old PID).
+2. Scripted customisations if needed: `python3 ~/.local/share/ii-customizations/fonts-and-icons/apply.py`,
+   `ii-rounding-customize`, `system-font --apply` (close Brave first).
+3. `~/.local/share/claude/asus-arch-ops/audit.sh`.
+4. Test Super-tap, Super+key (no search), F4, power button, Ctrl+RightAlt VT switch, lock-screen fingerprint.
