@@ -3,6 +3,7 @@ import qs.modules.common
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Io
 
 /**
  * A nice wrapper for date and time strings.
@@ -31,6 +32,17 @@ Singleton {
             root.inhibit = !root.inhibit;
         }
         Persistent.states.idle.inhibit = root.inhibit;
+    }
+
+    // ASUS coffee-lid (2026-11-08): while coffee is on, also stop logind from
+    // suspending on lid close. ~/.local/bin/lid-coffee then locks the session
+    // and turns the panel off instead. Ends with the toggle or with Quickshell.
+    Process {
+        id: lidInhibitor
+        running: root.inhibit
+        command: ["systemd-inhibit", "--what=handle-lid-switch",
+            "--who=Quickshell coffee", "--why=Keep awake (coffee toggle)",
+            "--mode=block", "sleep", "infinity"]
     }
 
     IdleInhibitor {

@@ -68,3 +68,11 @@ end
 -- Debounced via ~/.local/bin/power-key-session (one press arrived twice).
 hl.bind("XF86PowerOff", hl.dsp.exec_cmd("~/.local/bin/power-key-session"),
     { description = "Session: Toggle session menu (power button)" })
+-- Lid (2026-11-08, coffee-lid): with the Quickshell coffee toggle on, logind
+-- does not suspend on lid close (Quickshell holds a handle-lid-switch
+-- inhibitor); lid-coffee locks the session and turns the panel off instead.
+-- With coffee off logind suspends as usual and lid-coffee does nothing on close.
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee close"),
+    { locked = true, description = "Lid closed: lock + panel off when coffee is on" })
+hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee open"),
+    { locked = true, description = "Lid opened: panel on" })
