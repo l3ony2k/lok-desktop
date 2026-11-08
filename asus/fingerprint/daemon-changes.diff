@@ -1,5 +1,5 @@
 diff --git a/common/src/rust_fp_dbus.rs b/common/src/rust_fp_dbus.rs
-index 8957fa8..ef4694c 100644
+index 8957fa8..1b36798 100644
 --- a/common/src/rust_fp_dbus.rs
 +++ b/common/src/rust_fp_dbus.rs
 @@ -152,7 +152,27 @@ impl RustFp {
@@ -31,7 +31,15 @@ index 8957fa8..ef4694c 100644
          self.clear_abandoned_enrolment().await;
          if let Some(enrolling) = self.enrolling.as_ref() {
              // Enrolling and matching both own the sensor. Say so rather than
-@@ -170,6 +190,11 @@ impl RustFp {
+@@ -166,10 +186,18 @@ impl RustFp {
+             .driver
+             .match_templates(&templates, MATCH_STEP_TIMEOUT)
+             .await
+-            .map_err(|e| fdo::Error::Failed(format!("{e:?}")))?;
++            .map_err(|e| {
++                warn!("Match error: {e:?}");
++                fdo::Error::Failed(format!("{e:?}"))
++            })?;
          if !matches!(output, MatchOutput::TimedOut) {
              warn!("Match result: {output:?}");
          }

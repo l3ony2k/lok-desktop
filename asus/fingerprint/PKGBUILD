@@ -6,8 +6,8 @@
 # The safe sudo PAM module (pam_rust_fp_safe.so) is built from ../pam-safe.
 pkgname=rust-fp-cros-local
 pkgver=1.0.0
-pkgrel=5
-pkgdesc="rust-fp fingerprint daemon + CLI for ChromeOS FPMCU, FP_INFO v2 patch, safe PAM module, stale-match fix, parallel polkit"
+pkgrel=6
+pkgdesc="rust-fp fingerprint daemon + CLI for ChromeOS FPMCU, FP_INFO v2 patch, safe PAM module, stale-match fix, parallel polkit, retry on error"
 arch=('x86_64')
 url="https://github.com/kaukauk/rust-fp"
 license=('custom:unknown')

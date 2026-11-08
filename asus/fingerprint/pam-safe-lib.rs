@@ -163,6 +163,14 @@ fn say(pamh: &PamHandle, style: c_int, text: &str) {
     }
 }
 
+/// retry-on-error: log a failure to syslog (authpriv).
+fn log_err(msg: &str) {
+    let Ok(c) = CString::new(format!("pam_rust_fp_safe: {msg}")) else { return };
+    unsafe {
+        libc::syslog(libc::LOG_AUTHPRIV | libc::LOG_WARNING, b"%s\0".as_ptr() as *const c_char, c.as_ptr());
+    }
+}
+
 fn home_of(user: &str) -> Option<String> {
     let cuser = CString::new(user).ok()?;
     unsafe {
@@ -190,8 +198,20 @@ enum Outcome {
 /// Runs in a worker thread. Stops when `cancel` is set (checked between the
 /// daemon's periodic TimedOut hand-backs, about every 2 s).
 fn match_loop(templates: Vec<(String, Vec<u8>)>, cancel: Arc<AtomicBool>) -> Outcome {
-    let Ok(connection) = Connection::system() else { return Outcome::Failed };
-    let Ok(proxy) = RustFpProxyBlocking::new(&connection) else { return Outcome::Failed };
+    let connection = match Connection::system() {
+        Ok(c) => c,
+        Err(e) => {
+            log_err(&format!("system bus: {e}"));
+            return Outcome::Failed;
+        }
+    };
+    let proxy = match RustFpProxyBlocking::new(&connection) {
+        Ok(p) => p,
+        Err(e) => {
+            log_err(&format!("proxy: {e}"));
+            return Outcome::Failed;
+        }
+    };
     let outcome = match_until_done(&proxy, templates, cancel);
     // stale-match fix: leave the sensor disarmed so a later touch cannot
     // count for a later caller. Best effort; the daemon also drains on the
@@ -208,8 +228,17 @@ fn match_until_done(
     let blobs: Vec<Vec<u8>> = templates.iter().map(|(_, v)| v.clone()).collect();
     let mut misses = 0;
     while !cancel.load(Ordering::SeqCst) {
-        let Ok(bytes) = proxy.match_templates(blobs.clone()) else { return Outcome::Failed };
-        let Ok(output) = from_bytes::<MatchOutput>(&bytes) else { return Outcome::Failed };
+        let bytes = match proxy.match_templates(blobs.clone()) {
+            Ok(b) => b,
+            Err(e) => {
+                log_err(&format!("MatchTemplates: {e}"));
+                return Outcome::Failed;
+            }
+        };
+        let Ok(output) = from_bytes::<MatchOutput>(&bytes) else {
+            log_err("MatchTemplates: undecodable reply");
+            return Outcome::Failed;
+        };
         match output {
             MatchOutput::Match(MatchedOutput { index, .. }) => {
                 return match templates.get(index) {
@@ -315,7 +344,17 @@ fn authenticate(pamh: &mut PamHandle, args: &[&CStr]) -> PamResultCode {
             }
             if retry { PAM_AUTHINFO_UNAVAIL } else { PAM_AUTH_ERR }
         }
-        Ok(Outcome::Failed) | Err(RecvTimeoutError::Disconnected) => PAM_AUTH_ERR,
+        Ok(Outcome::Failed) | Err(RecvTimeoutError::Disconnected) => {
+            // retry-on-error: let the lock screen re-arm instead of giving
+            // up until the next lock; pause so a dead daemon cannot spin.
+            if retry {
+                log_err("wait failed, asking the caller to retry");
+                thread::sleep(Duration::from_secs(2));
+                PAM_AUTHINFO_UNAVAIL
+            } else {
+                PAM_AUTH_ERR
+            }
+        }
         Err(RecvTimeoutError::Timeout) => {
             if !quiet {
                 say(pamh, PAM_ERROR_MSG, "Fingerprint timed out, use your password");
