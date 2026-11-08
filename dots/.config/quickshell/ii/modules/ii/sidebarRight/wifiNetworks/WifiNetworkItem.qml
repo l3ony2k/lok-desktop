@@ -5,6 +5,7 @@ import qs.services
 import qs.services.network
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 
 DialogListItem {
     id: root
@@ -63,6 +64,27 @@ DialogListItem {
                 // Password
                 echoMode: TextInput.Password
                 inputMethodHints: Qt.ImhSensitiveData
+
+                // Set Rime to A once per Wi-Fi password prompt.
+                property bool rimeAsciiApplied: false
+                onActiveFocusChanged: {
+                    if (activeFocus && !rimeAsciiApplied) {
+                        rimeAsciiApplied = true;
+                        rimeAsciiTimer.restart();
+                    }
+                }
+                Timer {
+                    id: rimeAsciiTimer
+                    interval: 120
+                    repeat: false
+                    onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
+                }
+                Connections {
+                    target: passwordPrompt
+                    function onVisibleChanged() {
+                        if (!passwordPrompt.visible) passwordField.rimeAsciiApplied = false;
+                    }
+                }
 
                 onAccepted: {
                     Network.changePassword(root.wifiNetwork, passwordField.text);

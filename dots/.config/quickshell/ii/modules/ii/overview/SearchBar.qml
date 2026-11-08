@@ -78,6 +78,19 @@ RowLayout {
             }
         }
 
+        Connections {
+            target: GlobalStates
+            function onOverviewOpenChanged() {
+                if (GlobalStates.overviewOpen) rimeAsciiTimer.restart();
+            }
+        }
+        Timer {
+            id: rimeAsciiTimer
+            interval: 120
+            repeat: false
+            onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
+        }
+
         onTextChanged: LauncherSearch.query = text
 
         onAccepted: {

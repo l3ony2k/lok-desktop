@@ -79,11 +79,13 @@ Item {
                 RowLayout { // Name fill left, value on the right end
                     Layout.leftMargin: valueProgressBar.height / 2 // Align text with progressbar radius curve's left end
                     Layout.rightMargin: valueProgressBar.height / 2 // Align text with progressbar radius curve's left end
+                    spacing: 8 // Keep the mono label clear of the number
 
                     StyledText {
                         color: Appearance.colors.colOnLayer0
                         font.pixelSize: Appearance.font.pixelSize.small
                         Layout.fillWidth: true
+                        elide: Text.ElideRight
                         text: root.name
                     }
 

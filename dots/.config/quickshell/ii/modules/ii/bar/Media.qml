@@ -64,6 +64,7 @@ Item {
                 
                 MaterialSymbol {
                     anchors.centerIn: parent
+                    font.hintingPreference: Font.PreferFullHinting
                     fill: 1
                     text: activePlayer?.isPlaying ? "pause" : "music_note"
                     iconSize: Appearance.font.pixelSize.normal
@@ -82,6 +83,7 @@ Item {
             elide: Text.ElideRight // Truncates the text on the right
             color: Appearance.colors.colOnLayer1
             text: `${cleanedTitle}${activePlayer?.trackArtist ? ' • ' + activePlayer.trackArtist : ''}`
+            font.pixelSize: 14
         }
 
     }

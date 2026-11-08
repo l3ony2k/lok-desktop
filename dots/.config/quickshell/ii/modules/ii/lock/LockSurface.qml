@@ -144,6 +144,23 @@ MouseArea {
             echoMode: TextInput.Password
             inputMethodHints: Qt.ImhSensitiveData
 
+            // Keep Rime in A (ASCII) while the password field is focused.
+            // fcitx5's AllowInputMethodForPassword=false prevents Shift from
+            // switching back to Chinese here.
+            property bool rimeAsciiApplied: false
+            onActiveFocusChanged: {
+                if (activeFocus && !rimeAsciiApplied) {
+                    rimeAsciiApplied = true;
+                    rimeAsciiTimer.restart();
+                }
+            }
+            Timer {
+                id: rimeAsciiTimer
+                interval: 120
+                repeat: false
+                onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
+            }
+
             // Synchronizing (across monitors) and unlocking
             onTextChanged: root.context.currentText = this.text
             onAccepted: {

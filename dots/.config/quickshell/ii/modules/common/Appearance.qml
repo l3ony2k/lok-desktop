@@ -207,8 +207,8 @@ Singleton {
         property int large: 23
         property int verylarge: 30
         property int full: 9999
-        property int screenRounding: large
-        property int windowRounding: 18
+        property int screenRounding: 13 // screenRounding - hyprlandGapsOut + 1 == windowRounding
+        property int windowRounding: 11
     }
 
     font: QtObject {
@@ -216,7 +216,7 @@ Singleton {
             property string main: Config.options.appearance.fonts.main
             property string numbers: Config.options.appearance.fonts.numbers
             property string title: Config.options.appearance.fonts.title
-            property string iconMaterial: "Material Symbols Rounded"
+            property string iconMaterial: "Material Symbols Sharp"
             property string iconNerd: Config.options.appearance.fonts.iconNerd
             property string monospace: Config.options.appearance.fonts.monospace
             property string reading: Config.options.appearance.fonts.reading
@@ -396,11 +396,11 @@ Singleton {
         property real elevationMargin: 10
         property real fabShadowRadius: 5
         property real fabHoveredShadowRadius: 7
-        property real hyprlandGapsOut: 5
+        property real hyprlandGapsOut: 3
         property real mediaControlsWidth: 440
         property real mediaControlsHeight: 160
         property real notificationPopupWidth: 410
-        property real osdWidth: 180
+        property real osdWidth: 200
         property real searchWidthCollapsed: 210
         property real searchWidth: 360
         property real sidebarWidth: 460

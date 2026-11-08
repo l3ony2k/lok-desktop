@@ -40,6 +40,7 @@ MouseArea {
                 MaterialSymbol {
                     id: boltIcon
                     Layout.alignment: Qt.AlignVCenter
+                    font.hintingPreference: Font.PreferFullHinting
                     Layout.leftMargin: -2
                     Layout.rightMargin: -2
                     fill: 1
@@ -49,7 +50,9 @@ MouseArea {
                 }
                 StyledText {
                     Layout.alignment: Qt.AlignVCenter
-                    font: batteryProgress.font
+                    font.pixelSize: batteryProgress.font.pixelSize
+                    font.weight: batteryProgress.font.weight
+                    font.family: Appearance.font.family.numbers
                     text: batteryProgress.text
                 }
             }

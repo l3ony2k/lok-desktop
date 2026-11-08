@@ -20,29 +20,31 @@ MouseArea {
         anchors.rightMargin: 4
 
         Resource {
+            // Chip icon reads as CPU better than the pulse glyph.
             iconName: "memory"
+            percentage: ResourceUsage.cpuUsage
+            shown: Config.options.bar.resources.alwaysShowCpu ||
+                !(MprisController.activePlayer?.trackTitle?.length > 0) ||
+                root.alwaysShowAllResources
+            warningThreshold: Config.options.bar.resources.cpuWarningThreshold
+        }
+
+        Resource {
+            // Same glyph the popup's Total row uses (reads as a drive).
+            iconName: "empty_dashboard"
             percentage: ResourceUsage.memoryUsedPercentage
+            Layout.leftMargin: 6
             warningThreshold: Config.options.bar.resources.memoryWarningThreshold
         }
 
         Resource {
             iconName: "swap_horiz"
             percentage: ResourceUsage.swapUsedPercentage
-            shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) || 
+            shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) ||
                 (MprisController.activePlayer?.trackTitle == null) ||
                 root.alwaysShowAllResources
             Layout.leftMargin: shown ? 6 : 0
             warningThreshold: Config.options.bar.resources.swapWarningThreshold
-        }
-
-        Resource {
-            iconName: "planner_review"
-            percentage: ResourceUsage.cpuUsage
-            shown: Config.options.bar.resources.alwaysShowCpu || 
-                !(MprisController.activePlayer?.trackTitle?.length > 0) ||
-                root.alwaysShowAllResources
-            Layout.leftMargin: shown ? 6 : 0
-            warningThreshold: Config.options.bar.resources.cpuWarningThreshold
         }
 
     }

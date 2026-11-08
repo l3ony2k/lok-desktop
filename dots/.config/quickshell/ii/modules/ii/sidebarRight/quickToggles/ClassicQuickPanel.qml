@@ -34,6 +34,14 @@ AbstractQuickPanel {
         GameMode {}
         IdleInhibitor {}
         EasyEffectsToggle {}
-        CloudflareWarp {}
+        MihomoToggle {
+            onOpenMenu: root.openMihomoDialog()
+        }
+        TailscaleToggle {
+            onOpenMenu: root.openTailscaleDialog()
+        }
+        SshLanToggle {
+            onOpenMenu: root.openSshLanDialog()
+        }
     }
 }

@@ -76,6 +76,29 @@ Item {
             enabled: PolkitService.interactionAvailable
             placeholderText: PolkitService.cleanPrompt
             echoMode: root.usePasswordChars ? TextInput.Password : TextInput.Normal
+            inputMethodHints: Qt.ImhSensitiveData
+
+            // Set Rime to A once per polkit prompt.
+            property bool rimeAsciiApplied: false
+            onActiveFocusChanged: {
+                if (activeFocus && !rimeAsciiApplied) {
+                    rimeAsciiApplied = true;
+                    rimeAsciiTimer.restart();
+                }
+            }
+            Timer {
+                id: rimeAsciiTimer
+                interval: 120
+                repeat: false
+                onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
+            }
+            Connections {
+                target: PolkitService
+                function onFlowChanged() {
+                    if (!PolkitService.flow) inputField.rimeAsciiApplied = false;
+                }
+            }
+
             onAccepted: root.submit();
 
             Keys.onPressed: event => { // Esc to close

@@ -14,6 +14,9 @@ import Quickshell.Hyprland
 Scope {
     id: overviewScope
     property bool dontAutoCancelSearch: false
+    // Super-tap opens the search box alone; the Chromebook F4/overview key
+    // sets this true to reveal the full overview widget.
+    property bool showOverviewWidget: true
 
     PanelWindow {
         id: panelWindow
@@ -44,6 +47,7 @@ Scope {
                 if (!GlobalStates.overviewOpen) {
                     searchWidget.disableExpandAnimation();
                     overviewScope.dontAutoCancelSearch = false;
+                    overviewScope.showOverviewWidget = true;
                     GlobalFocusGrab.dismiss();
                 } else {
                     if (!overviewScope.dontAutoCancelSearch) {
@@ -94,7 +98,7 @@ Scope {
             Loader {
                 id: overviewLoader
                 anchors.horizontalCenter: parent.horizontalCenter
-                active: GlobalStates.overviewOpen && (Config?.options.overview.enable ?? true)
+                active: GlobalStates.overviewOpen && overviewScope.showOverviewWidget && (Config?.options.overview.enable ?? true)
                 visible: (panelWindow.searchingText == "")
                 sourceComponent: OverviewWidget {
                     screen: panelWindow.screen
@@ -126,8 +130,15 @@ Scope {
     IpcHandler {
         target: "search"
 
+        // Upstream (457ef250) binds Super-tap to `qs ipc call search toggle` on
+        // release; keep this machine's behaviour: Super-tap = search box only.
         function toggle() {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            if (GlobalStates.overviewOpen) {
+                GlobalStates.overviewOpen = false;
+            } else {
+                overviewScope.showOverviewWidget = false;
+                GlobalStates.overviewOpen = true;
+            }
         }
         function workspacesToggle() {
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
@@ -167,7 +178,13 @@ Scope {
         description: "Toggles overview on press"
 
         onPressed: {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            if (GlobalStates.overviewOpen && !overviewScope.showOverviewWidget) {
+                // Upgrade a Super-tap search into the full overview.
+                overviewScope.showOverviewWidget = true;
+            } else {
+                overviewScope.showOverviewWidget = true;
+                GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            }
         }
     }
     GlobalShortcut {
@@ -183,7 +200,13 @@ Scope {
                 GlobalStates.superReleaseMightTrigger = true;
                 return;
             }
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            if (GlobalStates.overviewOpen) {
+                GlobalStates.overviewOpen = false;
+            } else {
+                // Super-tap: search box only, no overview grid.
+                overviewScope.showOverviewWidget = false;
+                GlobalStates.overviewOpen = true;
+            }
         }
     }
     GlobalShortcut {

@@ -12,4 +12,7 @@ Rectangle {
     signal openBluetoothDialog()
     signal openNightLightDialog()
     signal openWifiDialog()
+    signal openTailscaleDialog()
+    signal openMihomoDialog()
+    signal openSshLanDialog()
 }

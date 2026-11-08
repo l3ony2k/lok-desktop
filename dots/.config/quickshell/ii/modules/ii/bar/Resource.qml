@@ -41,6 +41,7 @@ Item {
                 MaterialSymbol {
                     anchors.centerIn: parent
                     font.weight: Font.DemiBold
+                    font.hintingPreference: Font.PreferFullHinting
                     fill: 1
                     text: iconName
                     iconSize: Appearance.font.pixelSize.normal
@@ -64,7 +65,7 @@ Item {
                 id: percentageText
                 anchors.centerIn: parent
                 color: Appearance.colors.colOnLayer1
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: 14
                 text: `${Math.round(percentage * 100).toString()}`
             }
         }

@@ -14,6 +14,9 @@ import qs.modules.ii.sidebarRight.quickToggles.classicStyle
 
 import qs.modules.ii.sidebarRight.bluetoothDevices
 import qs.modules.ii.sidebarRight.nightLight
+import qs.modules.ii.sidebarRight.tailscale
+import qs.modules.ii.sidebarRight.mihomo
+import qs.modules.ii.sidebarRight.sshLan
 import qs.modules.ii.sidebarRight.volumeMixer
 import qs.modules.ii.sidebarRight.wifiNetworks
 
@@ -27,6 +30,9 @@ Item {
     property bool showBluetoothDialog: false
     property bool showNightLightDialog: false
     property bool showWifiDialog: false
+    property bool showTailscaleDialog: false
+    property bool showMihomoDialog: false
+    property bool showSshLanDialog: false
     property bool editMode: false
 
     Connections {
@@ -37,6 +43,9 @@ Item {
                 root.showBluetoothDialog = false;
                 root.showAudioOutputDialog = false;
                 root.showAudioInputDialog = false;
+                root.showTailscaleDialog = false;
+                root.showMihomoDialog = false;
+                root.showSshLanDialog = false;
             }
         }
     }
@@ -144,6 +153,24 @@ Item {
     }
 
     ToggleDialog {
+        shownPropertyString: "showTailscaleDialog"
+        dialog: TailscaleDialog {}
+        onShownChanged: if (shown) Tailscale.refresh();
+    }
+
+    ToggleDialog {
+        shownPropertyString: "showMihomoDialog"
+        dialog: MihomoDialog {}
+        onShownChanged: if (shown) Mihomo.refresh();
+    }
+
+    ToggleDialog {
+        shownPropertyString: "showSshLanDialog"
+        dialog: SshLanDialog {}
+        onShownChanged: if (shown) SshLan.refresh();
+    }
+
+    ToggleDialog {
         shownPropertyString: "showWifiDialog"
         dialog: WifiDialog {}
         onShownChanged: {
@@ -203,6 +230,15 @@ Item {
             }
             function onOpenWifiDialog() {
                 root.showWifiDialog = true;
+            }
+            function onOpenTailscaleDialog() {
+                root.showTailscaleDialog = true;
+            }
+            function onOpenMihomoDialog() {
+                root.showMihomoDialog = true;
+            }
+            function onOpenSshLanDialog() {
+                root.showSshLanDialog = true;
             }
         }
     }
