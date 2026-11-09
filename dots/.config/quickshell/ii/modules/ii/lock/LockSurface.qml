@@ -223,6 +223,12 @@ MouseArea {
             toggled: true
             enabled: !root.context.unlockInProgress
             colBackgroundToggled: Appearance.colors.colPrimary
+            // ASUS smooth confirm (2026-11-09): the RippleButton background goes through a
+            // layer + OpacityMask whose edge is jagged at the 1.333 scale. Without the layer the
+            // background Rectangle (radius clamped to height/2) is an antialiased circle.
+            // The ripple would no longer be clipped, so it is made transparent here.
+            rippleColor: "transparent"
+            Component.onCompleted: background.layer.enabled = false
 
             onClicked: root.context.tryUnlock()
 
@@ -301,7 +307,8 @@ MouseArea {
             showSeparator: false
             showOverflowMenu: false
             pinnedItems: SystemTray.items.values.filter(i => i.id == "Fcitx")
-            visible: pinnedItems.length > 0
+            // ASUS 2026-11-09: hidden on the lock screen (user); the Fcitx "A" image is off-centre.
+            visible: false
         }
     }
 
