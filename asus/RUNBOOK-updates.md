@@ -1,4 +1,5 @@
 # Runbook: updating this ASUS CX54 (SCREEBO) safely
+  > Power/sleep/hibernate background and the success criteria: entries/2026-11-09-power-sleep-hibernate-final-state.md
 
 Written 2026-11-08 after the hibernate / S0ix / fingerprint work. Read the
 2026-11-08 entries in entries/ for the why. Everything below is what an update
