@@ -321,6 +321,7 @@ MouseArea {
         IconAndTextPair {
             visible: Battery.available
             icon: Battery.isCharging ? "bolt" : "battery_android_full"
+            iconFamily: "Material Symbols Rounded"
             text: Math.round(Battery.percentage * 100)
             color: (Battery.isLow && !Battery.isCharging) ? Appearance.colors.colError : Appearance.colors.colOnSurfaceVariant
         }
@@ -369,6 +370,8 @@ MouseArea {
         required property string icon
         required property string text
         property color color: Appearance.colors.colOnSurfaceVariant
+        // ASUS 2026-11-09: per-icon font override (battery uses Rounded; global icons are Sharp)
+        property string iconFamily: Appearance.font.family.iconMaterial
 
         spacing: 4
         Layout.fillHeight: true
@@ -380,6 +383,7 @@ MouseArea {
             anchors.verticalCenter: parent.verticalCenter
             fill: 1
             text: pair.icon
+            font.family: pair.iconFamily
             iconSize: Appearance.font.pixelSize.huge
             animateChange: true
             color: pair.color
