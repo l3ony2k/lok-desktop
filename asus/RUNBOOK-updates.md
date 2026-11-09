@@ -42,7 +42,7 @@ can touch and how to check it afterwards.
    `/sys/kernel/debug/dri/0000:00:02.0/gt1/drpc` does not exist under xe.
    If the kernel changed, hibernate once and re-check gt1 (gt-c6) + an s2idle S0ix test after it.
    Watch for `drm_WARN_ON_ONCE(ret == -110)` in mcr_lock (seen once, harmless so far).
-   Lid = suspend-then-hibernate after 3 h; image_size 4 GiB (tmpfiles).
+   Lid + idle = suspend-then-hibernate after 24 h on battery (never on AC, HibernateOnACPower=no); image_size 4 GiB (tmpfiles).
 
 ### If something breaks
 - Boot the other UKI (linux-lts) from the boot menu, or roll back with the snapshot.
