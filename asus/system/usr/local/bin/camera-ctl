@@ -1,0 +1,124 @@
+#!/bin/bash
+# camera-ctl — privacy switch and post-hibernate recovery for the IPU6 camera (ov08x40).
+# 2026-11-09, ASUS CX54 (SCREEBO). Called by the Quickshell Camera tile through
+# `sudo -n /usr/local/bin/camera-ctl <cmd>` (sudoers: /etc/sudoers.d/camera-ctl).
+#
+#   status   key=value lines: privacy=on|off  applied=yes|no  health=ok|broken|unknown
+#   off      privacy on: camera nodes become root-only (chmod 0600, ACLs dropped), state saved
+#   on       privacy off: udev re-applies the normal permissions/ACLs, state cleared
+#   sync     re-apply the saved privacy state (after boot, udev resets the nodes)
+#   recover  ONLY when the last IPU6 auth message is a failure (post-hibernate state):
+#            stop wireplumber, unbind intel-ipu6, PCI FLR, bind, rebind ov08x40, start wireplumber.
+#            Never run on a working camera: unbind/rebind of a working IPU6 crashes the driver.
+#
+# The caller restarts WirePlumber after off/on so it drops or re-opens the device.
+set -u
+PCI=0000:00:05.0
+SENSOR=i2c-OVTI08F4:00
+STATE=/var/lib/camera-ctl/privacy-on
+USER_NAME=${SUDO_USER:-leon}
+
+camera_nodes() {
+    local n d
+    for n in /sys/class/video4linux/* /sys/bus/media/devices/*; do
+        [ -e "$n" ] || continue
+        d=$(readlink -f "$n/device" 2>/dev/null) || continue
+        case "$d" in
+            *"/$PCI"*|*"/$SENSOR"*) echo "/dev/$(basename "$n")" ;;
+        esac
+    done | sort -u
+}
+
+health() {
+    # Last IPU6 authentication line of this boot decides.
+    local last
+    last=$(dmesg 2>/dev/null | grep -E "intel-ipu6 $PCI: (CSE authenticate_run done|FW authentication failed)" | tail -1)
+    case "$last" in
+        *"authenticate_run done"*) echo ok ;;
+        *"authentication failed"*) echo broken ;;
+        *) echo unknown ;;
+    esac
+}
+
+applied() {
+    # Privacy is applied when no camera node is group/other accessible.
+    local f m
+    for f in $(camera_nodes); do
+        [ -e "$f" ] || continue
+        m=$(stat -c %a "$f")
+        [ "$m" = "600" ] || { echo no; return; }
+    done
+    echo yes
+}
+
+block() {
+    local f
+    for f in $(camera_nodes); do
+        [ -e "$f" ] || continue
+        setfacl -b "$f" 2>/dev/null
+        chmod 0600 "$f"
+    done
+}
+
+unblock() {
+    udevadm trigger --action=change --subsystem-match=video4linux --subsystem-match=media
+    udevadm settle --timeout=10
+}
+
+wp() { # $1 = stop|start for the session user's wireplumber
+    systemctl --user -M "$USER_NAME@" "$1" wireplumber.service
+}
+
+write_sysfs() { # $1 value, $2 file; bounded so a stuck driver cannot hang the tile forever
+    timeout 20 sh -c "echo '$1' > '$2'"
+}
+
+case "${1:-}" in
+    status)
+        if [ -e "$STATE" ]; then echo privacy=on; else echo privacy=off; fi
+        echo "applied=$(applied)"
+        echo "health=$(health)"
+        ;;
+    off)
+        mkdir -p "$(dirname "$STATE")" && : > "$STATE"
+        block
+        echo "privacy=on applied=$(applied)"
+        ;;
+    on)
+        rm -f "$STATE"
+        unblock
+        echo "privacy=off applied=$(applied)"
+        ;;
+    sync)
+        if [ -e "$STATE" ]; then block; fi
+        echo "privacy=$([ -e "$STATE" ] && echo on || echo off) applied=$(applied)"
+        ;;
+    recover)
+        h=$(health)
+        if [ "$h" != broken ]; then
+            echo "result=skipped health=$h"
+            exit 0
+        fi
+        logger -t camera-ctl "recover: start (IPU6 auth failed after resume)"
+        wp stop
+        sleep 1
+        write_sysfs "$PCI" /sys/bus/pci/drivers/intel-ipu6/unbind || { logger -t camera-ctl "recover: unbind failed"; wp start; echo result=failed step=unbind; exit 1; }
+        write_sysfs 1 "/sys/bus/pci/devices/$PCI/reset" || logger -t camera-ctl "recover: FLR failed"
+        write_sysfs "$PCI" /sys/bus/pci/drivers/intel-ipu6/bind || { logger -t camera-ctl "recover: bind failed"; wp start; echo result=failed step=bind; exit 1; }
+        sleep 3
+        if [ -e "/sys/bus/i2c/drivers/ov08x40/$SENSOR" ]; then
+            write_sysfs "$SENSOR" /sys/bus/i2c/drivers/ov08x40/unbind
+        fi
+        write_sysfs "$SENSOR" /sys/bus/i2c/drivers/ov08x40/bind
+        sleep 2
+        [ -e "$STATE" ] && block
+        wp start
+        h=$(health)
+        logger -t camera-ctl "recover: done, health=$h"
+        if [ "$h" = ok ]; then echo result=ok; else echo "result=failed health=$h"; exit 1; fi
+        ;;
+    *)
+        echo "usage: camera-ctl status|off|on|sync|recover" >&2
+        exit 2
+        ;;
+esac

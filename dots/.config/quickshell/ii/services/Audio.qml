@@ -86,6 +86,11 @@ Singleton {
         target: sink?.audio ?? null
         property bool lastReady: false
         property real lastVolume: 0
+        // ASUS 2026-11-09 sink-change grace: a recreated sink (WirePlumber restart,
+        // device switch) first reads 0, then gets its saved volume restored; do not
+        // treat that restore as an illegal increment.
+        property real graceUntil: 0
+        property int lastSinkId: -1
         function onVolumeChanged() {
             if (!Config.options.audio.protection.enable) return;
             const newVolume = sink.audio.volume;
@@ -95,7 +100,12 @@ Singleton {
                 lastVolume = 0;
                 return;
             }
-            if (!lastReady) {
+            const sinkId = sink?.id ?? -1;
+            if (sinkId !== lastSinkId) {
+                lastSinkId = sinkId;
+                graceUntil = Date.now() + 3000;
+            }
+            if (!lastReady || Date.now() < graceUntil) {
                 lastVolume = newVolume;
                 lastReady = true;
                 return;

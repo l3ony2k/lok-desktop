@@ -1,0 +1,1 @@
+leon ALL=(root) NOPASSWD: /usr/local/bin/camera-ctl

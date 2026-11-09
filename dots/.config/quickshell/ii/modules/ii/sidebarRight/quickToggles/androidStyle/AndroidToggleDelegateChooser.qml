@@ -112,6 +112,20 @@ DelegateChooser {
         cellSize: modelData.size
     } }
 
+    // ASUS 2026-11-09: IPU6 camera (privacy + post-hibernate recovery)
+    DelegateChoice { roleValue: "camera"; AndroidCameraToggle {
+        required property int index
+        required property var modelData
+        buttonIndex: root.startingIndex + index
+        buttonData: modelData
+        editMode: root.editMode
+        expandedSize: modelData.size > 1
+        baseCellWidth: root.baseCellWidth
+        baseCellHeight: root.baseCellHeight
+        cellSpacing: root.spacing
+        cellSize: modelData.size
+    } }
+
     DelegateChoice { roleValue: "easyEffects"; AndroidEasyEffectsToggle {
         required property int index
         required property var modelData
