@@ -43,5 +43,6 @@ AbstractQuickPanel {
         SshLanToggle {
             onOpenMenu: root.openSshLanDialog()
         }
+        BatteryLimitToggle {}
     }
 }

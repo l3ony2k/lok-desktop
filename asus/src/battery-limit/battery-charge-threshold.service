@@ -1,0 +1,13 @@
+[Unit]
+Description=Set ChromeOS EC battery charge thresholds (saved limit, /etc/battery-charge-limit)
+After=multi-user.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# 2026-11-12: limit comes from /etc/battery-charge-limit (60|80|100, default 80),
+# set with `battery-limit set N` or the ii quick toggle. Was hard-coded 75/80.
+ExecStart=/usr/local/bin/battery-limit apply
+
+[Install]
+WantedBy=multi-user.target
