@@ -32,9 +32,11 @@ Item {
         }
         radius: Appearance.rounding.full
         // lok: a raised surface with a visible frame so it stands off any window
-        color: Appearance.lok ? Appearance.colors.colLayer2 : Appearance.colors.colLayer0
-        border.width: Appearance.lok ? 1 : 0
-        border.color: Appearance.colors.colOutline
+        // lok: topmost surface. Dark mode lifts it to the brightest layer grey,
+        // light mode to white; the outline comes from the shadow component.
+        color: !Appearance.lok ? Appearance.colors.colLayer0
+            : Appearance.m3colors.darkmode ? Appearance.m3colors.m3surfaceContainerHighest
+            : Appearance.m3colors.m3surfaceContainerLowest
 
         implicitWidth: valueRow.implicitWidth
         implicitHeight: valueRow.implicitHeight
@@ -86,7 +88,7 @@ Item {
                     spacing: 8 // Keep the mono label clear of the number
 
                     StyledText {
-                        color: Appearance.lok ? Appearance.colors.colOnLayer2 : Appearance.colors.colOnLayer0
+                        color: Appearance.lok ? Appearance.colors.colOnLayer4 : Appearance.colors.colOnLayer0
                         font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smaller : Appearance.font.pixelSize.small
                         font.letterSpacing: Appearance.lok ? 1 : 0
                         Layout.fillWidth: true
@@ -116,6 +118,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.leftMargin: valueProgressBar.height / 2
                     Layout.rightMargin: valueProgressBar.height / 2
+                    colEmpty: Appearance.m3colors.darkmode ? Appearance.colors.colLayer1 : Appearance.m3colors.m3outlineVariant
                     value: (root.value - valueProgressBar.from) / Math.max(0.0001, valueProgressBar.to - valueProgressBar.from)
                 }
             }
