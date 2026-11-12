@@ -18,7 +18,7 @@ Item {
     property real valueIndicatorLeftPadding: 10
     property real valueIndicatorRightPadding: 20 // An icon is circle ish, a column isn't, hence the extra padding
 
-    implicitWidth: Appearance.sizes.osdWidth + 2 * Appearance.sizes.elevationMargin
+    implicitWidth: (Appearance.lok ? 300 : Appearance.sizes.osdWidth) + 2 * Appearance.sizes.elevationMargin
     implicitHeight: valueIndicator.implicitHeight + 2 * Appearance.sizes.elevationMargin
 
     StyledRectangularShadow {
@@ -31,7 +31,10 @@ Item {
             margins: Appearance.sizes.elevationMargin
         }
         radius: Appearance.rounding.full
-        color: Appearance.colors.colLayer0
+        // lok: a raised surface with a visible frame so it stands off any window
+        color: Appearance.lok ? Appearance.colors.colLayer2 : Appearance.colors.colLayer0
+        border.width: Appearance.lok ? 1 : 0
+        border.color: Appearance.colors.colOutline
 
         implicitWidth: valueRow.implicitWidth
         implicitHeight: valueRow.implicitHeight
@@ -83,7 +86,7 @@ Item {
                     spacing: 8 // Keep the mono label clear of the number
 
                     StyledText {
-                        color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer0
+                        color: Appearance.lok ? Appearance.colors.colOnLayer2 : Appearance.colors.colOnLayer0
                         font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smaller : Appearance.font.pixelSize.small
                         font.letterSpacing: Appearance.lok ? 1 : 0
                         Layout.fillWidth: true
@@ -93,7 +96,8 @@ Item {
 
                     StyledText {
                         color: Appearance.colors.colOnLayer0
-                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.larger : Appearance.font.pixelSize.small
+                        font.weight: Appearance.lok ? Font.DemiBold : Font.Normal
                         Layout.fillWidth: false
                         // lok: zero-padded like the boot screen counter ("078")
                         text: Appearance.lok ? String(Math.round(root.value * 100)).padStart(3, "0") : Math.round(root.value * 100)

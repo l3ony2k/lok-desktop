@@ -194,7 +194,7 @@ Item { // Bar content region
                 id: rightSidebarButton
 
                 Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
-                Layout.bottomMargin: Appearance.rounding.screenRounding
+                Layout.bottomMargin: Appearance.roundingSpace.screenRounding
                 Layout.fillHeight: false
 
                 implicitHeight: indicatorsColumnLayout.implicitHeight + 4 * 2

@@ -1,5 +1,6 @@
 import QtQuick
+import qs.modules.common
 
 Rectangle {
-    radius: Math.min(width, height) / 2
+    radius: Appearance.lok ? 0 : Math.min(width, height) / 2
 }

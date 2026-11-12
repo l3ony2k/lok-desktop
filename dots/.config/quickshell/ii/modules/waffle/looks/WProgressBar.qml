@@ -29,7 +29,7 @@ ProgressBar {
                 right: parent.right
                 verticalCenter: parent.verticalCenter
             }
-            radius: root.implicitHeight / 2
+            radius: Appearance.lok ? 0 : root.implicitHeight / 2
             color: Looks.colors.controlBg
             implicitHeight: root.implicitHeight
         }
@@ -40,7 +40,7 @@ ProgressBar {
                 left: parent.left
                 verticalCenter: parent.verticalCenter
             }
-            radius: root.implicitHeight / 2
+            radius: Appearance.lok ? 0 : root.implicitHeight / 2
             color: Looks.colors.accent
             implicitHeight: root.implicitHeight
             width: background.width * root.value

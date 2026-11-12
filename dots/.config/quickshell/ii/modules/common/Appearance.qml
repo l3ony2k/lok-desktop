@@ -11,6 +11,7 @@ Singleton {
     property QtObject animationCurves
     property QtObject colors
     property QtObject rounding
+    property QtObject roundingSpace
     property QtObject font
     property QtObject sizes
     property string syntaxHighlightingTheme
@@ -35,8 +36,8 @@ Singleton {
         return Math.max(0, Math.min(0.22, y)) - 0.12 * (m3colors.darkmode ? 0 : 1)
     }
     property real autoContentTransparency: 0.9
-    property real backgroundTransparency: Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
-    property real contentTransparency: Config?.options.appearance.transparency.automatic ? autoContentTransparency : Config?.options.appearance.transparency.contentTransparency
+    property real backgroundTransparency: root.lok ? 0 : Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
+    property real contentTransparency: root.lok ? 0 : Config?.options.appearance.transparency.automatic ? autoContentTransparency : Config?.options.appearance.transparency.contentTransparency
 
     m3colors: QtObject {
         property bool darkmode: true
@@ -213,6 +214,16 @@ Singleton {
         property int full: root.lok ? 0 : 9999
         property int screenRounding: root.lok ? 0 : 13 // screenRounding - hyprlandGapsOut + 1 == windowRounding
         property int windowRounding: root.lok ? 0 : 11
+    }
+
+    // Spacing that upstream derives from corner radii. Same numbers in material;
+    // lok keeps real padding on a 4 px grid even though its radii are 0.
+    roundingSpace: QtObject {
+        property int verysmall: root.lok ? 4 : 8
+        property int small: root.lok ? 8 : 12
+        property int normal: root.lok ? 12 : 17
+        property int large: root.lok ? 16 : 23
+        property int screenRounding: root.lok ? 8 : 13
     }
 
     font: QtObject {

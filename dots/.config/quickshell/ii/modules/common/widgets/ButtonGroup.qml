@@ -26,12 +26,12 @@ Rectangle {
         return total + rowLayout.spacing * (rowLayout.children.length - 1);
     }
 
-    topLeftRadius: rowLayout.children.length > 0 ? (rowLayout.children[0].radius + padding) : 
+    topLeftRadius: Appearance.lok ? 0 : rowLayout.children.length > 0 ? (rowLayout.children[0].radius + padding) : 
         Appearance?.rounding?.small
-    bottomLeftRadius: topLeftRadius
-    topRightRadius: rowLayout.children.length > 0 ? (rowLayout.children[rowLayout.children.length - 1].radius + padding) : 
+    bottomLeftRadius: Appearance.lok ? 0 : topLeftRadius
+    topRightRadius: Appearance.lok ? 0 : rowLayout.children.length > 0 ? (rowLayout.children[rowLayout.children.length - 1].radius + padding) : 
         Appearance?.rounding?.small
-    bottomRightRadius: topRightRadius
+    bottomRightRadius: Appearance.lok ? 0 : topRightRadius
 
     color: "transparent"
     width: root.contentWidth + padding * 2

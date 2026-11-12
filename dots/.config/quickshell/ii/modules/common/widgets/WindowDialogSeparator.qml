@@ -9,8 +9,8 @@ Rectangle {
     implicitHeight: 1
     color: Appearance.colors.colOutline
     Layout.fillWidth: true
-    Layout.leftMargin: -Appearance.rounding.large
-    Layout.rightMargin: -Appearance.rounding.large
+    Layout.leftMargin: -Appearance.roundingSpace.large
+    Layout.rightMargin: -Appearance.roundingSpace.large
     Layout.topMargin: -8
     Layout.bottomMargin: -8
 }

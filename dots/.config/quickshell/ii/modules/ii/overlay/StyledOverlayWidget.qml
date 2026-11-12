@@ -309,7 +309,7 @@ AbstractOverlayWidget {
     component TitlebarButton: RippleButton {
         id: titlebarButton
         required property string materialSymbol
-        buttonRadius: height / 2
+        buttonRadius: Appearance.lok ? 0 : height / 2
         implicitHeight: contentItem.implicitHeight
         implicitWidth: implicitHeight
         padding: 0

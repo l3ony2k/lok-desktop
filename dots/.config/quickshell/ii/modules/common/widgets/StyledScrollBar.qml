@@ -7,8 +7,8 @@ ScrollBar {
     id: root
 
     policy: ScrollBar.AsNeeded
-    topPadding: Appearance.rounding.normal
-    bottomPadding: Appearance.rounding.normal
+    topPadding: Appearance.roundingSpace.normal
+    bottomPadding: Appearance.roundingSpace.normal
     active: hovered || pressed
 
     contentItem: Rectangle {

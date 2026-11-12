@@ -14,8 +14,7 @@ RippleButton {
 
     implicitHeight: 40
     implicitWidth: implicitContentWidth + horizontalPadding * 2
-    buttonRadius: height / 2
-
+    buttonRadius: Appearance.lok ? 0 : height / 2
     colBackground: ColorUtils.transparentize(Appearance.colors.colSurfaceContainer)
     colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colOnSurface, current ? 1 : 0.95)
     colRipple: ColorUtils.transparentize(Appearance.colors.colOnSurface, 0.95)

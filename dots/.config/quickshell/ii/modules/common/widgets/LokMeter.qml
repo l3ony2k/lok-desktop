@@ -8,12 +8,12 @@ import qs.modules.common
 Item {
     id: root
     property real value: 0
-    property int segments: 20
+    property int segments: 25
     property real gap: 2
     property color colFilled: Appearance.colors.colOnLayer0
     property color colEmpty: Appearance.colors.colOutlineVariant
     property color colOver: Appearance.colors.colError // above 100 % (e.g. volume boost)
-    implicitHeight: 8
+    implicitHeight: 10
     implicitWidth: 200
 
     readonly property real cellWidth: (width - gap * (segments - 1)) / segments

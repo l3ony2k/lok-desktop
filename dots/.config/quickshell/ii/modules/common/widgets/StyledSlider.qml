@@ -46,7 +46,7 @@ Slider {
     property real handleHeight: (configuration === StyledSlider.Configuration.Wavy) ? 24 : Math.max(33, trackWidth + 9)
     property real handleWidth: root.pressed ? handlePressedWidth : handleDefaultWidth
     property real handleMargins: Appearance.lok ? 2 : 4
-    property real dividerMargins: Appearance.lok ? 0 : 2
+    property real dividerMargins: Appearance.lok ? 2 : 2 // lok keeps the gap: it marks where brightness hands over to gamma
     property real trackDotSize: 3
     property bool usePercentTooltip: true
     property string tooltipContent: usePercentTooltip ? `${Math.round(((value - from) / (to - from)) * 100)}%` : `${Math.round(value)}`

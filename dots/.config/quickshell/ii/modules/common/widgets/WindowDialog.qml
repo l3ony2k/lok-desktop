@@ -78,7 +78,7 @@ Rectangle {
             id: contentColumn
             anchors {
                 fill: parent
-                margins: dialogBackground.radius
+                margins: Appearance.lok ? Appearance.roundingSpace.large : dialogBackground.radius
             }
             spacing: 16
             opacity: root.show ? 1 : 0

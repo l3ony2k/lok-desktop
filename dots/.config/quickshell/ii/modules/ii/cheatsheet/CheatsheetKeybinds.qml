@@ -18,7 +18,7 @@ Item {
         id: flickable
         clip: true
         anchors.fill: parent
-        anchors.margins: Appearance.rounding.small
+        anchors.margins: Appearance.roundingSpace.small
         contentHeight: height
         contentWidth: flow.implicitWidth
         Flow {

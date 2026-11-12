@@ -24,6 +24,22 @@ StyledText {
         }
     }
 
+    // lok: Wi-Fi strength glyphs are partial arcs; draw the full symbol faintly
+    // underneath so the level reads as "n of 3" like Material's outlined bars.
+    readonly property bool lokWifiLevel: root.useLokIcons && /^(signal|network)_wifi_[0-3]_bar$/.test(root.text)
+    Text {
+        visible: root.lokWifiLevel
+        z: -1
+        anchors.fill: parent
+        horizontalAlignment: root.horizontalAlignment
+        verticalAlignment: root.verticalAlignment
+        renderType: root.renderType
+        text: "wifi"
+        font: root.font
+        color: root.color
+        opacity: 0.3
+    }
+
     Behavior on fill { // Leaky leaky, no good
         enabled: !root.useLokIcons
         NumberAnimation {
