@@ -29,24 +29,24 @@ Slider {
 
     property var configuration: StyledSlider.Configuration.S
 
-    property real handleDefaultWidth: 3
-    property real handlePressedWidth: 1.5
+    property real handleDefaultWidth: Appearance.lok ? 2 : 3
+    property real handlePressedWidth: Appearance.lok ? 2 : 1.5
     property color highlightColor: Appearance.colors.colPrimary
     property color trackColor: Appearance.colors.colSecondaryContainer
     property color handleColor: Appearance.colors.colPrimary
     property color dotColor: Appearance.m3colors.m3onSecondaryContainer
     property color dotColorHighlighted: Appearance.m3colors.m3onPrimary
-    property real unsharpenRadius: Appearance.rounding.unsharpen
+    property real unsharpenRadius: Appearance.lok ? 0 : Appearance.rounding.unsharpen
     property real trackWidth: configuration
-    property real trackRadius: trackWidth >= StyledSlider.Configuration.XL ? 21
+    property real trackRadius: Appearance.lok ? 0 : trackWidth >= StyledSlider.Configuration.XL ? 21
         : trackWidth >= StyledSlider.Configuration.L ? 12
         : trackWidth >= StyledSlider.Configuration.M ? 9
         : trackWidth >= StyledSlider.Configuration.S ? 6
         : height / 2
     property real handleHeight: (configuration === StyledSlider.Configuration.Wavy) ? 24 : Math.max(33, trackWidth + 9)
     property real handleWidth: root.pressed ? handlePressedWidth : handleDefaultWidth
-    property real handleMargins: 4
-    property real dividerMargins: 2
+    property real handleMargins: Appearance.lok ? 2 : 4
+    property real dividerMargins: Appearance.lok ? 0 : 2
     property real trackDotSize: 3
     property bool usePercentTooltip: true
     property string tooltipContent: usePercentTooltip ? `${Math.round(((value - from) / (to - from)) * 100)}%` : `${Math.round(value)}`

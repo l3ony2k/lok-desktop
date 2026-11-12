@@ -28,7 +28,7 @@ BarIconButton {
         }
         implicitWidth: 8
         implicitHeight: implicitWidth
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
         color: Updates.updateStronglyAdvised ? Looks.colors.warning : Looks.colors.accent
     }
 }

@@ -19,7 +19,7 @@ Button {
     property var releaseAction // When left clicking (release)
     property var altAction // When right clicking
     property var middleClickAction // When middle clicking
-    property bool bounce: true
+    property bool bounce: !(Appearance?.lok ?? false) // lok style: no expressive bounce
     property real baseWidth: contentItem.implicitWidth + horizontalPadding * 2
     property real baseHeight: contentItem.implicitHeight + verticalPadding * 2
     property bool enableImplicitWidthAnimation: true
@@ -131,8 +131,13 @@ Button {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }
 
-        border.width: root.tabbedTo ? 2 : 0
-        border.color: Appearance.colors.colSecondary
+        // lok style: hairline frame. Transparent buttons show it only on hover (like lok's
+        // header buttons); filled ones keep it; toggled ones are a solid inverted block.
+        readonly property bool lokFrame: (Appearance?.lok ?? false) && !root.toggled
+            && (root.hovered || root.down || root.colBackground.a > 0.01)
+        border.width: root.tabbedTo ? 2 : (lokFrame ? 1 : 0)
+        border.color: root.tabbedTo ? Appearance.colors.colSecondary
+            : (root.hovered || root.down) ? Appearance.colors.colOutline : Appearance.colors.colOutlineVariant
     }
 
     contentItem: StyledText {

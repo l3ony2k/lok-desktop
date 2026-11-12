@@ -15,6 +15,10 @@ Singleton {
     property QtObject sizes
     property string syntaxHighlightingTheme
 
+    // lok style (Config.options.appearance.style === "lok"): flat greyscale, square corners,
+    // hairline borders, no overshoot. "material" keeps every end-4 default below.
+    readonly property bool lok: Config.options?.appearance?.style === "lok"
+
     // Transparency. The quadratic functions were derived from analysis of hand-picked transparency values.
     ColorQuantizer {
         id: wallColorQuant
@@ -116,7 +120,7 @@ Singleton {
         property color colOnLayer0: m3colors.m3onBackground
         property color colLayer0Hover: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.9, root.contentTransparency))
         property color colLayer0Active: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.8, root.contentTransparency))
-        property color colLayer0Border: ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
+        property color colLayer0Border: root.lok ? root.m3colors.m3outlineVariant : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow
         property color colLayer1: ColorUtils.solveOverlayColor(colLayer0Base, colLayer1Base, 1 - root.contentTransparency);
@@ -199,16 +203,16 @@ Singleton {
     }
 
     rounding: QtObject {
-        property int unsharpen: 2
-        property int unsharpenmore: 6
-        property int verysmall: 8
-        property int small: 12
-        property int normal: 17
-        property int large: 23
-        property int verylarge: 30
-        property int full: 9999
-        property int screenRounding: 13 // screenRounding - hyprlandGapsOut + 1 == windowRounding
-        property int windowRounding: 11
+        property int unsharpen: root.lok ? 0 : 2
+        property int unsharpenmore: root.lok ? 0 : 6
+        property int verysmall: root.lok ? 0 : 8
+        property int small: root.lok ? 0 : 12
+        property int normal: root.lok ? 0 : 17
+        property int large: root.lok ? 0 : 23
+        property int verylarge: root.lok ? 0 : 30
+        property int full: root.lok ? 0 : 9999
+        property int screenRounding: root.lok ? 0 : 13 // screenRounding - hyprlandGapsOut + 1 == windowRounding
+        property int windowRounding: root.lok ? 0 : 11
     }
 
     font: QtObject {
@@ -217,6 +221,8 @@ Singleton {
             property string numbers: Config.options.appearance.fonts.numbers
             property string title: Config.options.appearance.fonts.title
             property string iconMaterial: "Material Symbols Sharp"
+            // lok: Tabler Icons glyphs behind Material Symbols names (fonts/LokIcons*.ttf)
+            property string iconLok: "Lok Icons"
             property string iconNerd: Config.options.appearance.fonts.iconNerd
             property string monospace: Config.options.appearance.fonts.monospace
             property string reading: Config.options.appearance.fonts.reading
@@ -249,22 +255,22 @@ Singleton {
     }
 
     animationCurves: QtObject {
-        readonly property list<real> expressiveFastSpatial: [0.42, 1.67, 0.21, 0.90, 1, 1] // Default, 350ms
-        readonly property list<real> expressiveDefaultSpatial: [0.38, 1.21, 0.22, 1.00, 1, 1] // Default, 500ms
-        readonly property list<real> expressiveSlowSpatial: [0.39, 1.29, 0.35, 0.98, 1, 1] // Default, 650ms
-        readonly property list<real> expressiveEffects: [0.34, 0.80, 0.34, 1.00, 1, 1] // Default, 200ms
-        readonly property list<real> emphasized: [0.05, 0, 2 / 15, 0.06, 1 / 6, 0.4, 5 / 24, 0.82, 0.25, 1, 1, 1]
+        readonly property list<real> expressiveFastSpatial: root.lok ? [0.2, 0, 0, 1, 1, 1] : [0.42, 1.67, 0.21, 0.90, 1, 1] // Default, 350ms
+        readonly property list<real> expressiveDefaultSpatial: root.lok ? [0.2, 0, 0, 1, 1, 1] : [0.38, 1.21, 0.22, 1.00, 1, 1] // Default, 500ms
+        readonly property list<real> expressiveSlowSpatial: root.lok ? [0.2, 0, 0, 1, 1, 1] : [0.39, 1.29, 0.35, 0.98, 1, 1] // Default, 650ms
+        readonly property list<real> expressiveEffects: root.lok ? [0.2, 0, 0, 1, 1, 1] : [0.34, 0.80, 0.34, 1.00, 1, 1] // Default, 200ms
+        readonly property list<real> emphasized: root.lok ? [0.2, 0, 0, 1, 1, 1] : [0.05, 0, 2 / 15, 0.06, 1 / 6, 0.4, 5 / 24, 0.82, 0.25, 1, 1, 1]
         readonly property list<real> emphasizedFirstHalf: [0.05, 0, 2 / 15, 0.06, 1 / 6, 0.4, 5 / 24, 0.82]
         readonly property list<real> emphasizedLastHalf: [5 / 24, 0.82, 0.25, 1, 1, 1]
-        readonly property list<real> emphasizedAccel: [0.3, 0, 0.8, 0.15, 1, 1]
-        readonly property list<real> emphasizedDecel: [0.05, 0.7, 0.1, 1, 1, 1]
+        readonly property list<real> emphasizedAccel: root.lok ? [0.4, 0, 1, 1, 1, 1] : [0.3, 0, 0.8, 0.15, 1, 1]
+        readonly property list<real> emphasizedDecel: root.lok ? [0, 0, 0.2, 1, 1, 1] : [0.05, 0.7, 0.1, 1, 1, 1]
         readonly property list<real> standard: [0.2, 0, 0, 1, 1, 1]
         readonly property list<real> standardAccel: [0.3, 0, 1, 1, 1, 1]
         readonly property list<real> standardDecel: [0, 0, 0, 1, 1, 1]
-        readonly property real expressiveFastSpatialDuration: 350
-        readonly property real expressiveDefaultSpatialDuration: 500
-        readonly property real expressiveSlowSpatialDuration: 650
-        readonly property real expressiveEffectsDuration: 200
+        readonly property real expressiveFastSpatialDuration: root.lok ? 140 : 350
+        readonly property real expressiveDefaultSpatialDuration: root.lok ? 180 : 500
+        readonly property real expressiveSlowSpatialDuration: root.lok ? 240 : 650
+        readonly property real expressiveEffectsDuration: root.lok ? 110 : 200
     }
 
     animation: QtObject {
@@ -297,7 +303,7 @@ Singleton {
         }
 
         property QtObject elementMoveEnter: QtObject {
-            property int duration: 400
+            property int duration: root.lok ? 180 : 400
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasizedDecel
             property int velocity: 650
@@ -312,7 +318,7 @@ Singleton {
         }
 
         property QtObject elementMoveExit: QtObject {
-            property int duration: 200
+            property int duration: root.lok ? 120 : 200
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasizedAccel
             property int velocity: 650
@@ -345,7 +351,7 @@ Singleton {
         }
 
         property QtObject elementResize: QtObject {
-            property int duration: 300
+            property int duration: root.lok ? 180 : 300
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.emphasized
             property int velocity: 650
@@ -360,7 +366,7 @@ Singleton {
         }
 
         property QtObject clickBounce: QtObject {
-            property int duration: 400
+            property int duration: root.lok ? 150 : 400
             property int type: Easing.BezierSpline
             property list<real> bezierCurve: animationCurves.expressiveDefaultSpatial
             property int velocity: 850
@@ -379,7 +385,7 @@ Singleton {
         }
 
         property QtObject menuDecel: QtObject {
-            property int duration: 350
+            property int duration: root.lok ? 160 : 350
             property int type: Easing.OutExpo
         }
     }

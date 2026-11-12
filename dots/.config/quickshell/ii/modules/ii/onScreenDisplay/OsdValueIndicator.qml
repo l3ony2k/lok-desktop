@@ -59,8 +59,9 @@ Item {
                     renderType: Text.QtRendering
 
                     text: root.icon
-                    iconSize: 20 + 10 * (root.scaleIcon ? value : 1)
-                    rotation: 180 * (root.rotateIcon ? value : 0)
+                    // lok style: fixed size, no rotation
+                    iconSize: Appearance.lok ? 22 : 20 + 10 * (root.scaleIcon ? value : 1)
+                    rotation: Appearance.lok ? 0 : 180 * (root.rotateIcon ? value : 0)
 
                     Behavior on iconSize {
                         animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
@@ -82,25 +83,36 @@ Item {
                     spacing: 8 // Keep the mono label clear of the number
 
                     StyledText {
-                        color: Appearance.colors.colOnLayer0
-                        font.pixelSize: Appearance.font.pixelSize.small
+                        color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer0
+                        font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smaller : Appearance.font.pixelSize.small
+                        font.letterSpacing: Appearance.lok ? 1 : 0
                         Layout.fillWidth: true
                         elide: Text.ElideRight
-                        text: root.name
+                        text: Appearance.lok ? root.name.toUpperCase() : root.name
                     }
 
                     StyledText {
                         color: Appearance.colors.colOnLayer0
                         font.pixelSize: Appearance.font.pixelSize.small
                         Layout.fillWidth: false
-                        text: Math.round(root.value * 100)
+                        // lok: zero-padded like the boot screen counter ("078")
+                        text: Appearance.lok ? String(Math.round(root.value * 100)).padStart(3, "0") : Math.round(root.value * 100)
                     }
                 }
                 
                 StyledProgressBar {
                     id: valueProgressBar
+                    visible: !Appearance.lok
                     Layout.fillWidth: true
                     value: root.value
+                }
+
+                LokMeter {
+                    visible: Appearance.lok
+                    Layout.fillWidth: true
+                    Layout.leftMargin: valueProgressBar.height / 2
+                    Layout.rightMargin: valueProgressBar.height / 2
+                    value: (root.value - valueProgressBar.from) / Math.max(0.0001, valueProgressBar.to - valueProgressBar.from)
                 }
             }
         }

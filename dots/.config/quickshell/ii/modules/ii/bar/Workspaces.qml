@@ -174,7 +174,7 @@ ButtonMouseArea {
             StateOverlay {
                 id: hoverOverlay
                 anchors.fill: interactionIndicator.indicatorRectangle
-                radius: root.activeWorkspaceSize / 2
+                radius: Appearance.lok ? 0 : root.activeWorkspaceSize / 2
                 hover: root.containsMouse
                 press: root.containsPress
                 drag: true // There are too many layers so we need to force this to be a lil more opaque
@@ -384,6 +384,7 @@ ButtonMouseArea {
             shown: !wsNum.showingNumbers
             anchors.centerIn: parent
             Circle {
+                radius: Appearance.lok ? 0 : diameter / 2
                 anchors.centerIn: parent
                 diameter: root.workspaceButtonWidth * 0.18
                 color: wsNum.contentColor
@@ -429,7 +430,7 @@ ButtonMouseArea {
             property real indicatorThickness: root.activeWorkspaceSize
 
             contentLayer: StyledRectangle.ContentLayer.Group
-            radius: indicatorThickness / 2
+            radius: Appearance.lok ? 0 : indicatorThickness / 2
             color: Appearance.colors.colPrimary
 
             x: root.vertical ? null : indicatorPosition

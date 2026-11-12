@@ -49,7 +49,7 @@ FooterRectangle {
         }
         implicitHeight: 32
         color: "transparent"
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
         border.width: 1
         border.color: Looks.colors.bg2Border
     }
@@ -58,7 +58,7 @@ FooterRectangle {
         id: searchInputBg
         anchors.fill: outline
         anchors.margins: 1
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
         color: Looks.colors.inputBg
 
         RowLayout {

@@ -16,7 +16,7 @@ StyledIndeterminateProgressBar {
         maskSource: Rectangle {
             width: progressBar.width
             height: progressBar.height
-            radius: progressBar.height / 2
+            radius: Appearance.lok ? 0 : progressBar.height / 2
         }
     }
 }

@@ -284,6 +284,16 @@ switch() {
 
     pre_process "$mode_flag"
 
+    # lok palette (ASUS 2026-11-12): fixed greyscale colours, nothing taken from the wallpaper.
+    if [[ "$type_flag" == "lok" ]]; then
+        "$SCRIPT_DIR/lok/apply-lok.sh" "$mode_flag" "$imgpath"
+        return
+    fi
+    # any other palette: drop lok's Hyprland decoration overrides
+    if [[ -f "$XDG_CONFIG_HOME/hypr/custom/lok.lua" ]]; then
+        echo "-- not using the lok palette: no overrides" > "$XDG_CONFIG_HOME/hypr/custom/lok.lua"
+    fi
+
     # Check if app and shell theming is enabled in config
     if [ -f "$SHELL_CONFIG_FILE" ]; then
         enable_apps_shell=$(jq -r '.appearance.wallpaperTheming.enableAppsAndShell' "$SHELL_CONFIG_FILE")
@@ -395,7 +405,7 @@ main() {
     fi
 
     # Validate type_flag (allow 'auto' as well)
-    allowed_types=(scheme-content scheme-expressive scheme-fidelity scheme-fruit-salad scheme-monochrome scheme-neutral scheme-rainbow scheme-tonal-spot auto)
+    allowed_types=(scheme-content scheme-expressive scheme-fidelity scheme-fruit-salad scheme-monochrome scheme-neutral scheme-rainbow scheme-tonal-spot auto lok)
     valid_type=0
     for t in "${allowed_types[@]}"; do
         if [[ "$type_flag" == "$t" ]]; then

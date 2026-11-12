@@ -82,7 +82,7 @@ BodyRectangle {
         enabled: hovered || checked || model.month === calendarView.focusedMonth
         implicitWidth: calendarView.buttonSize
         implicitHeight: calendarView.buttonSize
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
 
         required property int index
 

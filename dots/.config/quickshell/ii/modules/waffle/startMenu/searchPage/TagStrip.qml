@@ -33,7 +33,7 @@ RowLayout {
             id: tagButton
             required property var modelData
             border.width: 1
-            radius: height / 2
+            radius: Appearance.lok ? 0 : height / 2
             implicitWidth: tagButtonText.implicitWidth + 12 * 2
             implicitHeight: 32
             checked: {

@@ -17,7 +17,8 @@ Button {
     property real buttonRadiusPressed: buttonRadius
     property real buttonEffectiveRadius: root.down ? root.buttonRadiusPressed : root.buttonRadius
     property int rippleDuration: 1200
-    property bool rippleEnabled: true
+    // lok style: no ripple; pressing fills the button with the press colour instead
+    property bool rippleEnabled: !(Appearance?.lok ?? false)
     property var downAction // When left clicking (down)
     property var releaseAction // When left clicking (release)
     property var altAction // When right clicking
@@ -31,7 +32,9 @@ Button {
     property color colRippleToggled: Appearance?.colors.colPrimaryActive ?? "#D6CEE2"
 
     opacity: root.enabled ? 1 : 0.4
-    property color buttonColor: ColorUtils.transparentize(root.toggled ? 
+    property color buttonColor: ColorUtils.transparentize(
+        ((Appearance?.lok ?? false) && root.down) ? root.rippleColor :
+        root.toggled ? 
         (root.hovered ? colBackgroundToggledHover : 
             colBackgroundToggled) :
         (root.hovered ? colBackgroundHover : 

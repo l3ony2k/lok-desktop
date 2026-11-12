@@ -105,6 +105,10 @@ Singleton {
             }
 
             property JsonObject appearance: JsonObject {
+                // Visual language. "material": end-4 default (Material You). "lok": flat
+                // greyscale after lok.computer (square corners, hairline borders, no ripple,
+                // calm motion, Tabler icons). Colours for lok come from palette.type "lok".
+                property string style: "material"
                 property bool extraBackgroundTint: true
                 property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen
                 property JsonObject fonts: JsonObject {
@@ -134,7 +138,7 @@ Singleton {
                     }
                 }
                 property JsonObject palette: JsonObject {
-                    property string type: "auto" // Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
+                    property string type: "auto" // Allowed: lok (fixed greyscale, ASUS), auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
                     property string accentColor: ""
                 }
             }

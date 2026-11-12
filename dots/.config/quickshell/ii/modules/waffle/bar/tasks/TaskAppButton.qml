@@ -76,7 +76,7 @@ AppButton {
 
         implicitWidth: root.active ? 16 : 6
         implicitHeight: 3
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
 
         color: root.active ? Looks.colors.accent : Looks.colors.accentUnfocused
 

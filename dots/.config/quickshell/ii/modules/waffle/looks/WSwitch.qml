@@ -21,7 +21,7 @@ Switch {
     background: Rectangle {
         width: parent.width
         height: parent.height
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
         color: root.checked ? root.checkedColor : root.uncheckedColor
         border.width: 1
         border.color: root.checked ? root.checkedColor : root.borderColor
@@ -38,7 +38,7 @@ Switch {
     indicator: Rectangle {
         implicitWidth: (root.pressed || root.down) ? root.indicatorPressedWidth : root.indicatorHeight
         implicitHeight: (root.pressed || root.down) ? root.indicatorPressedHeight : root.indicatorHeight
-        radius: height / 2
+        radius: Appearance.lok ? 0 : height / 2
         color: root.checked ? Looks.colors.accentFg : root.borderColor
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left

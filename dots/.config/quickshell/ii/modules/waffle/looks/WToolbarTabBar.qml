@@ -38,7 +38,7 @@ TabBar {
                 }
                 implicitWidth: pressDetector.containsPress ? 16 : 12
                 implicitHeight: 3
-                radius: height / 2
+                radius: Appearance.lok ? 0 : height / 2
                 color: Looks.colors.accent
             }
         }

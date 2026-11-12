@@ -110,7 +110,7 @@ MenuItem {
             sourceComponent: Rectangle {
                 implicitWidth: 3
                 implicitHeight: 3
-                radius: width / 2
+                radius: Appearance.lok ? 0 : width / 2
                 color: Looks.colors.accent
                 property bool forceZeroHeight: true
                 height: forceZeroHeight ? 0 : Math.max(root.down ? 10 : 16, root.background.height - 18 * 2)

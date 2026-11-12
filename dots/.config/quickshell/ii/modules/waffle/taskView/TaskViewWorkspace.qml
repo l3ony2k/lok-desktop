@@ -138,7 +138,7 @@ WMouseAreaButton {
             implicitWidth: 32
             implicitHeight: 3
             color: Looks.colors.accent
-            radius: height / 2
+            radius: Appearance.lok ? 0 : height / 2
         }
     }
 }

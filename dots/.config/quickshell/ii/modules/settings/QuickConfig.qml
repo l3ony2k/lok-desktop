@@ -171,6 +171,27 @@ ContentPage {
         }
 
         ConfigSelectionArray {
+            // Visual style (ASUS 2026-11-12). Lok also switches to the fixed lok palette;
+            // Material goes back to wallpaper colours (palette "auto").
+            currentValue: Config.options.appearance.style
+            onSelected: newValue => {
+                Config.options.appearance.style = newValue;
+                Config.options.appearance.palette.type = newValue === "lok" ? "lok" : "auto";
+                Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);
+            }
+            options: [
+                {
+                    "value": "material",
+                    "displayName": Translation.tr("Material")
+                },
+                {
+                    "value": "lok",
+                    "displayName": Translation.tr("Lok")
+                }
+            ]
+        }
+
+        ConfigSelectionArray {
             currentValue: Config.options.appearance.palette.type
             onSelected: newValue => {
                 Config.options.appearance.palette.type = newValue;
@@ -212,6 +233,10 @@ ContentPage {
                 {
                     "value": "scheme-tonal-spot",
                     "displayName": Translation.tr("Tonal Spot")
+                },
+                {
+                    "value": "lok",
+                    "displayName": Translation.tr("Lok (fixed grey)")
                 }
             ]
         }

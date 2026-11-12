@@ -20,7 +20,7 @@ Item {
         anchors.centerIn: parent
         implicitWidth: root.implicitSize
         implicitHeight: root.implicitSize
-        radius: width / 2
+        radius: Appearance.lok ? 0 : width / 2
 
         // Hour mark lines
         Repeater {
@@ -40,7 +40,7 @@ Item {
                     implicitWidth: root.markLength
                     implicitHeight: root.markWidth
 
-                    radius: width / 2
+                    radius: Appearance.lok ? 0 : width / 2
                     color: root.colOnBackground
                 }
             }

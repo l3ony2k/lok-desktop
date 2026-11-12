@@ -194,7 +194,7 @@ Item {
             color: Config.options.background.widgets.clock.cookie.minuteHandStyle === "medium" ? root.colBackground : root.colMinuteHand
             implicitWidth: 6
             implicitHeight: implicitWidth
-            radius: width / 2
+            radius: Appearance.lok ? 0 : width / 2
         }
     }
 
