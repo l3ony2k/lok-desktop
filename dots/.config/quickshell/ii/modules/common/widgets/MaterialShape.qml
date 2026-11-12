@@ -1,3 +1,4 @@
+import qs.modules.common
 import qs.modules.common.widgets.shapes
 import "shapes/material-shapes.js" as MaterialShapes
 
@@ -46,6 +47,7 @@ ShapeCanvas {
     implicitWidth: implicitSize
     polygonIsNormalized: true
     roundedPolygon: {
+        if (Appearance.lok) return MaterialShapes.getLokSquare();
         switch (root.shape) {
             case MaterialShape.Shape.Circle: return MaterialShapes.getCircle();
             case MaterialShape.Shape.Square: return MaterialShapes.getSquare();

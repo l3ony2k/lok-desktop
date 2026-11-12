@@ -23,8 +23,34 @@ Item {
             verticalCenter: parent.verticalCenter
         }
 
+        // lok: icon + a thin vertical level bar instead of the round progress ring
+        Row {
+            visible: Appearance.lok
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 3
+            MaterialSymbol {
+                anchors.verticalCenter: parent.verticalCenter
+                text: iconName
+                iconSize: Appearance.font.pixelSize.normal
+                color: root.warning ? Appearance.colors.colError : Appearance.colors.colOnLayer0
+            }
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 4
+                height: 14
+                color: Appearance.colors.colLayer3
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: Math.round(parent.height * Math.max(0, Math.min(1, percentage)))
+                    color: root.warning ? Appearance.colors.colError : Appearance.colors.colOnLayer0
+                }
+            }
+        }
+
         ClippedFilledCircularProgress {
             id: resourceCircProg
+            visible: !Appearance.lok
             Layout.alignment: Qt.AlignVCenter
             lineWidth: Appearance.rounding.unsharpen
             value: percentage

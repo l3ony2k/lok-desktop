@@ -51,13 +51,23 @@ Item {
     Rectangle {
         id: contentItem
         anchors.fill: parent
-        radius: implicitSize / 2
+        radius: Appearance.lok ? 0 : implicitSize / 2
         color: root.colSecondary
         visible: false
         layer.enabled: true
         layer.smooth: true
 
+        // lok: a square that fills from the bottom instead of a pie
+        Rectangle {
+            visible: Appearance.lok
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: Math.round(parent.height * Math.max(0, Math.min(1, root.value)))
+            color: root.colPrimary
+        }
+
         Shape {
+            visible: !Appearance.lok
             anchors.fill: parent
             preferredRendererType: Shape.CurveRenderer
 

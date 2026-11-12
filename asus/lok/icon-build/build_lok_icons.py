@@ -28,6 +28,40 @@ for name in used:
     cp = int(tab[t], 16)
     pairs[name] = cmap[cp]
 
+# Wi-Fi levels: Tabler's wifi-0/1/2 sit off the full icon's grid, so cut the
+# levels out of the full "wifi" glyph itself (contours: dot, arc 1, arc 2, arc 3).
+# ii draws the full symbol faintly underneath, so each level reads as "n of 4".
+from fontTools.pens.recordingPen import RecordingPen
+_glyphset = font.getGlyphSet()
+_wifi = pairs.get("signal_wifi_4_bar") or cmap[int(tab["wifi"], 16)]
+_rec = RecordingPen()
+_glyphset[_wifi].draw(_rec)
+_contours, _cur = [], []
+for op in _rec.value:
+    _cur.append(op)
+    if op[0] in ("closePath", "endPath"):
+        _contours.append(_cur)
+        _cur = []
+_contours.sort(key=lambda c: min(pt[1] for o in c for pt in o[1]))  # bottom (dot) first
+for _name, _keep in (("network_wifi_3_bar", 3), ("network_wifi_2_bar", 2),
+                     ("network_wifi_1_bar", 1), ("signal_wifi_0_bar", 0)):
+    if _name not in pairs:
+        continue
+    _pen = TTGlyphPen(None)
+    for _c in _contours[:_keep]:
+        for _op, _args in _c:
+            getattr(_pen, _op)(*_args)
+    _g = "lokwifi_%d" % _keep
+    _glyph = _pen.glyph()
+    _glyph.recalcBounds(font["glyf"])
+    font["glyf"][_g] = _glyph
+    # lsb must equal this glyph's own xMin or renderers shift it sideways
+    _adv, _lsb = font["hmtx"][_wifi]
+    font["glyf"][_wifi].recalcBounds(font["glyf"])  # stored bounds are stale (xMin 0)
+    _delta = font["glyf"][_wifi].xMin - _lsb   # keep the full glyph's lsb/xMin relation
+    font["hmtx"][_g] = (_adv, (_glyph.xMin - _delta) if _keep else 0)
+    pairs[_name] = _g
+
 # Blank zero-width glyphs for the characters names are spelled with.
 chars = sorted({c for n in pairs for c in n})
 glyf = font["glyf"]
