@@ -7,4 +7,5 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hyprctl setcursor McMojave-cursors 32")
     hl.exec_cmd("gsettings set org.gnome.desktop.interface cursor-theme McMojave-cursors")
     hl.exec_cmd("gsettings set org.gnome.desktop.interface cursor-size 32")
+
 end)

@@ -1,0 +1,10 @@
+#!/bin/sh
+# idle-suspend — idle-timeout sleep for Hyprland (hypridle $suspend_cmd). 2026-11-12.
+# On AC power: do nothing, so the machine stays reachable (SSH/Tailscale); the
+# battery sits idle at the EC's 80 % cap. On battery: suspend-then-hibernate
+# (logind: hibernate after 24 h, never on AC). Plasma does the same through
+# powerdevilrc ([AC] AutoSuspendAction=0).
+if [ "$(cat /sys/class/power_supply/AC/online 2>/dev/null)" = 1 ]; then
+  exit 0
+fi
+systemctl suspend-then-hibernate || loginctl suspend-then-hibernate

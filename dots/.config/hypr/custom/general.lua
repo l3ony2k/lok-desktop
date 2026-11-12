@@ -82,5 +82,30 @@ hl.monitor({
     mode = "2560x1600@120",
     position = "0x0",
     scale = 1.3333334,
-    bitdepth = 10
+    bitdepth = 10,
+    -- Panel EDID is ~Display P3 (139% sRGB area, D65 white). Hyprland's
+    -- default `cm = srgb` sends sRGB values straight to the wide-gamut panel,
+    -- which stretches every colour -> visibly oversaturated. Tell the
+    -- compositor the panel's real gamut so sRGB content is converted to P3.
+    cm = "dp3"
+})
+
+-- macOS pointer acceleration. Apple's IOHIDParametricAcceleration curve was
+-- exported from macOS 15.7.9 on a 14" M1 Pro at tracking speed 0.875, then
+-- sampled into libinput's custom profile (64 points, linear interpolation)
+-- for this machine:
+--   ELAN touchpad: 3987 units / 128 mm = 31.15 units/mm
+--   panel: 2560x1600 @ 1.3333, 300 mm wide -> 1.27496 logical px per Mac point
+-- Slow movement stays near 0.75:1 for precision, then accelerates early and
+-- smoothly. libinput's adaptive touchpad curve instead decelerates below
+-- 7 mm/s, holds 0.9 * 0.2968 up to 130 mm/s, then ramps steeply.
+-- Custom profiles ignore `sensitivity`; rescale the point values to tune speed.
+hl.device({
+    name = "elan-touchpad",
+    accel_profile = "custom 0.1646 0.000000 0.026812 0.059383 0.097720 0.141828 0.191715 0.247387 0.308851 0.376113 0.449180 0.528058 0.612754 0.703275 0.799627 0.901816 1.009850 1.123735 1.243477 1.369084 1.500560 1.637914 1.781152 1.930280 2.085305 2.246234 2.413073 2.585828 2.764506 2.949115 3.139659 3.336147 3.538584 3.746977 3.961333 4.181659 4.407960 4.640243 4.878516 5.122784 5.373054 5.629333 5.891628 6.159944 6.434289 6.714669 7.001090 7.293560 7.592084 7.896670 8.207323 8.524051 8.846861 9.175758 9.510749 9.851841 10.199040 10.552354 10.911788 11.277349 11.649044 12.026879 12.410861 12.800994 13.194040",
+    -- libinput's custom profile needs a separate scroll curve. This reproduces
+    -- the previous adaptive finger-scroll gain (0.9 * 0.2968 * 1000/787.4 =
+    -- 0.339243), so scroll_factor and the per-app scroll_touchpad rules above
+    -- keep exactly the same feel.
+    scroll_points = "1.0 0.0 0.339243"
 })

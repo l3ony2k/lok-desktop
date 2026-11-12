@@ -373,6 +373,9 @@ Singleton {
 
             property JsonObject lock: JsonObject {
                 property bool useHyprlock: false
+                // Park monitors on temp workspaces while locked (slide-away animation).
+                // ii-customizations/lock-workspace; toggle with `ii-lock-park on|off`.
+                property bool parkWorkspaces: true
                 property bool launchOnStartup: false
                 property JsonObject blur: JsonObject {
                     property bool enable: true
