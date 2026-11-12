@@ -70,7 +70,7 @@ Item {
         bottomRightRadius: bottomLeftRadius
         topRightRadius: bottomLeftRadius
 
-        color: Appearance.colors.colPrimary
+        color: Appearance.colors.colAccent
 
         Behavior on topLeftRadius {
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)

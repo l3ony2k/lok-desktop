@@ -39,6 +39,7 @@ Button {
     property color colBackground: ColorUtils.transparentize(colBackgroundHover, 1) || "transparent"
     property color colBackgroundHover: Appearance?.colors.colLayer1Hover ?? "#E5DFED"
     property color colBackgroundActive: Appearance?.colors.colLayer1Active ?? "#D6CEE2"
+    property bool lokStatusStrip: false // lok: show the status strip when toggled
     property color colBackgroundToggled: Appearance?.colors.colPrimary ?? "#65558F"
     property color colBackgroundToggledHover: Appearance?.colors.colPrimaryHover ?? "#77699C"
     property color colBackgroundToggledActive: Appearance?.colors.colPrimaryActive ?? "#D6CEE2"
@@ -132,12 +133,22 @@ Button {
         }
 
         // lok style: hairline frame. Transparent buttons show it only on hover (like lok's
-        // header buttons); filled ones keep it; toggled ones are a solid inverted block.
-        readonly property bool lokFrame: (Appearance?.lok ?? false) && !root.toggled
-            && (root.hovered || root.down || root.colBackground.a > 0.01)
+        // header buttons); filled ones keep it. Toggled ones are a raised surface
+        // (colPrimary) with a brighter frame and a 2 px status strip along the bottom.
+        readonly property bool lok: Appearance?.lok ?? false
+        readonly property bool lokFrame: lok && (root.toggled
+            || root.hovered || root.down || root.colBackground.a > 0.01)
         border.width: root.tabbedTo ? 2 : (lokFrame ? 1 : 0)
         border.color: root.tabbedTo ? Appearance.colors.colSecondary
+            : (lok && root.toggled) ? Appearance.colors.colSelectedEdge
             : (root.hovered || root.down) ? Appearance.colors.colOutline : Appearance.colors.colOutlineVariant
+
+        Rectangle {
+            visible: parent.lok && root.toggled && root.lokStatusStrip
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 1 }
+            height: 2
+            color: Appearance.colors.colOnPrimary
+        }
     }
 
     contentItem: StyledText {

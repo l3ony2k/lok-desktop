@@ -15,7 +15,7 @@ StyledFlickable {
     property int selectionEnd
     property int cursorPosition
 
-    property color color: Appearance.colors.colPrimary
+    property color color: Appearance.colors.colAccent
     property color selectedTextColor: Appearance.colors.colOnSecondaryContainer
     property color selectionColor: Appearance.colors.colSecondaryContainer
 

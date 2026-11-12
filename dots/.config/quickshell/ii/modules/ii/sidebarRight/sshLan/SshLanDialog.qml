@@ -30,7 +30,7 @@ WindowDialog {
         MaterialSymbol {
             Layout.alignment: Qt.AlignTop
             iconSize: Appearance.font.pixelSize.larger
-            color: SshLan.active ? Appearance.colors.colPrimary : Appearance.colors.colSubtext
+            color: SshLan.active ? Appearance.colors.colAccent : Appearance.colors.colSubtext
             text: "terminal"
         }
 

@@ -134,7 +134,7 @@ Item {
 
                     StyledText {
                         font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colPrimary
+                        color: Appearance.colors.colAccent
                         text: {
                             const originalIndex = TimerService.stopwatchLaps.length - lapItem.index - 1
                             const lastTime = originalIndex > 0 ? TimerService.stopwatchLaps[originalIndex - 1] : 0

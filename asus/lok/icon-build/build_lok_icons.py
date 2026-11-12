@@ -86,6 +86,16 @@ for name in sorted(pairs, key=len, reverse=True):
 fea = "languagesystem DFLT dflt;\nlanguagesystem latn dflt;\nfeature liga {\n" + "\n".join(rules) + "\n} liga;\n"
 addOpenTypeFeaturesFromString(font, fea)
 
+# Tabler ships every glyph with lsb 0 while its outline starts further right;
+# renderers place xMin at lsb, so each icon drifted left by its own xMin
+# (narrow icons the most). Make lsb match the real outline for every glyph.
+for _n in font.getGlyphOrder():
+    _gl = font["glyf"][_n]
+    if _gl.numberOfContours == 0:
+        continue
+    _gl.recalcBounds(font["glyf"])
+    font["hmtx"][_n] = (font["hmtx"][_n][0], _gl.xMin)
+
 # Rename the family.
 for rec in font["name"].names:
     if rec.nameID in (1, 4, 16):

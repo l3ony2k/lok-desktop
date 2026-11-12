@@ -195,6 +195,7 @@ ButtonMouseArea {
         }
         Colorizer {
             z: 5
+            visible: !Appearance.lok // lok: numbers carry their own colour (bright on the active cell)
             anchors.fill: numbersGrid
             colorizationColor: Appearance.colors.colOnPrimary
             sourceColor: Appearance.colors.colOnSecondaryContainer
@@ -369,7 +370,8 @@ ButtonMouseArea {
         id: wsNum
         property bool hasBiggestWindow: !!wsModel.biggestWindow[index]
         property int wsId: wsModel.getWorkspaceIdAt(index)
-        property color contentColor: (wsModel.occupied[wsNum.index] && wsId !== wsModel.fakeWorkspace) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1Inactive
+        property color contentColor: (Appearance.lok && wsNum.index === root.workspaceIndexInGroup) ? Appearance.colors.colOnPrimary
+            : (wsModel.occupied[wsNum.index] && wsId !== wsModel.fakeWorkspace) ? Appearance.colors.colOnSecondaryContainer : (Appearance.lok ? Appearance.colors.colOutline : Appearance.colors.colOnLayer1Inactive)
         property bool showingNumbers: {
             if (root.superPressAndHeld)
                 return true;

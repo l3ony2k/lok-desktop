@@ -88,7 +88,7 @@ DialogListItem {
                 colBackground: p ? Appearance.colors.colError : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
                 colBackgroundHover: p ? Appearance.colors.colErrorHover : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
                 colRipple: p ? Appearance.colors.colErrorActive : Appearance.colors.colLayer3Hover
-                colText: p ? Appearance.colors.colOnError : Appearance.colors.colPrimary
+                colText: p ? Appearance.colors.colOnError : Appearance.colors.colAccent
 
                 buttonText: p ? Translation.tr("Forget") : Translation.tr("Always connect")
                 onClicked: {

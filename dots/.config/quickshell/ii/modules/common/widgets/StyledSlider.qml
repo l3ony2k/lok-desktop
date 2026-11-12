@@ -31,9 +31,9 @@ Slider {
 
     property real handleDefaultWidth: Appearance.lok ? 2 : 3
     property real handlePressedWidth: Appearance.lok ? 2 : 1.5
-    property color highlightColor: Appearance.colors.colPrimary
+    property color highlightColor: Appearance.colors.colMeterFill
     property color trackColor: Appearance.colors.colSecondaryContainer
-    property color handleColor: Appearance.colors.colPrimary
+    property color handleColor: Appearance.colors.colAccent
     property color dotColor: Appearance.m3colors.m3onSecondaryContainer
     property color dotColorHighlighted: Appearance.m3colors.m3onPrimary
     property real unsharpenRadius: Appearance.lok ? 0 : Appearance.rounding.unsharpen

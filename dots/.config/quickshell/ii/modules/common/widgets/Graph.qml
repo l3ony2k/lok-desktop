@@ -12,7 +12,7 @@ Canvas {
 
     required property list<real> values
     property int points: values.length
-    property color color: Appearance.colors.colPrimary
+    property color color: Appearance.colors.colAccent
     property real fillOpacity: 0.5
     property var alignment: Graph.Alignment.Left
 

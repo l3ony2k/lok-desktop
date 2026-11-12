@@ -16,7 +16,7 @@ GroupButton {
         anchors.centerIn: parent
         iconSize: 22
         fill: toggled ? 1 : 0
-        color: toggled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer1
+        color: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: buttonIcon

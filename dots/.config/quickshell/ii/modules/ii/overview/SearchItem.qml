@@ -205,7 +205,7 @@ RippleButton {
                             anchors.centerIn: parent
                             text: "check"
                             font.pixelSize: Appearance.font.pixelSize.normal
-                            color: Appearance.m3colors.m3onPrimary
+                            color: Appearance.colors.colOnPrimary
                         }
                     }
                 }

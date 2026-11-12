@@ -718,7 +718,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                         anchors.centerIn: parent
                         horizontalAlignment: Text.AlignHCenter
                         iconSize: 22
-                        color: sendButton.enabled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer2Disabled
+                        color: sendButton.enabled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2Disabled
                         text: "arrow_upward"
                     }
                 }

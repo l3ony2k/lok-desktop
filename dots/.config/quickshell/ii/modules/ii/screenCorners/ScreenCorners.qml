@@ -128,7 +128,7 @@ Scope {
                         active: Config.options.sidebar.cornerOpen.visualize
                         anchors.fill: parent
                         sourceComponent: Rectangle {
-                            color: Appearance.colors.colPrimary
+                            color: Appearance.colors.colAccent
                         }
                     }
                 }

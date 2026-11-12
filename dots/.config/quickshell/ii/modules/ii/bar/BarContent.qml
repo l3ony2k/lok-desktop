@@ -73,6 +73,7 @@ Item { // Bar content region
             icon: Hyprsunset.gamma === 100 ? "light_mode" : "wb_twilight"
             tooltipText: Translation.tr("Scroll to change brightness")
             side: "left"
+            z: 10 // above the sidebar buttons (their hover fill is opaque in lok)
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -85,7 +86,7 @@ Item { // Bar content region
             LeftSidebarButton { // Left sidebar button
                 id: leftSidebarButton
                 Layout.alignment: Qt.AlignVCenter
-                Layout.leftMargin: Appearance.roundingSpace.screenRounding
+                Layout.leftMargin: Appearance.lok ? 20 : Appearance.roundingSpace.screenRounding
                 colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
             }
 
@@ -214,6 +215,7 @@ Item { // Bar content region
             icon: "volume_up"
             tooltipText: Translation.tr("Scroll to change volume")
             side: "right"
+            z: 10 // above the sidebar buttons (their hover fill is opaque in lok)
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -228,7 +230,7 @@ Item { // Bar content region
                 id: rightSidebarButton
 
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.rightMargin: Appearance.roundingSpace.screenRounding
+                Layout.rightMargin: Appearance.lok ? 20 : Appearance.roundingSpace.screenRounding
                 Layout.fillWidth: false
 
                 implicitWidth: indicatorsRowLayout.implicitWidth + 10 * 2

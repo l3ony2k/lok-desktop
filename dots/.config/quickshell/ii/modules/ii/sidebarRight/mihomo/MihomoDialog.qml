@@ -54,7 +54,7 @@ WindowDialog {
 
         MaterialSymbol {
             iconSize: Appearance.font.pixelSize.larger
-            color: Mihomo.active ? Appearance.colors.colPrimary : Appearance.colors.colSubtext
+            color: Mihomo.active ? Appearance.colors.colAccent : Appearance.colors.colSubtext
             text: Mihomo.icon
         }
 
@@ -67,7 +67,7 @@ WindowDialog {
         }
 
         StyledText {
-            color: Mihomo.active ? Appearance.colors.colPrimary : Appearance.colors.colSubtext
+            color: Mihomo.active ? Appearance.colors.colAccent : Appearance.colors.colSubtext
             font.pixelSize: Appearance.font.pixelSize.smaller
             text: Mihomo.statusText
         }

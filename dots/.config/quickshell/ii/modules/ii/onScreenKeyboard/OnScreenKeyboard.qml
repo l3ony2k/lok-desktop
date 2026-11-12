@@ -96,7 +96,7 @@ Scope { // Scope
                                 text: "keep"
                                 horizontalAlignment: Text.AlignHCenter
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: root.pinned ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer0
+                                color: root.pinned ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0
                             }
                         }
                         OskControlButton {

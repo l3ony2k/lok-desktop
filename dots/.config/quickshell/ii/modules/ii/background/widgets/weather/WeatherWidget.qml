@@ -32,7 +32,7 @@ AbstractBackgroundWidget {
                 family: Appearance.font.family.expressive
                 weight: Font.Medium
             }
-            color: Appearance.colors.colPrimary
+            color: Appearance.colors.colAccent
             text: Weather.data?.temp.substring(0,Weather.data?.temp.length - 1) ?? "--°"
             anchors {
                 right: parent.right

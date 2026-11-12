@@ -28,7 +28,7 @@ WindowDialog {
 
             MaterialSymbol {
                 iconSize: Appearance.font.pixelSize.larger
-                color: Tailscale.running ? Appearance.colors.colPrimary : Appearance.colors.colSubtext
+                color: Tailscale.running ? Appearance.colors.colAccent : Appearance.colors.colSubtext
                 text: Tailscale.icon
             }
 
@@ -41,7 +41,7 @@ WindowDialog {
             }
 
             StyledText {
-                color: Tailscale.running ? Appearance.colors.colPrimary : Appearance.colors.colSubtext
+                color: Tailscale.running ? Appearance.colors.colAccent : Appearance.colors.colSubtext
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 text: Tailscale.statusText
             }

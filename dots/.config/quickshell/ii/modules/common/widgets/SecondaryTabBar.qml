@@ -26,7 +26,7 @@ TabBar {
             topRightRadius: height
             bottomLeftRadius: 0
             bottomRightRadius: 0
-            color: Appearance.colors.colPrimary
+            color: Appearance.colors.colAccent
             // Animation
             property real baseWidth: root.width / root.count
             AnimatedTabIndexPair {

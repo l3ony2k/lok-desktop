@@ -150,10 +150,17 @@ Singleton {
         property color colLayer4Active: ColorUtils.solveOverlayColor(colLayer3Base, ColorUtils.mix(colLayer4Base, colOnLayer4, 0.80), 1 - root.contentTransparency);
         property color colOnLayer4: m3colors.m3onSurface;
         // Primary
-        property color colPrimary: m3colors.m3primary
-        property color colOnPrimary: m3colors.m3onPrimary
-        property color colPrimaryHover: ColorUtils.mix(colors.colPrimary, colLayer1Hover, 0.87)
-        property color colPrimaryActive: ColorUtils.mix(colors.colPrimary, colLayer1Active, 0.7)
+        // lok: "primary" is the selected/on state. Instead of inverting (text colour as
+        // fill) it is one surface step above the top layer: #4a4a4a dark, white light.
+        // Text/icon accents that used primary use colAccent (plain text colour in lok).
+        property color colPrimary: root.lok ? (m3colors.darkmode ? "#4a4a4a" : "#ffffff") : m3colors.m3primary
+        property color colOnPrimary: root.lok ? m3colors.m3onSurface : m3colors.m3onPrimary
+        property color colPrimaryHover: root.lok ? ColorUtils.mix(colors.colPrimary, m3colors.m3onSurface, 0.92) : ColorUtils.mix(colors.colPrimary, colLayer1Hover, 0.87)
+        property color colPrimaryActive: root.lok ? ColorUtils.mix(colors.colPrimary, m3colors.m3onSurface, 0.84) : ColorUtils.mix(colors.colPrimary, colLayer1Active, 0.7)
+        property color colAccent: root.lok ? m3colors.m3onSurface : m3colors.m3primary
+        // lok: frame + status strip of a selected surface, and fills of meters/sliders
+        property color colSelectedEdge: root.lok ? (m3colors.darkmode ? "#8c8c8c" : "#3a3a3a") : "transparent"
+        property color colMeterFill: root.lok ? (m3colors.darkmode ? "#a6a6a6" : "#5c5c5c") : m3colors.m3primary
         property color colPrimaryContainer: m3colors.m3primaryContainer
         property color colPrimaryContainerHover: ColorUtils.mix(colors.colPrimaryContainer, colors.colOnPrimaryContainer, 0.9)
         property color colPrimaryContainerActive: ColorUtils.mix(colors.colPrimaryContainer, colors.colOnPrimaryContainer, 0.8)

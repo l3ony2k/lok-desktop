@@ -185,13 +185,13 @@ Item {
                         anchors.fill: parent
                         radius: Appearance.rounding.verysmall
                         border.width: 2
-                        border.color: todoInput.activeFocus ? Appearance.colors.colPrimary : Appearance.m3colors.m3outline
+                        border.color: todoInput.activeFocus ? Appearance.colors.colAccent : Appearance.m3colors.m3outline
                         color: "transparent"
                     }
 
                     cursorDelegate: Rectangle {
                         width: 1
-                        color: todoInput.activeFocus ? Appearance.colors.colPrimary : "transparent"
+                        color: todoInput.activeFocus ? Appearance.colors.colAccent : "transparent"
                         radius: 1
                     }
                 }

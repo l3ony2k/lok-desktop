@@ -17,7 +17,7 @@ GroupButton {
     colBackground: Appearance.colors.colLayer2
     colBackgroundHover: Appearance.colors.colLayer2Hover
     colBackgroundActive: Appearance.colors.colLayer2Active
-    property color colText: toggled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer1
+    property color colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
 
     contentItem: Item {
         id: content

@@ -22,7 +22,7 @@ RippleButton {
         text: day
         horizontalAlignment: Text.AlignHCenter
         font.weight: bold ? Font.DemiBold : Font.Normal
-        color: (isToday == 1) ? Appearance.m3colors.m3onPrimary : 
+        color: (isToday == 1) ? Appearance.colors.colOnPrimary : 
             (isToday == 0) ? Appearance.colors.colOnLayer1 : 
             Appearance.colors.colOutlineVariant
 
