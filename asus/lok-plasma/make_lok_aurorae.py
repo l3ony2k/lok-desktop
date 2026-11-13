@@ -19,8 +19,13 @@ MODES = {
                   shadow="#000000", shadow_op=0.30, hover=0.10, press=0.18),
 }
 
-B = 2          # border
+# Side/bottom border pieces are drawn wider than KWin's border strip so they always
+# fill it: at the 1.333 display scale KWin rounds each strip to 1-3 px depending on
+# the window position, and a thinner piece left transparent gaps next to the client.
+B = 3
+TB = 1.5       # top border rows (drawn inside our own title piece): exactly 2 px at 1.333
 TOP = 30       # title area incl. top border (TitleEdgeTop + TitleHeight + TitleEdgeBottom)
+LB = 2         # layout values must be integers
 SH = 3         # shadow offset = right/bottom padding
 W = 8          # length of stretchable pieces
 
@@ -38,7 +43,7 @@ def pieces(prefix, c, active):
     p = []
     # top row: border(B) on top, title fill, hairline at bottom (y = TOP-1)
     def top_body(w, left_border, right_border):
-        s = r(0, 0, w, TOP, title) + r(0, 0, w, B, frame) + r(0, TOP - 1, w, 1, line)
+        s = r(0, 0, w, TOP, title) + r(0, 0, w, TB, frame) + r(0, TOP - 1, w, 1, line)
         if left_border: s += r(0, 0, B, TOP, frame)
         if right_border: s += r(w - B, 0, B, TOP, frame)
         return s
@@ -113,9 +118,9 @@ for mode, c in MODES.items():
         "TitleAlignment=Left\nTitleVerticalAlignment=Center\nAnimation=0\nShadow=false\n"
         "Blur=false\n\n"
         "[Layout]\n"
-        f"BorderLeft={B}\nBorderRight={B}\nBorderBottom={B}\n"
-        f"TitleEdgeTop={B + 3}\nTitleEdgeBottom=4\nTitleEdgeLeft={B + 6}\nTitleEdgeRight={B + 4}\n"
-        f"TitleHeight={TOP - (B + 3) - 4}\nTitleBorderLeft=8\nTitleBorderRight=8\n"
+        f"BorderLeft={LB}\nBorderRight={LB}\nBorderBottom={LB}\n"
+        f"TitleEdgeTop={LB + 3}\nTitleEdgeBottom=4\nTitleEdgeLeft={LB + 6}\nTitleEdgeRight={LB + 4}\n"
+        f"TitleHeight={TOP - (LB + 3) - 4}\nTitleBorderLeft=8\nTitleBorderRight=8\n"
         "ButtonWidth=20\nButtonHeight=20\nButtonSpacing=2\nButtonMarginTop=0\nExplicitButtonSpacer=8\n"
         f"PaddingTop=0\nPaddingLeft=0\nPaddingRight={SH}\nPaddingBottom={SH}\n"
         "TitleEdgeTopMaximized=3\nTitleEdgeBottomMaximized=4\nTitleEdgeLeftMaximized=6\nTitleEdgeRightMaximized=4\n")

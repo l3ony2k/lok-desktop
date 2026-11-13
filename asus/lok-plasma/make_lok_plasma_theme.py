@@ -176,12 +176,54 @@ def build_switch():
     body.append(f'<rect id="hint-bar-size" x="{x}" y="0" width="38" height="{BAR_H}" style="fill:none"/>')
     write_svg("widgets/switch", body)
 
+def box(eid, x, size, parts):
+    return (f'<g id="{eid}"><rect x="{x}" y="0" width="{size}" height="{size}" '
+            f'style="fill:#000;fill-opacity:0"/>' + "".join(parts) + "</g>")
+
+def ring(x, size, paint):
+    return [rect(x, 0, size, 1, paint), rect(x, size - 1, size, 1, paint),
+            rect(x, 0, 1, size, paint), rect(x + size - 1, 0, 1, size, paint)]
+
+def build_slider():
+    """widgets/slider: flat groove + mid-grey filled part; handle = 3 px bright bar
+    (ii's lok slider handle), focus = 1 px ring."""
+    body = frame("groove", F((T, 0.18), None), 0, 0) + frame("groove-highlight", F((T, 0.60), None), 40, 0)
+    x, HS = 100, 20
+    for orient in ("horizontal", "vertical"):
+        def bar(op):
+            if orient == "horizontal":
+                return [rect(x + (HS - 3) / 2, 0, 3, HS, (T, op))]
+            return [rect(x, (HS - 3) / 2, HS, 3, (T, op))]
+        body.append(box(f"{orient}-slider-handle", x, HS, bar(0.90))); x += HS + 4
+        body.append(box(f"{orient}-slider-hover", x, HS, bar(1.0))); x += HS + 4
+        body.append(box(f"{orient}-slider-focus", x, HS, ring(x, HS, (T, 0.55)))); x += HS + 4
+        body.append(box(f"{orient}-slider-shadow", x, HS, [])); x += HS + 4
+    body.append(f'<rect id="hint-handle-size" x="{x}" y="0" width="{HS}" height="{HS}" style="fill:none"/>')
+    body.append(f'<rect id="hint-tile-center" x="{x + 30}" y="0" width="2" height="2" style="fill:none"/>')
+    write_svg("widgets/slider", body)
+
+def build_radiobutton():
+    """widgets/radiobutton: square like everything in lok; checked = inset square."""
+    S16, x, body = 16, 0, []
+    for eid, parts in (("normal", [rect(0, 0, S16, S16, (V, 1))] + ring(0, S16, (T, 0.45))),
+                       ("hover", ring(0, S16, (T, 0.75))),
+                       ("focus", ring(0, S16, (T, 0.85))),
+                       ("checked", [rect(4, 4, 8, 8, (T, 0.95))]),
+                       ("symbol", [rect(4, 4, 8, 8, (T, 0.95))]),
+                       ("shadow", [])):
+        g =[s.replace('<rect x="', f'<rect transform="translate({x},0)" x="', 1) for s in parts]
+        body.append(box(eid, x, S16, g)); x += S16 + 4
+    body.append(f'<rect id="hint-size" x="{x}" y="0" width="{S16}" height="{S16}" style="fill:none"/>')
+    write_svg("widgets/radiobutton", body)
+
 if os.path.isdir(DST):
     shutil.rmtree(DST)
 os.makedirs(DST)
 for path, spec in SPEC.items():
     build(path, spec)
 build_switch()
+build_slider()
+build_radiobutton()
 json.dump({"KPlugin": {"Id": "lok", "Name": "Lok", "Version": "1",
                         "Description": "Square, shadowless, greyscale (lok.computer). Generated; colours follow the KDE colour scheme.",
                         "License": "LGPL-2.1+", "Authors": [{"Name": "leon"}]},
