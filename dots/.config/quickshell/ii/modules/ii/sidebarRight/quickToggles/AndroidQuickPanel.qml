@@ -18,11 +18,12 @@ AbstractQuickPanel {
     Behavior on implicitHeight {
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
     }
-    property real spacing: 6
-    property real padding: 6
+    property real spacing: Appearance.lok ? 8 : 6
+    property real padding: Appearance.lok ? 8 : 6
     readonly property real baseCellWidth: {
         // This is the wrong calculation, but it looks correct in reality???
         // (theoretically spacing should be multiplied by 1 column less)
+        // The panel is one spacing wider than its visible card, so subtracting `columns` spacings is the exact grid
         const availableWidth = root.width - (root.padding * 2) - (root.spacing * (root.columns))
         return availableWidth / root.columns
     }
