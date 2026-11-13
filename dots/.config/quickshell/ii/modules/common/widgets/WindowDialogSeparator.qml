@@ -7,7 +7,7 @@ import qs.modules.common.widgets
 
 Rectangle {
     implicitHeight: 1
-    color: Appearance.colors.colOutline
+    color: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutline
     Layout.fillWidth: true
     Layout.leftMargin: -Appearance.roundingSpace.large
     Layout.rightMargin: -Appearance.roundingSpace.large

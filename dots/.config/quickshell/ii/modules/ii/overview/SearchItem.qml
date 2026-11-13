@@ -199,7 +199,7 @@ RippleButton {
                         implicitWidth: activeText.implicitHeight
                         implicitHeight: activeText.implicitHeight
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colPrimary
+                        color: Appearance.colors.colAccent
                         MaterialSymbol {
                             id: activeText
                             anchors.centerIn: parent

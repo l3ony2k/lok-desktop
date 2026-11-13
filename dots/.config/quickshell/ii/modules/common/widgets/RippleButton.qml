@@ -11,6 +11,8 @@ import QtQuick.Controls
 Button {
     id: root
     property bool toggled
+    // Shell font by default, so contentItems that copy `font: root.font` don't fall back to Qt's system font
+    font.family: Appearance?.font.family.main ?? "sans-serif"
     property string buttonText
     property bool pointingHandCursor: true
     property real buttonRadius: Appearance?.rounding?.small ?? 4
@@ -40,6 +42,8 @@ Button {
         (root.hovered ? colBackgroundHover : 
             colBackground), root.enabled ? 0 : 1)
     property color rippleColor: root.toggled ? colRippleToggled : colRipple
+    property real borderWidth: 0
+    property color borderColor: "transparent"
 
     function startRipple(x, y) {
         const stateY = buttonBackground.y;
@@ -140,6 +144,8 @@ Button {
         implicitHeight: 30
 
         color: root.buttonColor
+        border.width: root.borderWidth
+        border.color: root.borderColor
         Behavior on color {
             animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this)
         }

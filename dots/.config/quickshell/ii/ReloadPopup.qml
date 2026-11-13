@@ -3,11 +3,26 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Io
 
 Scope {
 	id: root
 	property bool failed;
 	property string errorString;
+
+	// lok style. Deliberately not using Appearance/Config: this popup must still render
+	// when the shell config itself fails to load, so it reads the two JSON files directly
+	// and falls back to the upstream look if anything is missing.
+	property bool lok: false
+	property var pal: ({})
+	function readLok() {
+		try { root.lok = JSON.parse(cfgFile.text()).appearance.style === "lok"; } catch (e) { root.lok = false; }
+		try { root.pal = JSON.parse(colFile.text()); } catch (e) { root.pal = ({}); }
+	}
+	function c(key, fallback) { return (root.lok && root.pal[key]) ? root.pal[key] : fallback; }
+	FileView { id: cfgFile; path: Quickshell.env("HOME") + "/.config/illogical-impulse/config.json"; blockLoading: true; onLoaded: root.readLok() }
+	FileView { id: colFile; path: Quickshell.env("HOME") + "/.local/state/quickshell/user/generated/colors.json"; blockLoading: true; onLoaded: root.readLok() }
+	Component.onCompleted: readLok()
 
 	// Connect to the Quickshell global to listen for the reload signals.
 	Connections {
@@ -50,11 +65,13 @@ Scope {
 			Rectangle {
 				id: rect
 				anchors.centerIn: parent
-				color: failed ?  "#ffe99195" : "#ffD1E8D5"
+				color: root.lok ? root.c("surface_container_high", "#313131") : (failed ?  "#ffe99195" : "#ffD1E8D5")
+				border.width: root.lok ? 1 : 0
+				border.color: root.lok ? (failed ? root.c("error", "#ff6e64") : root.c("outline", "#808080")) : "transparent"
 
 				implicitHeight: layout.implicitHeight + 30
 				implicitWidth: layout.implicitWidth + 30
-				radius: 12
+				radius: root.lok ? 0 : 12
 
 				// Fills the whole area of the rectangle, making any clicks go to it,
 				// which dismiss the popup.
@@ -81,10 +98,11 @@ Scope {
 
 					Text {
 						renderType: Text.NativeRendering
-						font.family: "Google Sans Flex"
-						font.pointSize: 14
+						font.family: root.lok ? "IoskeleyMonoTerm Nerd Font" : "Google Sans Flex"
+						font.weight: root.lok ? Font.Medium : Font.Normal
+						font.pointSize: root.lok ? 12 : 14
 						text: root.failed ? "Quickshell: Reload failed" : "Quickshell reloaded"
-						color: failed ? "#ff93000A" : "#ff0C1F13"
+						color: root.lok ? (failed ? root.c("error", "#ff6e64") : root.c("on_surface", "#ededed")) : (failed ? "#ff93000A" : "#ff0C1F13")
 					}
 
 					Text {
@@ -92,7 +110,7 @@ Scope {
 						font.family: "JetBrains Mono NF"
 						font.pointSize: 11
 						text: root.errorString
-						color: failed ? "#ff93000A" : "#ff0C1F13"
+						color: root.lok ? (failed ? root.c("error", "#ff6e64") : root.c("on_surface", "#ededed")) : (failed ? "#ff93000A" : "#ff0C1F13")
 						// When visible is false, it also takes up no space.
 						visible: root.errorString != ""
 					}
@@ -103,12 +121,12 @@ Scope {
 				Rectangle {
 					z: 2
 					id: bar
-					color: failed ? "#ff93000A" : "#ff0C1F13"
+					color: root.lok ? (failed ? root.c("error", "#ff6e64") : root.c("on_surface", "#ededed")) : (failed ? "#ff93000A" : "#ff0C1F13")
 					anchors.bottom: parent.bottom
 					anchors.left: parent.left
 					anchors.margins: 10
-					height: 5
-					radius: 9999
+					height: root.lok ? 2 : 5
+					radius: root.lok ? 0 : 9999
 
 					PropertyAnimation {
 						id: anim
@@ -129,12 +147,12 @@ Scope {
 				Rectangle {
 					z: 1
 					id: bar_bg
-					color: failed ? "#30af1b25" : "#4027643e"
+					color: root.lok ? root.c("outline_variant", "#474747") : (failed ? "#30af1b25" : "#4027643e")
 					anchors.bottom: parent.bottom
 					anchors.left: parent.left
 					anchors.margins: 10
-					height: 5
-					radius: 9999
+					height: root.lok ? 2 : 5
+					radius: root.lok ? 0 : 9999
 					width: rect.width - bar.anchors.margins * 2
 				}
 
@@ -152,7 +170,7 @@ Scope {
                 verticalOffset: 2
                 radius: 6
                 samples: radius * 2 + 1 // Ideally should be 2 * radius + 1, see qt docs
-                color: "#44000000"
+                color: root.lok ? "transparent" : "#44000000"
                 source: rect
             }
 		}

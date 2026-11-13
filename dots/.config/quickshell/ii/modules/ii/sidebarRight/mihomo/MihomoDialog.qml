@@ -9,7 +9,6 @@ import Quickshell
 
 WindowDialog {
     id: root
-    backgroundHeight: 520
 
     component InfoRow: RowLayout {
         required property string icon

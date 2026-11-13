@@ -9,7 +9,6 @@ import Quickshell
 
 WindowDialog {
     id: root
-    backgroundHeight: 500
 
     onShowChanged: {
         if (root.show)

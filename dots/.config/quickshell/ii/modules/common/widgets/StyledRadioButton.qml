@@ -13,7 +13,7 @@ RadioButton {
     padding: 4
     implicitHeight: contentItem.implicitHeight + padding * 2
     property string description
-    property color activeColor: Appearance?.colors.colPrimary ?? "#685496"
+    property color activeColor: Appearance?.colors.colAccent ?? "#685496"
     property color inactiveColor: Appearance?.m3colors.m3onSurfaceVariant ?? "#45464F"
 
     PointingHandInteraction {}
@@ -41,7 +41,7 @@ RadioButton {
                 width: checked ? 10 : 4
                 height: checked ? 10 : 4
                 radius: Appearance?.rounding.full
-                color: Appearance?.colors.colPrimary
+                color: Appearance?.colors.colAccent
                 opacity: checked ? 1 : 0
 
                 Behavior on opacity {

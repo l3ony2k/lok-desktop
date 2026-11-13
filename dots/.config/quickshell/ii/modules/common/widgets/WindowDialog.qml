@@ -10,7 +10,7 @@ Rectangle {
 
     property bool show: false
     default property alias contentData: contentColumn.data
-    property real backgroundHeight: dialogBackground.implicitHeight
+    property real backgroundHeight: Math.min(dialogBackground.naturalHeight, root.height)  // content-sized unless a dialog sets a fixed height
     property real backgroundWidth: 350
     property real backgroundAnimationMovementDistance: 60
     
@@ -30,7 +30,6 @@ Rectangle {
 
     onShowChanged: {
         dialogBackgroundHeightAnimation.easing.bezierCurve = (show ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel)
-        dialogBackground.implicitHeight = show ? backgroundHeight : 0
     }
 
     radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
@@ -51,7 +50,12 @@ Rectangle {
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
         implicitWidth: root.backgroundWidth
-        implicitHeight: contentColumn.implicitHeight + dialogBackground.radius * 2
+        property real padding: Appearance.lok ? Appearance.roundingSpace.large : dialogBackground.radius
+        // Declarative so the dialog keeps following its content (wrapped or changing text) while open
+        property real naturalHeight: contentColumn.implicitHeight + dialogBackground.padding * 2
+        implicitHeight: root.show ? root.backgroundHeight : 0
+        border.width: Appearance.lok ? 1 : 0
+        border.color: Appearance.colors.colLokFrame
         Behavior on implicitHeight {
             NumberAnimation {
                 id: dialogBackgroundHeightAnimation
@@ -78,7 +82,7 @@ Rectangle {
             id: contentColumn
             anchors {
                 fill: parent
-                margins: Appearance.lok ? Appearance.roundingSpace.large : dialogBackground.radius
+                margins: dialogBackground.padding
             }
             spacing: 16
             opacity: root.show ? 1 : 0

@@ -27,7 +27,8 @@ RippleButton {
             id: labelWidget
             Layout.fillWidth: true
             text: root.text
-            font: root.font
+            font.pixelSize: root.font.pixelSize
+            wrapMode: Text.Wrap
             color: Appearance.colors.colOnSecondaryContainer
             opacity: root.enabled ? 1 : 0.4
         }
@@ -35,6 +36,7 @@ RippleButton {
             id: switchWidget
             down: root.down
             Layout.fillWidth: false
+            Layout.alignment: Qt.AlignVCenter
             checked: root.checked
             onClicked: root.clicked()
         }

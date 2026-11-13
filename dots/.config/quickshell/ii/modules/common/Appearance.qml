@@ -121,6 +121,9 @@ Singleton {
         property color colOnLayer0: m3colors.m3onBackground
         property color colLayer0Hover: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.9, root.contentTransparency))
         property color colLayer0Active: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.8, root.contentTransparency))
+        // lok: frame of a floating dialog > dividers inside it (one window, not a stack of boxes)
+        property color colLokFrame: m3colors.darkmode ? "#5e5e5e" : "#8c8c8c"
+        property color colLokDivider: m3colors.darkmode ? "#3d3d3d" : "#bdbdbd"
         property color colLayer0Border: root.lok ? root.m3colors.m3outlineVariant : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow

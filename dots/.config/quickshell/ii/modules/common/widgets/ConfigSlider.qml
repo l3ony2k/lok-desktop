@@ -32,6 +32,7 @@ RowLayout {
             id: labelWidget
             Layout.preferredWidth: root.textWidth
             text: root.text
+            wrapMode: Text.Wrap
             color: Appearance.colors.colOnSecondaryContainer
         }
     }
