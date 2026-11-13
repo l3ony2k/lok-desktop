@@ -48,8 +48,17 @@ Item {
         spacing: 4
         anchors.fill: parent
 
+        MaterialSymbol { // lok: a plain glyph like the rest of the bar
+            visible: Appearance.lok
+            Layout.alignment: Qt.AlignVCenter
+            text: activePlayer?.isPlaying ? "pause" : "music_note"
+            iconSize: Appearance.font.pixelSize.larger
+            color: Appearance.colors.colSubtext
+        }
+
         ClippedFilledCircularProgress {
             id: mediaCircProg
+            visible: !Appearance.lok
             Layout.alignment: Qt.AlignVCenter
             lineWidth: Appearance.rounding.unsharpen
             value: activePlayer?.position / activePlayer?.length
@@ -79,7 +88,7 @@ Item {
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true // Ensures the text takes up available space
             Layout.rightMargin: rowLayout.spacing
-            horizontalAlignment: Text.AlignHCenter
+            horizontalAlignment: Appearance.lok ? Text.AlignLeft : Text.AlignHCenter
             elide: Text.ElideRight // Truncates the text on the right
             color: Appearance.colors.colOnLayer1
             text: `${cleanedTitle}${activePlayer?.trackArtist ? ' • ' + activePlayer.trackArtist : ''}`

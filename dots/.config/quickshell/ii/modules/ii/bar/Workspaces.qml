@@ -96,7 +96,7 @@ ButtonMouseArea {
             id: occupiedIndicatorsBg
             anchors.fill: parent
             contentLayer: StyledRectangle.ContentLayer.Group
-            color: ColorUtils.transparentize(Appearance.m3colors.m3secondaryContainer, 0.4)
+            color: Appearance.lok ? Appearance.colors.colLokWsOccupied : ColorUtils.transparentize(Appearance.m3colors.m3secondaryContainer, 0.4)
             visible: false
         }
 
@@ -122,9 +122,10 @@ ButtonMouseArea {
                     // The idea: over-stretch to occupied sides, animate this for a smooth transition.
                     //           masking already prevents weird overlaps
                     Pill {
-                        property real undirectionalWidth: root.workspaceButtonWidth * wsBg.currentOccupied
-                        property real undirectionalLength: root.workspaceButtonWidth * (1 + 0.5 * wsBg.previousOccupied + 0.5 * wsBg.nextOccupied) * currentOccupied
-                        property real undirectionalOffset: (!wsBg.currentOccupied ? 0.5 : -0.5 * wsBg.previousOccupied) * root.workspaceButtonWidth
+                        // lok: separate squares the same size as the active one (no merging into a strip)
+                        property real undirectionalWidth: Appearance.lok ? root.activeWorkspaceSize * wsBg.currentOccupied : root.workspaceButtonWidth * wsBg.currentOccupied
+                        property real undirectionalLength: Appearance.lok ? root.activeWorkspaceSize * wsBg.currentOccupied : root.workspaceButtonWidth * (1 + 0.5 * wsBg.previousOccupied + 0.5 * wsBg.nextOccupied) * currentOccupied
+                        property real undirectionalOffset: Appearance.lok ? (root.activeWorkspaceMargin + (wsBg.currentOccupied ? 0 : root.activeWorkspaceSize / 2)) : (!wsBg.currentOccupied ? 0.5 : -0.5 * wsBg.previousOccupied) * root.workspaceButtonWidth
                         anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
                         anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
                         x: root.vertical ? 0 : undirectionalOffset
@@ -161,6 +162,7 @@ ButtonMouseArea {
             id: activeIndicator
             anchors.fill: parent
             z: 2
+            color: Appearance.lok ? Appearance.colors.colLokWsActive : Appearance.colors.colPrimary
 
             index: root.workspaceIndexInGroup
         }

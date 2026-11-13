@@ -47,6 +47,15 @@ Item { // Bar content region
         border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
         border.color: Appearance.colors.colLayer0Border
     }
+    Rectangle { // lok: hairline between the bar and the desktop, same tone as dialog dividers
+        visible: Appearance.lok && Config.options.bar.showBackground && Config.options.bar.cornerStyle !== 1 && !Config.options.bar.vertical
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: Config.options.bar.bottom ? undefined : parent.bottom
+        anchors.top: Config.options.bar.bottom ? parent.top : undefined
+        height: 1
+        color: Appearance.colors.colLokDivider
+    }
 
     FocusedScrollMouseArea { // Left side | scroll to change brightness
         id: barLeftSideMouseArea
@@ -122,19 +131,36 @@ Item { // Bar content region
         }
     }
 
+    MouseArea { // Centred clock (centerClock layout)
+        id: centerClockArea
+        visible: root.centerClock
+        anchors.centerIn: parent // the bar's exact centre, independent of the other sections
+        z: 1
+        implicitWidth: centerClockGroup.implicitWidth
+        implicitHeight: centerClockGroup.implicitHeight
+        onPressed: GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen
+        BarGroup {
+            id: centerClockGroup
+            anchors.fill: parent
+            ClockWidget {
+                showDate: (Config.options.bar.verbose && root.useShortenedForm < 2)
+                Layout.alignment: Qt.AlignVCenter
+            }
+        }
+    }
+
     Row { // Middle section
         id: middleSection
         anchors {
             top: parent.top
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
-            // centerClock: put the clock itself on the screen's centre line, whatever the side groups' widths
-            horizontalCenterOffset: root.centerClock ? (middleSection.width / 2 - (centerClockArea.x + centerClockArea.width / 2)) : 0
         }
         spacing: 4
 
         BarGroup {
             id: leftCenterGroup
+            visible: !root.centerClock
             anchors.verticalCenter: parent.verticalCenter
             implicitWidth: root.centerSideModuleWidth
 
@@ -150,24 +176,7 @@ Item { // Bar content region
         }
 
         VerticalBarSeparator {
-            visible: Config.options?.bar.borderless
-        }
-
-        MouseArea { // Centred clock (centerClock layout)
-            id: centerClockArea
-            visible: root.centerClock
-            anchors.verticalCenter: parent.verticalCenter
-            implicitWidth: centerClockGroup.implicitWidth
-            implicitHeight: centerClockGroup.implicitHeight
-            onPressed: GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen
-            BarGroup {
-                id: centerClockGroup
-                anchors.fill: parent
-                ClockWidget {
-                    showDate: (Config.options.bar.verbose && root.useShortenedForm < 2)
-                    Layout.alignment: Qt.AlignVCenter
-                }
-            }
+            visible: Config.options?.bar.borderless && !root.centerClock
         }
 
         BarGroup {
@@ -194,11 +203,12 @@ Item { // Bar content region
         }
 
         VerticalBarSeparator {
-            visible: Config.options?.bar.borderless
+            visible: Config.options?.bar.borderless && !root.centerClock
         }
 
         MouseArea {
             id: rightCenterGroup
+            visible: !root.centerClock
             anchors.verticalCenter: parent.verticalCenter
             implicitWidth: root.centerSideModuleWidth
             implicitHeight: rightCenterGroupContent.implicitHeight
@@ -227,15 +237,6 @@ Item { // Bar content region
                     visible: (root.useShortenedForm < 2 && Battery.available)
                     Layout.alignment: Qt.AlignVCenter
                 }
-
-                Loader { // Weather next to the clock (centerClock layout)
-                    active: root.centerClock && Config.options.bar.weather.enable
-                    visible: active
-                    Layout.alignment: Qt.AlignVCenter
-                    sourceComponent: WeatherBar {}
-                }
-
-                Item { visible: root.centerClock; Layout.fillWidth: true } // keep the group packed toward the clock
             }
         }
     }
@@ -376,6 +377,36 @@ Item { // Bar content region
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 invertSide: Config?.options.bar.bottom
+            }
+
+            // centerClock: status cluster, right-to-left. Media is the leftmost item, so it
+            // appearing/disappearing never moves anything else.
+            Loader {
+                active: root.centerClock && Config.options.bar.weather.enable
+                visible: active
+                Layout.leftMargin: 8
+                Layout.alignment: Qt.AlignVCenter
+                sourceComponent: WeatherBar {}
+            }
+            BatteryIndicator {
+                visible: root.centerClock && root.useShortenedForm < 2 && Battery.available
+                Layout.leftMargin: 8
+                Layout.alignment: Qt.AlignVCenter
+            }
+            UtilButtons {
+                visible: root.centerClock && Config.options.bar.verbose && root.useShortenedForm === 0
+                Layout.alignment: Qt.AlignVCenter
+            }
+            SystemMonitor {
+                visible: root.centerClock
+                Layout.leftMargin: 8
+                Layout.alignment: Qt.AlignVCenter
+            }
+            Media {
+                visible: root.centerClock && root.useShortenedForm < 2 && !!MprisController.activePlayer
+                Layout.leftMargin: 8
+                Layout.maximumWidth: 260
+                Layout.alignment: Qt.AlignVCenter
             }
 
             Item {

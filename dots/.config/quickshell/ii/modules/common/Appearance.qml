@@ -123,6 +123,9 @@ Singleton {
         property color colLayer0Active: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.8, root.contentTransparency))
         // lok: frame of a floating dialog > dividers inside it (one window, not a stack of boxes)
         property color colLokFrame: m3colors.darkmode ? "#5e5e5e" : "#8c8c8c"
+        // lok workspace states: active = 3:1 against the bar (WCAG 1.4.11), occupied = L* midpoint
+        property color colLokWsActive: m3colors.darkmode ? "#616161" : "#8c8c8c"
+        property color colLokWsOccupied: m3colors.darkmode ? "#383838" : "#bebebe"
         property color colLokDialog: m3colors.darkmode ? "#272727" : "#ececec"
         property color colLokDivider: m3colors.darkmode ? "#3d3d3d" : "#bdbdbd"
         property color colLayer0Border: root.lok ? root.m3colors.m3outlineVariant : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)

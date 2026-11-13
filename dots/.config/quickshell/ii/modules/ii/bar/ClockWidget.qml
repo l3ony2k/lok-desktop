@@ -14,7 +14,7 @@ Item {
     RowLayout {
         id: rowLayout
         anchors.centerIn: parent
-        spacing: 4
+        spacing: Appearance.lok ? 12 : 4
 
         StyledText {
             font.pixelSize: 14
@@ -23,7 +23,7 @@ Item {
         }
 
         StyledText {
-            visible: root.showDate
+            visible: root.showDate && !Appearance.lok
             font.pixelSize: 14
             color: Appearance.colors.colOnLayer1
             text: "•"
@@ -32,7 +32,7 @@ Item {
         StyledText {
             visible: root.showDate
             font.pixelSize: 14
-            color: Appearance.colors.colOnLayer1
+            color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
             text: DateTime.longDate
         }
     }

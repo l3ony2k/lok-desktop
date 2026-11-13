@@ -20,6 +20,17 @@ Singleton {
 	property real swapUsed: swapTotal - swapFree
     property real swapUsedPercentage: swapTotal > 0 ? (swapUsed / swapTotal) : 0
     property real cpuUsage: 0
+    // Network throughput in bytes/s over physical links only (wl*/en*/eth*/ww*), so
+    // tunnels (tailscale0, Mihomo TUN) don't count the same traffic twice
+    property real netRxRate: 0
+    property real netTxRate: 0
+    property var previousNet
+    function formatRate(bytesPerSec) {
+        const units = ["B/s", "KB/s", "MB/s", "GB/s"];
+        let v = Math.max(0, bytesPerSec), i = 0;
+        while (v >= 1000 && i < units.length - 1) { v /= 1024; i++; }
+        return (i === 0 || v >= 100 ? Math.round(v).toString() : v.toFixed(1)) + " " + units[i];
+    }
     property var previousCpuStats
 
     property string maxAvailableMemoryString: kbToGbString(ResourceUsage.memoryTotal)
@@ -67,6 +78,7 @@ Singleton {
             // Reload files
             fileMeminfo.reload()
             fileStat.reload()
+            fileNetDev.reload()
 
             // Parse memory and swap usage
             const textMeminfo = fileMeminfo.text()
@@ -92,6 +104,20 @@ Singleton {
                 previousCpuStats = { total, idle }
             }
 
+            // Parse network counters
+            let rx = 0, tx = 0;
+            for (const line of fileNetDev.text().split("\n")) {
+                const m = line.match(/^\s*([^:\s]+):\s*(\d+)(?:\s+\d+){7}\s+(\d+)/);
+                if (m && /^(wl|en|eth|ww)/.test(m[1])) { rx += Number(m[2]); tx += Number(m[3]); }
+            }
+            const now = Date.now();
+            if (previousNet && now > previousNet.t) {
+                const dt = (now - previousNet.t) / 1000;
+                netRxRate = Math.max(0, (rx - previousNet.rx) / dt);
+                netTxRate = Math.max(0, (tx - previousNet.tx) / dt);
+            }
+            previousNet = { rx, tx, t: now };
+
             root.updateHistories()
             interval = Config.options?.resources?.updateInterval ?? 3000
         }
@@ -99,6 +125,7 @@ Singleton {
 
 	FileView { id: fileMeminfo; path: "/proc/meminfo" }
     FileView { id: fileStat; path: "/proc/stat" }
+    FileView { id: fileNetDev; path: "/proc/net/dev" }
 
     Process {
         id: findCpuMaxFreqProc

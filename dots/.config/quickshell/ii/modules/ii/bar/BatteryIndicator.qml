@@ -13,13 +13,34 @@ MouseArea {
     readonly property real percentage: Battery.percentage
     readonly property bool isLow: percentage <= Config.options.battery.low / 100
 
-    implicitWidth: batteryProgress.implicitWidth
+    implicitWidth: Appearance.lok ? lokBattery.implicitWidth : batteryProgress.implicitWidth
     implicitHeight: Appearance.sizes.barHeight
 
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
 
+    RowLayout { // lok: quiet text until it matters
+        id: lokBattery
+        visible: Appearance.lok
+        anchors.centerIn: parent
+        spacing: 4
+        readonly property color tint: (root.isLow && !root.isCharging) ? Appearance.m3colors.m3error : Appearance.colors.colOnLayer1
+        MaterialSymbol {
+            Layout.alignment: Qt.AlignVCenter
+            iconSize: Appearance.font.pixelSize.larger
+            color: root.isCharging ? Appearance.colors.colOnLayer1 : (root.isLow ? lokBattery.tint : Appearance.colors.colSubtext)
+            text: root.isCharging ? "bolt" : root.percentage >= 0.95 ? "battery_android_full" : ("battery_android_" + Math.max(0, Math.min(6, Math.floor(root.percentage * 7))))
+        }
+        StyledText {
+            Layout.alignment: Qt.AlignVCenter
+            font.pixelSize: 14
+            color: lokBattery.tint
+            text: Math.round(root.percentage * 100) + "%"
+        }
+    }
+
     ClippedProgressBar {
         id: batteryProgress
+        visible: !Appearance.lok
         anchors.centerIn: parent
         value: percentage
         highlightColor: (isLow && !isCharging) ? Appearance.m3colors.m3error : Appearance.colors.colOnSecondaryContainer
