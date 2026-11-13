@@ -141,7 +141,8 @@ Item { // Wrapper
             spacing: 0
 
             // clip: true
-            layer.enabled: true
+            layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+            clip: Appearance.lok // stands in for the mask's clipping
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width: searchWidgetContent.width

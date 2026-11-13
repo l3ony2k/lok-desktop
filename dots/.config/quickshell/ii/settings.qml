@@ -1,3 +1,4 @@
+//@ pragma Env FONTCONFIG_FILE=/home/leon/.config/quickshell/ii/fontconfig-grayscale.conf
 //@ pragma UseQApplication
 //@ pragma Env QS_NO_RELOAD_POPUP=1
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic

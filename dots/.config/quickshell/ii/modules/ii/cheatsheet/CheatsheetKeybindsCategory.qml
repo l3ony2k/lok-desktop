@@ -15,6 +15,9 @@ Column {
     required property string categoryName
     readonly property bool isCategorized: categoryName?.length > 0
     property int maxBindWidth: 0
+    // lok: one key-column width for the whole sheet, so descriptions line up across sections
+    property var widthHost: null
+    readonly property int effectiveBindWidth: (Appearance.lok && widthHost) ? widthHost.sharedBindWidth : maxBindWidth
     property real columnSpacing: 40
     property real titleSpacing: 7
 
@@ -176,8 +179,11 @@ Column {
             spacing: 16
             Row {
                 id: modRow
-                Component.onCompleted: root.maxBindWidth = Math.max(root.maxBindWidth, implicitWidth)
-                width: root.maxBindWidth
+                Component.onCompleted: {
+                    root.maxBindWidth = Math.max(root.maxBindWidth, implicitWidth)
+                    if (root.widthHost) root.widthHost.sharedBindWidth = Math.max(root.widthHost.sharedBindWidth, implicitWidth)
+                }
+                width: root.effectiveBindWidth
                 spacing: 4
                 Repeater {
                     model: {

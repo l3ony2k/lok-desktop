@@ -162,7 +162,7 @@ Scope { // Scope
                         implicitHeight: Math.max.apply(null, contentChildren.map(child => child.implicitHeight || 0))
 
                         clip: true
-                        layer.enabled: true
+                        layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
                         layer.effect: OpacityMask {
                             maskSource: Rectangle {
                                 width: swipeView.width

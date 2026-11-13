@@ -18,11 +18,14 @@ Item {
         anchors {
             top: tabBarColumn.top
             left: tabBarColumn.left
+            // lok collapsed rail: a selected icon tile (the labels are wider than the item);
+            // expanded rail: the whole item. Both square with the selection frame.
             topMargin: itemHeight * root.currentIndex + (root.expanded ? 0 : ((itemHeight - baseHighlightHeight) / 2))
         }
         radius: Appearance.rounding.full
-        color: Appearance.colors.colSecondaryContainer
+        color: Appearance.lok ? Appearance.colors.colPrimary : Appearance.colors.colSecondaryContainer
         implicitHeight: root.expanded ? itemHeight : baseHighlightHeight
+        LokFrame { visible: Appearance.lok; z: 1; color: Appearance.colors.colSelectedEdge }
         implicitWidth: tabBarColumn?.children[root.currentIndex]?.visualWidth ?? 100
 
         Behavior on anchors.topMargin {

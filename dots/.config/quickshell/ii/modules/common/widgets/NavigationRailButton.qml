@@ -47,10 +47,14 @@ TabButton {
             id: itemBackground
             anchors.top: itemIconBackground.top
             anchors.left: itemIconBackground.left
-            anchors.bottom: itemIconBackground.bottom
+            // lok: the highlight covers the whole item (icon + label), not a pill around the icon
+            anchors.bottom: (Appearance.lok && !root.expanded) ? buttonContent.bottom : itemIconBackground.bottom
+            LokFrame { visible: Appearance.lok && root.toggled && root.showToggledHighlight; z: 1; color: Appearance.colors.colSelectedEdge }
             implicitWidth: root.visualWidth
             radius: Appearance.rounding.full
-            color: toggled ? 
+            color: Appearance.lok ? (toggled && root.showToggledHighlight ? Appearance.colors.colPrimary
+                    : (root.down || root.hovered) ? Appearance.colors.colLayer2 : "transparent")
+                : toggled ? 
                 root.showToggledHighlight ?
                     (root.down ? Appearance.colors.colSecondaryContainerActive : root.hovered ? Appearance.colors.colSecondaryContainerHover : Appearance.colors.colSecondaryContainer)
                     : ColorUtils.transparentize(Appearance.colors.colSecondaryContainer) :

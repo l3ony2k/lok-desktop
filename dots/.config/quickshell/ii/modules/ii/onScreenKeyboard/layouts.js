@@ -71,9 +71,9 @@ const byName = {
                 { keytype: "normal", label: "\\", labelShift: "|", shape: "expand", keycode: 43 }
             ],
             [
-                //{ keytype: "normal", label: "Caps", shape: "caps", keycode: 58 }, // not needed as double-pressing shift does that
-                { keytype: "spacer", label: "", shape: "empty" },
-                { keytype: "spacer", label: "", shape: "empty" },
+                // Caps key restored: the two empty spacers left a hole at the row start
+                // (double-pressing shift still locks caps as well)
+                { keytype: "normal", label: "Caps", shape: "caps", keycode: 58 },
                 { keytype: "normal", label: "a", labelShift: "A", shape: "normal", keycode: 30 },
                 { keytype: "normal", label: "s", labelShift: "S", shape: "normal", keycode: 31 },
                 { keytype: "normal", label: "d", labelShift: "D", shape: "normal", keycode: 32 },

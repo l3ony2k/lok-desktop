@@ -58,7 +58,8 @@ StyledOverlayWidget {
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         }
 
-        layer.enabled: true
+        layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+        clip: Appearance.lok // stands in for the mask's clipping
         layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: bg.width

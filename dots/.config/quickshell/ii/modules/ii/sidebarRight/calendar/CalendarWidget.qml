@@ -96,6 +96,7 @@ Item {
                     isToday: modelData.today
                     bold: true
                     enabled: false
+                    opacity: Appearance.lok ? 1 : 0.4 // lok: a header in the subtext colour, not a dimmed button
                 }
             }
         }

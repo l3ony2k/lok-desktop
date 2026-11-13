@@ -26,7 +26,7 @@ DARK = {
     "surface_container_highest": "#3c3c3c",
     "on_surface": "#ededed", "surface_variant": "#313131", "on_surface_variant": "#b4b4b4",
     "inverse_surface": "#ededed", "inverse_on_surface": "#1a1a1a",
-    "outline": "#808080", "outline_variant": "#474747",
+    "outline": "#8f8f8f", "outline_variant": "#474747",
     "shadow": "#000000", "scrim": "#000000", "surface_tint": "#ededed",
     # accent = inversion: the text colour used as a fill
     "primary": "#ededed", "on_primary": "#141414",
@@ -55,7 +55,7 @@ LIGHT = {
     "surface_container_highest": "#c4c4c4",
     "on_surface": "#161616", "surface_variant": "#d1d1d1", "on_surface_variant": "#4a4a4a",
     "inverse_surface": "#262626", "inverse_on_surface": "#f0f0f0",
-    "outline": "#6a6a6a", "outline_variant": "#b0b0b0",
+    "outline": "#5c5c5c", "outline_variant": "#b0b0b0",
     "shadow": "#000000", "scrim": "#000000", "surface_tint": "#1f1f1f",
     "primary": "#1f1f1f", "on_primary": "#f5f5f5",
     "primary_container": "#b8b8b8", "on_primary_container": "#141414", "inverse_primary": "#b8b8b8",

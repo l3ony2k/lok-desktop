@@ -140,6 +140,9 @@ WindowDialog {
         text: Translation.tr("From another device: ssh %1@%2").arg(Quickshell.env("USER") || "leon").arg(SshLan.lanAddress)
     }
 
+    WindowDialogSeparator { // footer divider like the other dialogs
+        visible: Appearance.lok
+    }
     WindowDialogButtonRow {
         Item {
             Layout.fillWidth: true

@@ -51,7 +51,8 @@ Item {
     Rectangle {
         id: activeIndicator
         z: 0
-        color: Appearance.colors.colSecondaryContainer
+        color: Appearance.lok ? Appearance.colors.colPrimary : Appearance.colors.colSecondaryContainer
+        LokFrame { visible: Appearance.lok; z: 1; color: Appearance.colors.colSelectedEdge } // lok: shared selected style
         implicitWidth: contentItem.children[root.currentIndex]?.implicitWidth ?? 0
         implicitHeight: contentItem.children[root.currentIndex]?.implicitHeight ?? 0
         radius: Appearance.lok ? 0 : height / 2

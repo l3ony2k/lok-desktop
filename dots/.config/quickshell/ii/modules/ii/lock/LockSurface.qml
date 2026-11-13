@@ -177,7 +177,7 @@ MouseArea {
                 root.context.resetClearTimer();
             }
             
-            layer.enabled: true
+            layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width: passwordBox.width - 8

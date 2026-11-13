@@ -68,7 +68,8 @@ Button {
             fillMode: Image.PreserveAspectFit
             source: modelData.preview_url
 
-            layer.enabled: true
+            layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+            clip: Appearance.lok // stands in for the mask's clipping
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width: root.rowHeight * modelData.aspect_ratio

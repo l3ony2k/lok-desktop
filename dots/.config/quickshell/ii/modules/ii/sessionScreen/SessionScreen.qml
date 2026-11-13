@@ -278,6 +278,7 @@ Scope {
         color: Appearance.colors.colTooltip
         clip: true
         radius: Appearance.rounding.normal
+        LokFrame { visible: Appearance.lok; z: 1 } // lok: framed like every floating label
         implicitHeight: descriptionLabelText.implicitHeight + 10 * 2
         implicitWidth: descriptionLabelText.implicitWidth + 15 * 2
 

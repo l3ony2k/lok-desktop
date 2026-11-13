@@ -38,7 +38,7 @@ Button {
     implicitHeight: (root.down && bounce) ? clickedHeight : baseHeight
 
     property color colBackground: ColorUtils.transparentize(colBackgroundHover, 1) || "transparent"
-    property color colBackgroundHover: Appearance?.colors.colLayer1Hover ?? "#E5DFED"
+    property color colBackgroundHover: (Appearance?.lok ?? false) ? Appearance.colors.colLayer2 : (Appearance?.colors.colLayer1Hover ?? "#E5DFED")
     property color colBackgroundActive: Appearance?.colors.colLayer1Active ?? "#D6CEE2"
     property bool lokStatusStrip: false // lok: show the status strip when toggled
     property color colBackgroundToggled: Appearance?.colors.colPrimary ?? "#65558F"
@@ -140,13 +140,13 @@ Button {
         // header buttons); filled ones keep it. Toggled ones are a raised surface
         // (colPrimary) with a brighter frame and a 2 px status strip along the bottom.
         readonly property bool lok: Appearance?.lok ?? false
-        readonly property bool lokFrame: lok && (root.toggled
-            || root.hovered || root.down || root.colBackground.a > 0.01)
+        // hover never adds a frame (hover = fill one ramp step up); frames mark filled or toggled buttons
+        readonly property bool lokFrame: lok && (root.toggled || root.colBackground.a > 0.01)
         border.width: root.tabbedTo ? 2 : 0 // lok: LokFrame below (border drops sides at 1.333 scale)
         LokFrame { visible: !root.tabbedTo && parent.lokFrame; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
         border.color: root.tabbedTo ? Appearance.colors.colSecondary
             : (lok && root.toggled) ? Appearance.colors.colSelectedEdge
-            : (root.hovered || root.down) ? (lok ? Appearance.colors.colLokFrame : Appearance.colors.colOutline)
+            : (root.hovered || root.down) ? (lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutline)
             : (lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutlineVariant)
 
         Rectangle {

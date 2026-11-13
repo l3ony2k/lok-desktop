@@ -96,7 +96,8 @@ TabButton {
         radius: Appearance?.rounding.normal
         implicitHeight: 42
         color: (root.hovered ? root.colBackgroundHover : root.colBackground)
-        layer.enabled: true
+        layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+        clip: Appearance.lok // stands in for the mask's clipping
         layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: buttonBackground.width

@@ -18,7 +18,7 @@ Item {
         anchors.bottomMargin: 5
 
         clip: true
-        layer.enabled: true
+        layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
         layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: listview.width

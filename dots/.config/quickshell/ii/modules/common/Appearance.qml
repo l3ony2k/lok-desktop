@@ -140,7 +140,7 @@ Singleton {
         // lok: icons/text drawn on top of a meter fill (#a6a6a6 dark / #5c5c5c light)
         property color colOnMeterFill: m3colors.darkmode ? "#121212" : "#fbfbfb"
         // lok: one muted grey for de-emphasised items (outside-month days etc), ~3:1
-        property color colLokMuted: m3colors.darkmode ? "#6a6a6a" : "#8f8f8f"
+        property color colLokMuted: m3colors.darkmode ? "#6a6a6a" : "#6a6a6a"
         property color colLayer0Border: root.lok ? colors.colLokFrame : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow

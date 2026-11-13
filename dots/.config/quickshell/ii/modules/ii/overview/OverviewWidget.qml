@@ -319,8 +319,9 @@ Item {
                 topRightRadius: (workspaceAtRight && workspaceAtTop) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
                 bottomLeftRadius: (workspaceAtLeft && workspaceAtBottom) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
                 bottomRightRadius: (workspaceAtRight && workspaceAtBottom) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
-                border.width: 2
+                border.width: Appearance.lok ? 0 : 2
                 border.color: root.activeBorderColor
+                LokFrame { visible: Appearance.lok; z: 1; color: Appearance.colors.colSelectedEdge } // lok: 1 px selection frame
                 Behavior on x {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }

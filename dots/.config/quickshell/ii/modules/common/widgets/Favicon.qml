@@ -37,7 +37,8 @@ IconImage {
     source: Qt.resolvedUrl(root.urlToLoad)
     implicitSize: root.size
 
-    layer.enabled: true
+    layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+    clip: Appearance.lok // stands in for the mask's clipping
     layer.effect: OpacityMask {
         maskSource: Rectangle {
             width: root.implicitSize

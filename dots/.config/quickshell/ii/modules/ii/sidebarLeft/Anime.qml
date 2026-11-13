@@ -153,7 +153,8 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            layer.enabled: true
+            layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+            clip: Appearance.lok // stands in for the mask's clipping
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width: swipeView.width

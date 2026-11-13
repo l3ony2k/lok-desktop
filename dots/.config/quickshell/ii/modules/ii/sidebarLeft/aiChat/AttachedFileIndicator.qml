@@ -135,7 +135,8 @@ Rectangle {
                     sourceSize.width: root.imageWidth * root.scale
                     sourceSize.height: root.imageHeight * root.scale
 
-                    layer.enabled: true
+                    layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+                    clip: Appearance.lok // stands in for the mask's clipping
                     layer.effect: OpacityMask {
                         maskSource: Rectangle {
                             width: imagePreview.width

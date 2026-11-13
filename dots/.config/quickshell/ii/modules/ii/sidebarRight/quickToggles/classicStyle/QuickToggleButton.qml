@@ -16,7 +16,7 @@ GroupButton {
         anchors.centerIn: parent
         iconSize: 22
         fill: toggled ? 1 : 0
-        color: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+        color: toggled ? Appearance.colors.colOnPrimary : (Appearance.lok && button.hovered) ? Appearance.m3colors.m3onSurface : Appearance.colors.colOnLayer1 // lok: hover brightens the icon
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         text: buttonIcon

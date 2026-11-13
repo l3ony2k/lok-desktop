@@ -104,7 +104,8 @@ Item { // Player instance
         color: ColorUtils.applyAlpha(blendedColors.colLayer0, 1)
         radius: root.radius
 
-        layer.enabled: true
+        layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+        clip: Appearance.lok // stands in for the mask's clipping
         layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: background.width
@@ -156,7 +157,8 @@ Item { // Player instance
                 radius: Appearance.rounding.verysmall
                 color: ColorUtils.transparentize(blendedColors.colLayer1, 0.5)
 
-                layer.enabled: true
+                layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+                clip: Appearance.lok // stands in for the mask's clipping
                 layer.effect: OpacityMask {
                     maskSource: Rectangle {
                         width: artBackground.width

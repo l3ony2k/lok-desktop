@@ -161,6 +161,7 @@ MouseArea {
                     ListView {
                         // Quick dirs
                         Layout.fillHeight: true
+                        Layout.fillWidth: true // full column width: equal insets on both sides
                         Layout.margins: 4
                         implicitWidth: 140
                         clip: true
@@ -222,6 +223,7 @@ MouseArea {
                             borderWidth: (Appearance.lok && toggled) ? 1 : 0
                             borderColor: Appearance.colors.colSelectedEdge
                             readonly property bool lokSeparator: Appearance.lok && modelData.icon.length === 0
+                            opacity: lokSeparator ? 1 : (enabled ? 1 : 0.4) // the divider must not inherit the disabled dimming
                             Rectangle { // lok: the "---" entry is a real full-width divider
                                 visible: quickDirButton.lokSeparator
                                 anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter }
@@ -347,7 +349,7 @@ MouseArea {
                             }
                         }
 
-                        layer.enabled: true
+                        layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
                         layer.effect: OpacityMask {
                             maskSource: Rectangle {
                                 width: gridDisplayRegion.width

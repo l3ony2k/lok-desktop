@@ -112,7 +112,8 @@ StyledOverlayWidget {
             Layout.fillHeight: true
             radius: Appearance.rounding.small
             color: Appearance.colors.colSecondaryContainer
-            layer.enabled: true
+            layer.enabled: !Appearance.lok // lok: square, no mask (the texture blurred hairlines)
+            clip: Appearance.lok // stands in for the mask's clipping
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width: graphBg.width

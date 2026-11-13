@@ -19,7 +19,7 @@ Rectangle {
     implicitHeight: contentRow.implicitHeight + (padding * 2)
     color: Appearance.m3colors.m3surfaceContainer
     radius: Appearance.rounding.large
-    border.color: Appearance.colors.colOutlineVariant
+    border.color: Appearance.lok ? Appearance.colors.colLokFrame : Appearance.colors.colOutlineVariant
     border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
     LokFrame { visible: Appearance.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
 
@@ -61,7 +61,7 @@ Rectangle {
 
     component Separator: Rectangle {
         implicitWidth: 1
-        color: Appearance.colors.colOutlineVariant
+        color: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutlineVariant
         Layout.fillHeight: true
         Layout.topMargin: 10
         Layout.bottomMargin: 10

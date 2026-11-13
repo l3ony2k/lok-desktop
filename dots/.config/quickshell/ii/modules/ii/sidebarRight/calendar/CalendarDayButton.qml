@@ -15,6 +15,8 @@ RippleButton {
     implicitHeight: 38;
 
     toggled: (isToday == 1)
+    borderWidth: (Appearance.lok && isToday == 1) ? 1 : 0 // lok: shared selected style
+    borderColor: Appearance.colors.colSelectedEdge
     buttonRadius: Appearance.rounding.small
     
     contentItem: StyledText {
@@ -22,7 +24,7 @@ RippleButton {
         text: day
         horizontalAlignment: Text.AlignHCenter
         font.weight: bold ? Font.DemiBold : Font.Normal
-        color: (isToday == 1) ? Appearance.colors.colOnPrimary : 
+        color: (Appearance.lok && bold && isToday != 1) ? Appearance.colors.colSubtext : (isToday == 1) ? Appearance.colors.colOnPrimary : 
             (isToday == 0) ? Appearance.colors.colOnLayer1 : 
             (Appearance.lok ? Appearance.colors.colLokMuted : Appearance.colors.colOutlineVariant)
 

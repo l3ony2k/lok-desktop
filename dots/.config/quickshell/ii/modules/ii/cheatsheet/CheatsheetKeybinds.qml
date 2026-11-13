@@ -11,6 +11,7 @@ import Quickshell
 Item {
     id: root
     property real padding: 4
+    property real sharedBindWidth: 0 // widest key combination of all sections (lok)
     implicitWidth: QsWindow?.window?.screen.width * 0.7 ?? 0
     implicitHeight: QsWindow?.window?.screen.height * 0.7 ?? 0
 
@@ -31,6 +32,7 @@ Item {
                 delegate: CheatsheetKeybindsCategory {
                     required property var modelData
                     categoryName: modelData
+                    widthHost: root
                 }
             }
         }

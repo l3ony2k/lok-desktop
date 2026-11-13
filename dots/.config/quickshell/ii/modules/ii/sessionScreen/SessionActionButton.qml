@@ -72,7 +72,7 @@ RippleButton {
         }
         height: 2 * Appearance.sizes.hairline
         z: 2
-        color: Appearance.colors.colSelectedEdge
+        color: Appearance.colors.colOnPrimary // same strip as the quick toggles
     }
     StyledToolTip {
         text: buttonText

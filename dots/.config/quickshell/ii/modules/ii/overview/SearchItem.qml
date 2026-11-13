@@ -53,7 +53,7 @@ RippleButton {
         (selected ? Appearance.colors.colPrimaryContainer : 
         ColorUtils.transparentize(Appearance.colors.colPrimaryContainer, 1))
     // lok: hover is one step up from the panel surface, below the keyboard-current fill
-    colBackgroundHover: Appearance.lok ? Appearance.colors.colLayer3 : Appearance.colors.colPrimaryContainer
+    colBackgroundHover: Appearance.lok ? (root.focus ? root.colBackground : Appearance.colors.colLayer3) : Appearance.colors.colPrimaryContainer
     colRipple: Appearance.colors.colPrimaryContainerActive
     property color colForeground: selected ? Appearance.colors.colOnPrimaryContainer : Appearance.m3colors.m3onSurface
 
@@ -156,6 +156,8 @@ RippleButton {
         Loader {
             id: iconLoader
             active: true
+            // lok: one 35 px icon column for app icons, symbols and emoji, so every label starts on one line
+            Layout.preferredWidth: (Appearance.lok && sourceComponent !== null) ? 35 : -1
             sourceComponent: switch(root.iconType) {
                 case LauncherSearchResult.IconType.Material:
                     return materialSymbolComponent
@@ -184,6 +186,7 @@ RippleButton {
             MaterialSymbol {
                 text: root.materialSymbol
                 iconSize: 30
+                horizontalAlignment: Text.AlignHCenter
                 color: root.colForeground
             }
         }
@@ -193,6 +196,7 @@ RippleButton {
             StyledText {
                 text: root.bigText
                 font.pixelSize: Appearance.font.pixelSize.larger
+                horizontalAlignment: Text.AlignHCenter
                 color: root.colForeground
             }
         }
