@@ -22,7 +22,7 @@ MouseArea {
     readonly property color colWarn: Appearance.m3colors.m3error
 
     TextMetrics { id: pctMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "100%" }
-    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "999 KB/s" }
+    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "99 KB" }
 
     component Label: StyledText {
         font.pixelSize: root.fontSize

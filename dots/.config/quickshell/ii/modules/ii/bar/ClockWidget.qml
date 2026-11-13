@@ -20,7 +20,7 @@ Item {
         spacing: -2
         StyledText {
             Layout.alignment: Qt.AlignHCenter
-            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.pixelSize: root.showDate ? Appearance.font.pixelSize.smaller : Appearance.font.pixelSize.small
             color: Appearance.colors.colOnLayer1
             text: DateTime.time
         }

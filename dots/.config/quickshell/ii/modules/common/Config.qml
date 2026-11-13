@@ -281,6 +281,11 @@ Singleton {
                     property int fetchInterval: 10 // minutes
                 }
                 property JsonObject indicators: JsonObject {
+                    // Show a state in the bar only if it isn't your normal; the sidebar always shows everything
+                    property bool volumeMute: true
+                    property bool micMute: true
+                    property bool notificationsSilent: true // the paused-bell icon while Do Not Disturb is on
+                    property string bluetooth: "always" // "always" | "connected" | "never"
                     property JsonObject notifications: JsonObject {
                         property bool showUnreadCount: false
                     }

@@ -150,7 +150,7 @@ Item { // Bar content region
             id: centerClockGroup
             anchors.fill: parent
             ClockWidget {
-                showDate: (Config.options.bar.verbose && root.useShortenedForm < 2)
+                showDate: !Appearance.lok && (Config.options.bar.verbose && root.useShortenedForm < 2) // lok: date lives in the hover popup
                 Layout.alignment: Qt.AlignVCenter
             }
         }
@@ -305,7 +305,8 @@ Item { // Bar content region
                 colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
                 colRippleToggled: Appearance.colors.colSecondaryContainerActive
                 toggled: GlobalStates.sidebarRightOpen
-                property color colText: toggled ? Appearance.m3colors.m3onSecondaryContainer : Appearance.colors.colOnLayer0
+                // lok: indicator glyphs use the same secondary grey as the other status glyphs
+                property color colText: toggled ? Appearance.m3colors.m3onSecondaryContainer : (Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer0)
 
                 Behavior on colText {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -322,7 +323,7 @@ Item { // Bar content region
                     spacing: 0
 
                     Revealer {
-                        reveal: Audio.sink?.audio?.muted ?? false
+                        reveal: (Audio.sink?.audio?.muted ?? false) && (Config.options.bar.indicators.volumeMute ?? true)
                         Layout.fillHeight: true
                         Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
                         Behavior on Layout.rightMargin {
@@ -335,7 +336,7 @@ Item { // Bar content region
                         }
                     }
                     Revealer {
-                        reveal: Audio.source?.audio?.muted ?? false
+                        reveal: (Audio.source?.audio?.muted ?? false) && (Config.options.bar.indicators.micMute ?? true)
                         Layout.fillHeight: true
                         Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
                         Behavior on Layout.rightMargin {
@@ -353,7 +354,7 @@ Item { // Bar content region
                         color: rightSidebarButton.colText
                     }
                     Revealer {
-                        reveal: Notifications.silent || Notifications.unread > 0
+                        reveal: (Notifications.silent && (Config.options.bar.indicators.notificationsSilent ?? true)) || (!Notifications.silent && Notifications.unread > 0)
                         Layout.fillHeight: true
                         Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
                         implicitHeight: reveal ? notificationUnreadCount.implicitHeight : 0
@@ -372,7 +373,7 @@ Item { // Bar content region
                     }
                     MaterialSymbol {
                         Layout.leftMargin: indicatorsRowLayout.realSpacing
-                        visible: BluetoothStatus.available
+                        visible: BluetoothStatus.available && (Config.options.bar.indicators.bluetooth === "always" || (Config.options.bar.indicators.bluetooth === "connected" && BluetoothStatus.connected))
                         text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
                         iconSize: Appearance.font.pixelSize.larger
                         color: rightSidebarButton.colText
