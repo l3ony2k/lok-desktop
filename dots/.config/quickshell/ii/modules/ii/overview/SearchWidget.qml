@@ -20,7 +20,7 @@ Item { // Wrapper
     readonly property int typingResultLimit: 15 // Should be enough to cover the whole view
 
     property string searchingText: LauncherSearch.query
-    property bool showResults: searchingText != ""
+    property bool showResults: searchingText != "" || LauncherSearch.listAppsWhenEmpty
     implicitWidth: searchWidgetContent.implicitWidth + Appearance.sizes.elevationMargin * 2
     implicitHeight: searchWidgetContent.implicitHeight + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2
 
@@ -37,7 +37,9 @@ Item { // Wrapper
     }
 
     function cancelSearch() {
-        searchBar.searchInput.selectAll();
+        // Start every open from an empty box (shows the full app list on Super-tap)
+        // instead of keeping the last query selected
+        searchBar.searchInput.text = "";
         LauncherSearch.query = "";
         searchBar.animateWidth = true;
     }
@@ -141,8 +143,8 @@ Item { // Wrapper
                 id: searchBar
                 property real verticalPadding: 4
                 Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 4
+                Layout.leftMargin: Appearance.lok ? 20 : 10
+                Layout.rightMargin: Appearance.lok ? 8 : 4
                 Layout.topMargin: verticalPadding
                 Layout.bottomMargin: verticalPadding
                 Synchronizer on searchingText {
@@ -155,7 +157,7 @@ Item { // Wrapper
                 visible: root.showResults
                 Layout.fillWidth: true
                 height: 1
-                color: Appearance.colors.colOutlineVariant
+                color: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutlineVariant
             }
 
             ListView { // App results

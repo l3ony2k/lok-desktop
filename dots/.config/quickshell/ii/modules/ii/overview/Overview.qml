@@ -87,6 +87,12 @@ Scope {
                 }
             }
 
+            Binding {
+                target: LauncherSearch
+                property: "listAppsWhenEmpty"
+                value: GlobalStates.overviewOpen && !overviewScope.showOverviewWidget
+            }
+
             SearchWidget {
                 id: searchWidget
                 anchors.horizontalCenter: parent.horizontalCenter

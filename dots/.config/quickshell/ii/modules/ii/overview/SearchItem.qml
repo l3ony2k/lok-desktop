@@ -52,10 +52,23 @@ RippleButton {
     colRipple: Appearance.colors.colPrimaryContainerActive
     property color colForeground: selected ? Appearance.colors.colOnPrimaryContainer : Appearance.m3colors.m3onSurface
 
-    readonly property string highlightPrefix: `<u><font color="${Appearance.colors.colPrimary}">`
-    readonly property string highlightSuffix: `</font></u>`
+    // lok: colPrimary is a fill there; matched letters are bright, bold and underlined
+    readonly property string highlightPrefix: Appearance.lok ? `<u><b><font color="${Appearance.colors.colAccent}">` : `<u><font color="${Appearance.colors.colPrimary}">`
+    readonly property string highlightSuffix: Appearance.lok ? `</font></b></u>` : `</font></u>`
     // Note that this highlighting is independent from the search
     // It's close, but does not accurately represent how the fuzzy algorithm works
+    function iconForAction(name) {
+        const n = (name ?? "").toLowerCase();
+        if (/private|incognito|隐私|无痕/.test(n)) return "visibility_off";
+        if (/profile|account|配置文件|用户/.test(n)) return "person";
+        if (/tab|标签/.test(n)) return "tab";
+        if (/window|窗口/.test(n)) return "open_in_new";
+        if (/setting|preference|设置|首选项/.test(n)) return "settings";
+        if (/quit|exit|close|退出|关闭/.test(n)) return "close";
+        if (/new|create|新建/.test(n)) return "add";
+        return "arrow_forward";
+    }
+
     function highlightContent(content, query) {
         if (!query || query.length === 0 || content == query || fontType === "monospace")
             return StringUtils.escapeHtml(content);
@@ -277,7 +290,8 @@ RippleButton {
                             anchors.centerIn: parent
                             active: actionButton.iconType === LauncherSearchResult.IconType.Material || actionButton.iconName === ""
                             sourceComponent: MaterialSymbol {
-                                text: actionButton.iconName || "video_settings"
+                                // Desktop actions rarely ship an icon; pick one from the action name instead of one generic glyph for all
+                                text: actionButton.iconName || root.iconForAction(actionButton.modelData.name)
                                 font.pixelSize: Appearance.font.pixelSize.hugeass
                                 color: root.colForeground
                             }

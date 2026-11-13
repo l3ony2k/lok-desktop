@@ -10,7 +10,7 @@ import qs.modules.common.functions
 
 RowLayout {
     id: root
-    spacing: 6
+    spacing: Appearance.lok ? 10 : 6
     property bool animateWidth: false
     property alias searchInput: searchInput
     property string searchingText
@@ -32,8 +32,19 @@ RowLayout {
         return SearchBar.SearchPrefixType.DefaultSearch;
     }
     
+    // lok: the prefix icon is a plain glyph in the input line, no shape behind it
+    MaterialSymbol {
+        visible: Appearance.lok
+        Layout.alignment: Qt.AlignVCenter
+        Layout.preferredWidth: 35  // same box as result icons, so the query lines up with result names
+        horizontalAlignment: Text.AlignHCenter
+        iconSize: Appearance.font.pixelSize.larger
+        color: Appearance.colors.colSubtext
+        text: searchIcon.text
+    }
     MaterialShapeWrappedMaterialSymbol {
         id: searchIcon
+        visible: !Appearance.lok
         Layout.alignment: Qt.AlignVCenter
         iconSize: Appearance.font.pixelSize.huge
         shape: switch(root.searchPrefixType) {
@@ -63,10 +74,13 @@ RowLayout {
         Layout.topMargin: 4
         Layout.bottomMargin: 4
         implicitHeight: 40
+        // lok: the whole bar is the field; no inner pill, text starts right after the icon
+        colBackground: Appearance.lok ? "transparent" : Appearance.colors.colLayer1
+        leftPadding: Appearance.lok ? 0 : 10
         focus: GlobalStates.overviewOpen
         font.pixelSize: Appearance.font.pixelSize.small
         placeholderText: Translation.tr("Search, calculate or run")
-        implicitWidth: root.searchingText == "" ? Appearance.sizes.searchWidthCollapsed : Appearance.sizes.searchWidth
+        implicitWidth: (root.searchingText == "" && !LauncherSearch.listAppsWhenEmpty) ? Appearance.sizes.searchWidthCollapsed + (Appearance.lok ? 60 : 0) : Appearance.sizes.searchWidth
 
         Behavior on implicitWidth {
             id: searchWidthBehavior
@@ -134,14 +148,24 @@ RowLayout {
         Layout.rightMargin: 4
         toggled: SongRec.running
         onClicked: SongRec.toggleRunning()
-        text: "music_cast"
+        text: Appearance.lok ? "music_note" : "music_cast"
 
         StyledToolTip {
             text: Translation.tr("Recognize music")
         }
 
-        colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSurfaceVariant
-        background: MaterialShape {
+        colText: Appearance.lok ? Appearance.colors.colOnSurfaceVariant : toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSurfaceVariant
+        background: Item {
+          Rectangle {
+            anchors.fill: parent
+            visible: Appearance.lok
+            color: songRecButton.toggled ? Appearance.colors.colPrimary : songRecButton.hovered ? Appearance.colors.colLayer1Hover : "transparent"
+            border.width: songRecButton.toggled ? 1 : 0
+            border.color: Appearance.colors.colSelectedEdge
+          }
+          MaterialShape {
+            anchors.fill: parent
+            visible: !Appearance.lok
             RotationAnimation on rotation {
                 running: songRecButton.toggled
                 duration: 12000
@@ -167,6 +191,7 @@ RowLayout {
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
             }
+          }
         }
     }
 }
