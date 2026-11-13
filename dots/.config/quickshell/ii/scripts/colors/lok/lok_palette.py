@@ -122,6 +122,9 @@ def kde_scheme(mode):
     p = DARK if mode == "dark" else LIGHT
     name = "LokDark" if mode == "dark" else "LokLight"
     view_bg = p["surface_container_lowest"] if mode == "light" else p["surface_container_low"]
+    # light windows/popups float just above the #f2f2f2 base (ii bar) instead of the
+    # recessed #dddddd container grey; dark keeps surface_container
+    win_bg = "#f7f7f7" if mode == "light" else p["surface_container"]
     common = {
         "ForegroundNormal": p["on_surface"], "ForegroundInactive": p["on_surface_variant"],
         "ForegroundActive": p["on_surface"], "ForegroundLink": p["link"], "ForegroundVisited": p["visited"],
@@ -129,17 +132,20 @@ def kde_scheme(mode):
         "DecorationFocus": p["outline"], "DecorationHover": p["outline"],
     }
     sets = {
-        "Window": {"BackgroundNormal": p["surface_container"], "BackgroundAlternate": p["surface_container_high"]},
-        "View": {"BackgroundNormal": view_bg, "BackgroundAlternate": p["surface_container"]},
+        "Window": {"BackgroundNormal": win_bg, "BackgroundAlternate": p["surface_container_high"]},
+        "View": {"BackgroundNormal": view_bg, "BackgroundAlternate": "#f4f4f4" if mode == "light" else "#212121"},  # alternating rows: a hint, not stripes
         "Button": {"BackgroundNormal": p["surface_container_high"], "BackgroundAlternate": p["surface_container_highest"]},
-        "Header": {"BackgroundNormal": p["surface_container"], "BackgroundAlternate": p["surface_container_high"]},
+        "Header": {"BackgroundNormal": win_bg, "BackgroundAlternate": p["surface_container_high"]},
         "Header][Inactive": {"BackgroundNormal": p["surface_container"], "BackgroundAlternate": p["surface_container_high"]},
         "Tooltip": {"BackgroundNormal": p["surface_container_highest"], "BackgroundAlternate": p["surface_container_high"]},
         "Complementary": {"BackgroundNormal": p["background"], "BackgroundAlternate": p["surface_container_low"]},
-        # selection = inversion
-        "Selection": {"BackgroundNormal": p["on_surface"], "BackgroundAlternate": p["on_surface_variant"],
-                      "ForegroundNormal": p["surface"], "ForegroundActive": p["surface"],
-                      "ForegroundInactive": p["surface_container_high"]},
+        # selection = one step from the surface toward the text colour (same rule as
+        # ii's colPrimary); text keeps the normal text colour. Inversion made apps
+        # that draw selected text with the normal text colour unreadable.
+        "Selection": {"BackgroundNormal": "#4a4a4a" if mode == "dark" else "#c8c8c8",
+                      "BackgroundAlternate": "#3c3c3c" if mode == "dark" else "#d4d4d4",
+                      "ForegroundNormal": p["on_surface"], "ForegroundActive": p["on_surface"],
+                      "ForegroundInactive": p["on_surface_variant"]},
     }
     out = [f"[General]\nColorScheme={name}\nName=Lok {mode.capitalize()}\nshadeSortColumn=true\n",
            "[KDE]\ncontrast=4\n",
