@@ -97,7 +97,7 @@ Item { // Bar content region
                 id: leftSidebarButton
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: Appearance.lok ? 20 : Appearance.roundingSpace.screenRounding
-                colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
+                colBackground: (barLeftSideMouseArea.hovered && !Appearance.lok) ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
             }
 
             Loader { // Workspaces in the top-left (centerClock layout)
@@ -290,8 +290,9 @@ Item { // Bar content region
                 implicitHeight: indicatorsRowLayout.implicitHeight + 5 * 2
 
                 buttonRadius: Appearance.rounding.full
-                colBackground: barRightSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
-                colBackgroundHover: Appearance.colors.colLayer1Hover
+                // lok: the whole area is clickable anyway; no hover fill
+                colBackground: (barRightSideMouseArea.hovered && !Appearance.lok) ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
+                colBackgroundHover: Appearance.lok ? ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1) : Appearance.colors.colLayer1Hover
                 colRipple: Appearance.colors.colLayer1Active
                 colBackgroundToggled: Appearance.colors.colSecondaryContainer
                 colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover

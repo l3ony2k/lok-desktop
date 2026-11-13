@@ -82,8 +82,30 @@ Item {
             }
         }
 
+        ColumnLayout { // lok: player app over the title
+            visible: Appearance.lok && Config.options.bar.verbose
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: true
+            Layout.maximumWidth: 220
+            spacing: -2
+            StyledText {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                color: Appearance.colors.colSubtext
+                text: activePlayer?.identity || activePlayer?.desktopEntry || Translation.tr("Media")
+            }
+            StyledText {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                color: Appearance.colors.colOnLayer1
+                text: root.cleanedTitle
+            }
+        }
+
         StyledText {
-            visible: Config.options.bar.verbose
+            visible: !Appearance.lok && Config.options.bar.verbose
             width: rowLayout.width - (CircularProgress.size + rowLayout.spacing * 2)
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true // Ensures the text takes up available space

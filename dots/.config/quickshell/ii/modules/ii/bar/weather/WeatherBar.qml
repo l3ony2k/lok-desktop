@@ -10,7 +10,7 @@ import QtQuick.Layouts
 MouseArea {
     id: root
     property bool hovered: false
-    implicitWidth: rowLayout.implicitWidth + 10 * 2
+    implicitWidth: rowLayout.implicitWidth + (Appearance.lok ? 0 : 10 * 2)
     implicitHeight: Appearance.sizes.barHeight
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -31,12 +31,13 @@ MouseArea {
     RowLayout {
         id: rowLayout
         anchors.centerIn: parent
+        spacing: Appearance.lok ? 4 : 5
 
         MaterialSymbol {
             fill: 0
             text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
-            iconSize: Appearance.font.pixelSize.large
-            color: Appearance.colors.colOnLayer1
+            iconSize: Appearance.lok ? Appearance.font.pixelSize.larger : Appearance.font.pixelSize.large
+            color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
             Layout.alignment: Qt.AlignVCenter
         }
 

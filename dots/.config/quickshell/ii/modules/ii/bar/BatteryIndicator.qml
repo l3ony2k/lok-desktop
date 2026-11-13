@@ -27,12 +27,12 @@ MouseArea {
         MaterialSymbol {
             Layout.alignment: Qt.AlignVCenter
             iconSize: Appearance.font.pixelSize.larger
-            color: root.isCharging ? Appearance.colors.colOnLayer1 : (root.isLow ? lokBattery.tint : Appearance.colors.colSubtext)
+            color: (root.isLow && !root.isCharging) ? lokBattery.tint : Appearance.colors.colSubtext
             text: root.isCharging ? "bolt" : root.percentage >= 0.95 ? "battery_android_full" : ("battery_android_" + Math.max(0, Math.min(6, Math.floor(root.percentage * 7))))
         }
         StyledText {
             Layout.alignment: Qt.AlignVCenter
-            font.pixelSize: 14
+            font.pixelSize: Appearance.font.pixelSize.small
             color: lokBattery.tint
             text: Math.round(root.percentage * 100) + "%"
         }

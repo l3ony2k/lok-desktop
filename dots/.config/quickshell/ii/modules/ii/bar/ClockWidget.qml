@@ -8,11 +8,34 @@ Item {
     id: root
     property bool borderless: Config.options.bar.borderless
     property bool showDate: Config.options.bar.verbose
-    implicitWidth: rowLayout.implicitWidth
+    // lok: time over date, same 12 px two-line rhythm as the monitor and media
+    readonly property bool twoLine: Appearance.lok
+    implicitWidth: twoLine ? twoLineLayout.implicitWidth : rowLayout.implicitWidth
     implicitHeight: Appearance.sizes.barHeight
+
+    ColumnLayout {
+        id: twoLineLayout
+        visible: root.twoLine
+        anchors.centerIn: parent
+        spacing: -2
+        StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: Appearance.colors.colOnLayer1
+            text: DateTime.time
+        }
+        StyledText {
+            visible: root.showDate
+            Layout.alignment: Qt.AlignHCenter
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: Appearance.colors.colSubtext
+            text: DateTime.longDate
+        }
+    }
 
     RowLayout {
         id: rowLayout
+        visible: !root.twoLine
         anchors.centerIn: parent
         spacing: Appearance.lok ? 12 : 4
 

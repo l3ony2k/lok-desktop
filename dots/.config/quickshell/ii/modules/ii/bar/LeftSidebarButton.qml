@@ -18,7 +18,7 @@ RippleButton {
     implicitWidth: distroIcon.width + buttonPadding * 2
     implicitHeight: distroIcon.height + buttonPadding * 2
     buttonRadius: Appearance.rounding.full
-    colBackgroundHover: Appearance.colors.colLayer1Hover
+    colBackgroundHover: Appearance.lok ? "transparent" : Appearance.colors.colLayer1Hover // lok: no hover fill on the bar
     colRipple: Appearance.colors.colLayer1Active
     colBackgroundToggled: Appearance.colors.colSecondaryContainer
     colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
