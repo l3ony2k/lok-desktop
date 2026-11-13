@@ -86,7 +86,7 @@ Scope {
 
             exclusionMode: ExclusionMode.Ignore
             exclusiveZone: 0
-            implicitWidth: root.widgetWidth
+            implicitWidth: Math.max(root.widgetWidth, playerColumnLayout.implicitWidth)
             implicitHeight: playerColumnLayout.implicitHeight
             color: "transparent"
             WlrLayershell.namespace: "quickshell:mediaControls"
