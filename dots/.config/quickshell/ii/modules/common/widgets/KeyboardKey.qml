@@ -6,17 +6,23 @@ Rectangle {
     property string key
 
     property real horizontalPadding: 6
-    property real verticalPadding: 1
-    property real borderWidth: 1
-    property real extraBottomBorderWidth: 2
-    property color borderColor: Appearance.colors.colOnLayer0
-    property real borderRadius: 5
+    property real verticalPadding: Appearance.lok ? 2 : 1
+    // lok: flat square keycap with a 1 device px frame, no raised bottom edge
+    property real borderWidth: Appearance.lok ? 0 : 1 // lok: LokFrame below draws the edge
+    property real extraBottomBorderWidth: Appearance.lok ? 0 : 2
+    property color borderColor: Appearance.lok ? Appearance.colors.colLokFrame : Appearance.colors.colOnLayer0
+    property real borderRadius: Appearance.lok ? 0 : 5
     property real pixelSize: Appearance.font.pixelSize.smaller
-    property color keyColor: Appearance.m3colors.m3surfaceContainerLow
+    property color keyColor: Appearance.lok ? Appearance.colors.colLayer1 : Appearance.m3colors.m3surfaceContainerLow
     implicitWidth: keyFace.implicitWidth + borderWidth * 2
     implicitHeight: keyFace.implicitHeight + borderWidth * 2 + extraBottomBorderWidth
     radius: borderRadius
-    color: borderColor
+    color: Appearance.lok ? keyColor : borderColor
+    LokFrame {
+        visible: Appearance.lok
+        z: 1
+        color: root.borderColor
+    }
 
     Rectangle {
         id: keyFace

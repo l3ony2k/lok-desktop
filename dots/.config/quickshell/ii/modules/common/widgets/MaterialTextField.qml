@@ -26,7 +26,7 @@ TextField {
     property Item lokBackground: Rectangle {
         implicitHeight: 40
         color: Appearance.colors.colLayer1
-        border.width: 1
+        border.width: Appearance.sizes.hairline
         border.color: root.activeFocus ? Appearance.colors.colSelectedEdge : Appearance.colors.colLokDivider
     }
     Binding on background {

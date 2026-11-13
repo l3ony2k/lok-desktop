@@ -25,7 +25,7 @@ Switch {
         height: parent.height
         radius: Appearance?.rounding.full ?? 9999
         color: root.lok ? (root.checked ? Appearance.colors.colPrimary : "transparent") : (root.checked ? root.activeColor : root.inactiveColor)
-        border.width: root.lok ? 1 : 2 * root.scale
+        border.width: root.lok ? Appearance.sizes.hairline : 2 * root.scale
         border.color: root.lok ? (root.checked ? Appearance.colors.colAccent : Appearance.m3colors.m3outline) : (root.checked ? root.activeColor : Appearance.m3colors.m3outline)
 
         Behavior on color {

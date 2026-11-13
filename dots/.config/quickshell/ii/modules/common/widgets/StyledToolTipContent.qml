@@ -28,6 +28,8 @@ Item {
         implicitWidth: shown ? (tooltipTextObject.implicitWidth + 2 * root.horizontalPadding) : 0
         implicitHeight: shown ? (tooltipTextObject.implicitHeight + 2 * root.verticalPadding) : 0
         clip: true
+        border.width: Appearance?.lok ? Appearance.sizes.hairline : 0
+        border.color: Appearance?.colors.colLokFrame ?? "transparent"
 
         Behavior on implicitWidth {
             animation: Appearance?.animation.elementMoveFast.numberAnimation.createObject(this)

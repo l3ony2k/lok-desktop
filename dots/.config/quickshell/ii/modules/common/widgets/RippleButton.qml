@@ -151,7 +151,9 @@ Button {
             animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this)
         }
 
-        layer.enabled: true
+        // lok: corners are square, so the rounded mask is useless, and its offscreen texture
+        // snaps to device pixels and covers the right/bottom hairline of frames on the button
+        layer.enabled: !(Appearance?.lok ?? false)
         layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: buttonBackground.width

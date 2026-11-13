@@ -45,9 +45,9 @@ Item { // Wrapper
         root.closedAt = Date.now();
     }
 
-    function cancelSearch() {
+    function cancelSearch(allowRestore = true) {
         const keepMs = (Config.options.search.keepQuerySeconds ?? 300) * 1000;
-        const restore = root.keptText !== "" && (Date.now() - root.closedAt) < keepMs;
+        const restore = allowRestore && root.keptText !== "" && (Date.now() - root.closedAt) < keepMs;
         const text = restore ? root.keptText : "";
         searchBar.searchInput.text = text;
         LauncherSearch.query = text;

@@ -37,7 +37,7 @@ Item {
         // light mode to white; the outline comes from the shadow component.
         // lok: same surface + frame as every other floating dialog
         color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colLayer0
-        border.width: Appearance.lok ? 1 : 0
+        border.width: Appearance.lok ? Appearance.sizes.hairline : 0
         border.color: Appearance.colors.colLokFrame
 
         implicitWidth: Appearance.lok ? lokRow.implicitWidth + 2 * lokRow.anchors.margins : valueRow.implicitWidth

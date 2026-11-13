@@ -53,7 +53,7 @@ Item { // Bar content region
         anchors.right: parent.right
         anchors.bottom: Config.options.bar.bottom ? undefined : parent.bottom
         anchors.top: Config.options.bar.bottom ? parent.top : undefined
-        height: 1
+        height: Appearance.sizes.hairline
         color: Appearance.colors.colLokDivider
     }
 

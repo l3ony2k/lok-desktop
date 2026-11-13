@@ -111,11 +111,12 @@ Scope { // Scope
                         }
                     }
                     Rectangle {
-                        Layout.topMargin: 20
-                        Layout.bottomMargin: 20
+                        Layout.topMargin: Appearance.lok ? 0 : 20
+                        Layout.bottomMargin: Appearance.lok ? 0 : 20
                         Layout.fillHeight: true
                         implicitWidth: 1
-                        color: Appearance.colors.colOutlineVariant
+                        color: Appearance.lok ? "transparent" : Appearance.colors.colOutlineVariant
+                        Rectangle { visible: Appearance.lok; x: 0; y: 0; width: Appearance.sizes.hairline; height: parent.height; color: Appearance.colors.colLokDivider }
                     }
                     OskContent {
                         id: oskContent

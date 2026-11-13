@@ -19,6 +19,8 @@ Singleton {
     // lok style (Config.options.appearance.style === "lok"): flat greyscale, square corners,
     // hairline borders, no overshoot. "material" keeps every end-4 default below.
     readonly property bool lok: Config.options?.appearance?.style === "lok"
+    // physical/logical pixel ratio (1.333 here); lok hairlines are exactly 1 device px
+    readonly property real dpr: Quickshell.screens.length > 0 ? Quickshell.screens[0].devicePixelRatio : 1
 
     // Transparency. The quadratic functions were derived from analysis of hand-picked transparency values.
     ColorQuantizer {
@@ -130,7 +132,7 @@ Singleton {
         // Light mode floats near-white over the grey base; in-panel groups still step darker.
         property color colLokDialog: m3colors.darkmode ? "#272727" : "#fbfbfb"
         property color colLokDivider: m3colors.darkmode ? "#3d3d3d" : "#bdbdbd"
-        property color colLayer0Border: root.lok ? root.m3colors.m3outlineVariant : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
+        property color colLayer0Border: root.lok ? colors.colLokFrame : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow
         property color colLayer1: ColorUtils.solveOverlayColor(colLayer0Base, colLayer1Base, 1 - root.contentTransparency);
@@ -203,8 +205,9 @@ Singleton {
         property color colOnSurface: m3colors.m3onSurface
         property color colOnSurfaceVariant: m3colors.m3onSurfaceVariant
         // Misc
-        property color colTooltip: m3colors.m3inverseSurface
-        property color colOnTooltip: m3colors.m3inverseOnSurface
+        // lok: tooltips are small floating surfaces like every other popup, never inverted blocks
+        property color colTooltip: root.lok ? colors.colLokDialog : m3colors.m3inverseSurface
+        property color colOnTooltip: root.lok ? m3colors.m3onSurface : m3colors.m3inverseOnSurface
         property color colScrim: ColorUtils.transparentize(m3colors.m3scrim, 0.5)
         property color colShadow: ColorUtils.transparentize(m3colors.m3shadow, 0.7)
         property color colOutline: m3colors.m3outline
@@ -427,6 +430,9 @@ Singleton {
         property real barShortenScreenWidthThreshold: 1200 // Shorten if screen width is at most this value
         property real barHellaShortenScreenWidthThreshold: 1000 // Shorten even more...
         property real elevationMargin: 10
+        // a band exactly 1 device px wide always covers exactly one pixel row/column,
+        // so lok frames render 1 px everywhere instead of 1 or 2 depending on position
+        property real hairline: root.lok ? 1 / root.dpr : 1
         property real fabShadowRadius: 5
         property real fabHoveredShadowRadius: 7
         property real hyprlandGapsOut: 3

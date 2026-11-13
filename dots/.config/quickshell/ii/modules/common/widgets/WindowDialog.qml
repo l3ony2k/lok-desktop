@@ -10,7 +10,9 @@ Rectangle {
 
     property bool show: false
     default property alias contentData: contentColumn.data
-    property real backgroundHeight: Math.min(dialogBackground.naturalHeight, root.height)  // content-sized unless a dialog sets a fixed height
+    // content-sized unless a dialog sets a fixed height; the screen caps it only when this
+    // item has a size (polkit centres a zero-size WindowDialog, which hid the dialog entirely)
+    property real backgroundHeight: root.height > 0 ? Math.min(dialogBackground.naturalHeight, root.height) : dialogBackground.naturalHeight
     property real backgroundWidth: 350
     property real backgroundAnimationMovementDistance: 60
     
@@ -50,13 +52,14 @@ Rectangle {
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
         // At least backgroundWidth, wider when the content needs it (wider fonts, translations), never past the screen
-        implicitWidth: Math.min(root.width - 2 * Appearance.sizes.hyprlandGapsOut, Math.max(root.backgroundWidth, contentColumn.implicitWidth + dialogBackground.padding * 2))
+        readonly property real wantedWidth: Math.max(root.backgroundWidth, contentColumn.implicitWidth + dialogBackground.padding * 2)
+        implicitWidth: root.width > 0 ? Math.min(root.width - 2 * Appearance.sizes.hyprlandGapsOut, wantedWidth) : wantedWidth
         clip: true
         property real padding: Appearance.lok ? Appearance.roundingSpace.large : dialogBackground.radius
         // Declarative so the dialog keeps following its content (wrapped or changing text) while open
         property real naturalHeight: contentColumn.implicitHeight + dialogBackground.padding * 2
         implicitHeight: root.show ? root.backgroundHeight : 0
-        border.width: Appearance.lok ? 1 : 0
+        border.width: Appearance.lok ? Appearance.sizes.hairline : 0
         border.color: Appearance.colors.colLokFrame
         Behavior on implicitHeight {
             NumberAnimation {

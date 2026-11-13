@@ -1,0 +1,16 @@
+diff --git a/material-shapes.js b/material-shapes.js
+index 8743f37..d4e6126 100644
+--- a/material-shapes.js
++++ b/material-shapes.js
+@@ -710,3 +710,11 @@ function customPolygon(pnr, reps = 1, center = new Offset.Offset(0.5, 0.5), mirr
+     const perVertexRounding = actualPoints.map(p => p.r);
+     return RoundedPolygon.RoundedPolygon.fromVertices(vertices, CornerRounding.Unrounded, perVertexRounding, center.x, center.y);
+ }
++
++// lok style: a plain square with sharp corners (MaterialShape draws every shape as this)
++var _lokSquare = null;
++function getLokSquare() {
++    if (_lokSquare !== null) return _lokSquare;
++    _lokSquare = RoundedPolygon.RoundedPolygon.rectangle(1, 1).normalized();
++    return _lokSquare;
++}

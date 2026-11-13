@@ -22,8 +22,8 @@ WindowDialog {
         Layout.fillWidth: true
         Layout.topMargin: -8
         Layout.bottomMargin: -8
-        Layout.leftMargin: -Appearance.roundingSpace.large
-        Layout.rightMargin: -Appearance.roundingSpace.large
+        Layout.leftMargin: -Appearance.roundingSpace.large + (Appearance.lok ? Appearance.sizes.hairline : 0)
+        Layout.rightMargin: -Appearance.roundingSpace.large + (Appearance.lok ? Appearance.sizes.hairline : 0)
     }
     ListView {
         id: wifiList

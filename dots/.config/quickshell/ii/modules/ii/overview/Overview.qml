@@ -46,14 +46,18 @@ Scope {
             function onOverviewOpenChanged() {
                 if (!GlobalStates.overviewOpen) {
                     // Clipboard/emoji opens set a prefix themselves; don't carry that into the next Super-tap
-                    searchWidget.rememberSearch(!overviewScope.dontAutoCancelSearch);
+                    // the workspace overview leaves the Super-tap query untouched
+                    if (!overviewScope.showOverviewWidget)
+                        searchWidget.rememberSearch(!overviewScope.dontAutoCancelSearch);
                     searchWidget.disableExpandAnimation();
                     overviewScope.dontAutoCancelSearch = false;
                     overviewScope.showOverviewWidget = true;
                     GlobalFocusGrab.dismiss();
                 } else {
                     if (!overviewScope.dontAutoCancelSearch) {
-                        searchWidget.cancelSearch();
+                        // only a Super-tap (search box alone) brings back a recent query;
+                        // the workspace overview always opens with an empty box
+                        searchWidget.cancelSearch(!overviewScope.showOverviewWidget);
                     }
                     GlobalFocusGrab.addDismissable(panelWindow);
                 }

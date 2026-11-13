@@ -142,7 +142,7 @@ Button {
         readonly property bool lok: Appearance?.lok ?? false
         readonly property bool lokFrame: lok && (root.toggled
             || root.hovered || root.down || root.colBackground.a > 0.01)
-        border.width: root.tabbedTo ? 2 : (lokFrame ? 1 : 0)
+        border.width: root.tabbedTo ? 2 : (lokFrame ? Appearance.sizes.hairline : 0)
         border.color: root.tabbedTo ? Appearance.colors.colSecondary
             : (lok && root.toggled) ? Appearance.colors.colSelectedEdge
             : (root.hovered || root.down) ? Appearance.colors.colOutline : Appearance.colors.colOutlineVariant
@@ -150,7 +150,7 @@ Button {
         Rectangle {
             visible: parent.lok && root.toggled && root.lokStatusStrip
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 1 }
-            height: 2
+            height: Appearance.lok ? 2 * Appearance.sizes.hairline : 2
             color: Appearance.colors.colOnPrimary
         }
     }

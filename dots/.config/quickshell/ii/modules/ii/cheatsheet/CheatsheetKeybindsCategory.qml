@@ -77,6 +77,7 @@ Column {
           "Super": Config.options.cheatsheet.superKey,
       }: {},
       Config.options.cheatsheet.useMacSymbol ? macSymbolMap : {},
+      Appearance.lok ? { "Super": "Super" } : {},
       Config.options.cheatsheet.useFnSymbol ? functionSymbolMap : {},
       Config.options.cheatsheet.useMouseSymbol ? mouseSymbolMap : {},
     )
@@ -152,10 +153,11 @@ Column {
         Repeater {
             id: repeater
             model: {
+                // keycode-only binds (empty key, e.g. keypad duplicates) have nothing to show
                 if (!root.isCategorized) {
-                    return HyprlandKeybinds.keybinds.filter(bind => root.hasDescription(bind) && root.isUncategorized(bind) && !root.containsNonFirstRepetitive(bind));
+                    return HyprlandKeybinds.keybinds.filter(bind => bind.key.length > 0 && root.hasDescription(bind) && root.isUncategorized(bind) && !root.containsNonFirstRepetitive(bind));
                 }
-                return HyprlandKeybinds.keybinds.filter(bind => root.hasDescription(bind) && root.isCategory(bind, root.categoryName) && !root.containsNonFirstRepetitive(bind));
+                return HyprlandKeybinds.keybinds.filter(bind => bind.key.length > 0 && root.hasDescription(bind) && root.isCategory(bind, root.categoryName) && !root.containsNonFirstRepetitive(bind));
             }
             delegate: BindLine {
                 required property var modelData

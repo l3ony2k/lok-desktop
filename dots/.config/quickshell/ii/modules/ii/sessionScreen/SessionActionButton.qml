@@ -57,13 +57,10 @@ RippleButton {
         text: buttonIcon
     }
 
-    Rectangle { // lok frame
+    LokFrame {
         visible: Appearance.lok
-        anchors.fill: parent
         z: 2
-        color: "transparent"
-        border.width: 1
-        border.color: button.lokSelected ? Appearance.colors.colSelectedEdge : Appearance.colors.colLokDivider
+        color: button.lokSelected ? Appearance.colors.colSelectedEdge : Appearance.colors.colLokDivider
     }
     Rectangle { // lok status strip
         visible: Appearance.lok && button.lokSelected
@@ -72,7 +69,7 @@ RippleButton {
             right: parent.right
             bottom: parent.bottom
         }
-        height: 2
+        height: 2 * Appearance.sizes.hairline
         z: 2
         color: Appearance.colors.colSelectedEdge
     }

@@ -15,12 +15,14 @@ RectangularShadow {
     color: Appearance.lok ? "transparent" : Appearance.colors.colShadow
     cached: true
 
+    // lok: drawn on the surface edge (inside its bounds, stacked above it) so frame and
+    // fill always share an edge; outside-and-below left 1 px gaps at fractional scale
+    z: Appearance.lok ? (target?.z ?? 0) + 1 : 0
     Rectangle {
         visible: Appearance.lok
         anchors.fill: parent
-        anchors.margins: -1
         color: "transparent"
-        border.width: 1
+        border.width: Appearance.sizes.hairline
         border.color: Appearance.colors.colLayer0Border
     }
 }
