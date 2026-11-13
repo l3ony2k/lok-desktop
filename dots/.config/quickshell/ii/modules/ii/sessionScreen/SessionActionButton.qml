@@ -12,14 +12,20 @@ RippleButton {
     property real size: 120
 
     buttonRadius: (button.focus || button.down) ? size / 2 : Appearance.rounding.verylarge
-    colBackground: button.keyboardDown ? Appearance.colors.colSecondaryContainerActive : 
-        button.focus ? Appearance.colors.colPrimary : 
+    // lok: same language as the quick toggles. Idle = dialog surface, dim
+    // frame, grey icon. Selected (keyboard focus or hover) = raised fill,
+    // bright frame, bright icon, 2 px status strip.
+    readonly property bool lokSelected: button.focus || button.hovered || button.down || button.keyboardDown
+    colBackground: Appearance.lok ? (button.keyboardDown ? Appearance.colors.colPrimaryActive
+            : button.focus ? Appearance.colors.colPrimary : Appearance.colors.colLokDialog)
+        : button.keyboardDown ? Appearance.colors.colSecondaryContainerActive :
+        button.focus ? Appearance.colors.colPrimary :
         Appearance.colors.colSecondaryContainer
     colBackgroundHover: Appearance.colors.colPrimary
     colRipple: Appearance.colors.colPrimaryActive
-    property color colText: (button.down || button.keyboardDown || button.focus || button.hovered) ?
+    property color colText: Appearance.lok ? (button.lokSelected ? Appearance.colors.colOnLayer0 : Appearance.colors.colSubtext)
+        : (button.down || button.keyboardDown || button.focus || button.hovered) ?
         Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0
-
     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
     background.implicitHeight: size
     background.implicitWidth: size
@@ -51,6 +57,25 @@ RippleButton {
         text: buttonIcon
     }
 
+    Rectangle { // lok frame
+        visible: Appearance.lok
+        anchors.fill: parent
+        z: 2
+        color: "transparent"
+        border.width: 1
+        border.color: button.lokSelected ? Appearance.colors.colSelectedEdge : Appearance.colors.colLokDivider
+    }
+    Rectangle { // lok status strip
+        visible: Appearance.lok && button.lokSelected
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+        height: 2
+        z: 2
+        color: Appearance.colors.colSelectedEdge
+    }
     StyledToolTip {
         text: buttonText
     }
