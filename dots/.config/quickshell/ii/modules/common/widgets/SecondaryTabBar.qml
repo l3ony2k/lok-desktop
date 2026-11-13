@@ -6,7 +6,8 @@ import qs.modules.common.models
 
 TabBar {
     id: root
-    property real indicatorPadding: 8
+    // lok: the active tab is marked by a flat 2 px strip (same as the selected-tile strip)
+    property real indicatorPadding: Appearance.lok ? 0 : 8
     Layout.fillWidth: true
 
     background: Item {
@@ -22,18 +23,18 @@ TabBar {
             id: activeIndicator
             z: 9999
             anchors.bottom: parent.bottom
-            topLeftRadius: height
-            topRightRadius: height
+            topLeftRadius: Appearance.lok ? 0 : height
+            topRightRadius: Appearance.lok ? 0 : height
             bottomLeftRadius: 0
             bottomRightRadius: 0
-            color: Appearance.colors.colAccent
+            color: Appearance.lok ? Appearance.colors.colSelectedEdge : Appearance.colors.colAccent
             // Animation
             property real baseWidth: root.width / root.count
             AnimatedTabIndexPair {
                 id: idxPair
                 index: root.currentIndex
             }
-            height: 3
+            height: Appearance.lok ? 2 * Appearance.sizes.hairline : 3
             x: Math.min(idxPair.idx1, idxPair.idx2) * baseWidth + root.indicatorPadding
             width: ((Math.max(idxPair.idx1, idxPair.idx2) + 1) * baseWidth - root.indicatorPadding) - x
         }
@@ -42,12 +43,12 @@ TabBar {
             id: tabBarBottomBorder
             z: 9998
             anchors.bottom: parent.bottom
-            height: 1
+            height: Appearance.lok ? Appearance.sizes.hairline : 1
             anchors {
                 left: parent.left
                 right: parent.right
             }
-            color: Appearance.colors.colOutlineVariant
+            color: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutlineVariant
         }
     }
 }

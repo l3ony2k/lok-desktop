@@ -41,6 +41,9 @@ RippleButton {
     property int buttonVerticalPadding: 6
     property bool keyboardDown: false
     readonly property bool selected: (root.hovered || root.focus)
+    // lok: selected row = raised fill + bright hairline frame, like every other selection
+    borderWidth: (Appearance.lok && root.selected) ? 1 : 0
+    borderColor: Appearance.colors.colSelectedEdge
 
     implicitHeight: rowLayout.implicitHeight + root.buttonVerticalPadding * 2
     implicitWidth: rowLayout.implicitWidth + root.buttonHorizontalPadding * 2

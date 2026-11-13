@@ -22,6 +22,7 @@ Item {
     Loader {
         active: root.enableShadow
         anchors.fill: background
+        z: Appearance.lok ? 1 : 0 // lok: the frame sits on top of the fill, not under it
         sourceComponent: StyledRectangularShadow {
             target: background
             anchors.fill: undefined

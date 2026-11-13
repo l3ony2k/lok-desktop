@@ -47,6 +47,7 @@ MouseArea {
                     id: thumbnailShadowLoader
                     active: thumbnailImageLoader.active && thumbnailImageLoader.item.status === Image.Ready
                     anchors.fill: thumbnailImageLoader
+                    z: Appearance.lok ? 1 : 0 // lok: frame above the thumbnail
                     sourceComponent: StyledRectangularShadow {
                         target: thumbnailImageLoader
                         anchors.fill: undefined

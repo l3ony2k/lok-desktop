@@ -26,7 +26,7 @@ Switch {
         radius: Appearance?.rounding.full ?? 9999
         color: root.lok ? (root.checked ? Appearance.colors.colPrimary : "transparent") : (root.checked ? root.activeColor : root.inactiveColor)
         border.width: root.lok ? 0 : 2 * root.scale // lok: LokFrame below (border drops sides at 1.333 scale)
-        LokFrame { visible: root.lok; z: 99; color: parent.border.color }
+        LokFrame { visible: root.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
         border.color: root.lok ? (root.checked ? Appearance.colors.colAccent : Appearance.m3colors.m3outline) : (root.checked ? root.activeColor : Appearance.m3colors.m3outline)
 
         Behavior on color {

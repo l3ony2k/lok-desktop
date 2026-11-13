@@ -18,6 +18,7 @@ Item {
     Loader {
         active: root.enableShadow
         anchors.fill: parent
+        z: Appearance.lok ? 1 : 0 // lok: the frame sits on top of the fill, not under it
         sourceComponent: StyledRectangularShadow {
             target: fabWidget
             radius: fabWidget.buttonRadius
@@ -26,7 +27,7 @@ Item {
     FloatingActionButton {
         id: fabWidget
         onClicked: e => root.clicked(e)
-        baseSize: 48
+        baseSize: Appearance.lok ? 56 : 48 // lok: same height as the toolbar it pairs with
         colBackground: Appearance.colors.colTertiaryContainer
         colBackgroundHover: Appearance.colors.colTertiaryContainerHover
         colRipple: Appearance.colors.colTertiaryContainerActive

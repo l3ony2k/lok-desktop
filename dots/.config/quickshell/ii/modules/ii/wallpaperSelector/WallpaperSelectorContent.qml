@@ -122,7 +122,7 @@ MouseArea {
         }
         focus: true
         border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
-        LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
+        LokFrame { visible: Appearance.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
         border.color: Appearance.colors.colLayer0Border
         color: Appearance.colors.colLayer0
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
@@ -198,7 +198,7 @@ MouseArea {
                             {
                                 icon: "wallpaper",
                                 name: "Wallpapers",
-                                path: `${Directories.pictures}/Wallpapers`
+                                path: `${Directories.pictures}/wallpapers` // this machine keeps them lowercase
                             },
                             ...(Config.options.policies.weeb === 1 ? [
                                     {

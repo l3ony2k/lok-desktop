@@ -439,6 +439,8 @@ Singleton {
         property real elevationMargin: 10
         // lok: one distance between the bar and anything that pops out of it
         property real popupGap: root.lok ? 8 : elevationMargin
+        // sidebars and notification popups keep the same distance from the bar and screen edges
+        property real sidebarGap: root.lok ? popupGap : hyprlandGapsOut
         // a band exactly 1 device px wide always covers exactly one pixel row/column,
         // so lok frames render 1 px everywhere instead of 1 or 2 depending on position
         property real hairline: root.lok ? 1 / root.dpr : 1

@@ -145,7 +145,7 @@ RowLayout {
         id: songRecButton
         Layout.topMargin: 4
         Layout.bottomMargin: 4
-        Layout.rightMargin: 4
+        Layout.rightMargin: Appearance.lok ? 9 : 4 // lok: centred over the rows rightmost action column
         toggled: SongRec.running
         onClicked: SongRec.toggleRunning()
         text: Appearance.lok ? "music_note" : "music_cast"
@@ -161,7 +161,7 @@ RowLayout {
             visible: Appearance.lok
             color: songRecButton.toggled ? Appearance.colors.colPrimary : songRecButton.hovered ? Appearance.colors.colLayer1Hover : "transparent"
             border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
-            LokFrame { visible: songRecButton.toggled; z: 99; color: parent.border.color }
+            LokFrame { visible: songRecButton.toggled; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
             border.color: Appearance.colors.colSelectedEdge
           }
           MaterialShape {

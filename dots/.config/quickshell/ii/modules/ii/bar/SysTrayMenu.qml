@@ -75,7 +75,7 @@ PopupWindow {
             color: Appearance.colors.colLayer0
             radius: Appearance.rounding.windowRounding
             border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
-            LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
+            LokFrame { visible: Appearance.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
             border.color: Appearance.colors.colLayer0Border
             clip: true
 

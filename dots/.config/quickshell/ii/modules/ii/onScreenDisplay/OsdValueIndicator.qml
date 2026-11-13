@@ -38,7 +38,7 @@ Item {
         // lok: same surface + frame as every other floating dialog
         color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colLayer0
         border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
-        LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
+        LokFrame { visible: Appearance.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
         border.color: Appearance.colors.colLokFrame
 
         implicitWidth: Appearance.lok ? lokRow.implicitWidth + 2 * lokRow.anchors.margins : valueRow.implicitWidth

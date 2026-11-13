@@ -50,11 +50,11 @@ Scope {
             active: GlobalStates.sidebarRightOpen || Config?.options.sidebar.keepRightSidebarLoaded
             anchors {
                 fill: parent
-                margins: Appearance.sizes.hyprlandGapsOut
+                margins: Appearance.sizes.sidebarGap
                 leftMargin: Appearance.sizes.elevationMargin
             }
-            width: sidebarWidth - Appearance.sizes.hyprlandGapsOut - Appearance.sizes.elevationMargin
-            height: parent.height - Appearance.sizes.hyprlandGapsOut * 2
+            width: sidebarWidth - Appearance.sizes.sidebarGap - Appearance.sizes.elevationMargin
+            height: parent.height - Appearance.sizes.sidebarGap * 2
 
             focus: GlobalStates.sidebarRightOpen
             Keys.onPressed: event => {
