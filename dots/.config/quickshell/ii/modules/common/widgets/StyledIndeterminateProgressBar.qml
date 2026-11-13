@@ -5,5 +5,5 @@ import QtQuick.Controls
 
 ProgressBar {
     indeterminate: true
-    Material.accent: Appearance.colors.colPrimary
+    Material.accent: Appearance.lok ? Appearance.colors.colMeterFill : Appearance.colors.colPrimary
 }

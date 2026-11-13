@@ -126,7 +126,9 @@ Singleton {
         // lok workspace states: active = 3:1 against the bar (WCAG 1.4.11), occupied = L* midpoint
         property color colLokWsActive: m3colors.darkmode ? "#616161" : "#8c8c8c"
         property color colLokWsOccupied: m3colors.darkmode ? "#383838" : "#bebebe"
-        property color colLokDialog: m3colors.darkmode ? "#272727" : "#ececec"
+        // lok: every floating surface (dialogs, popups, notifications, search, OSD).
+        // Light mode floats near-white over the grey base; in-panel groups still step darker.
+        property color colLokDialog: m3colors.darkmode ? "#272727" : "#fbfbfb"
         property color colLokDivider: m3colors.darkmode ? "#3d3d3d" : "#bdbdbd"
         property color colLayer0Border: root.lok ? root.m3colors.m3outlineVariant : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
@@ -160,7 +162,7 @@ Singleton {
         // lok: "primary" is the selected/on state. Instead of inverting (text colour as
         // fill) it is one surface step above the top layer: #4a4a4a dark, white light.
         // Text/icon accents that used primary use colAccent (plain text colour in lok).
-        property color colPrimary: root.lok ? (m3colors.darkmode ? "#4a4a4a" : "#ffffff") : m3colors.m3primary
+        property color colPrimary: root.lok ? (m3colors.darkmode ? "#4a4a4a" : "#c8c8c8") /* selected = one step from the surface toward the text colour */ : m3colors.m3primary
         property color colOnPrimary: root.lok ? m3colors.m3onSurface : m3colors.m3onPrimary
         property color colPrimaryHover: root.lok ? ColorUtils.mix(colors.colPrimary, m3colors.m3onSurface, 0.92) : ColorUtils.mix(colors.colPrimary, colLayer1Hover, 0.87)
         property color colPrimaryActive: root.lok ? ColorUtils.mix(colors.colPrimary, m3colors.m3onSurface, 0.84) : ColorUtils.mix(colors.colPrimary, colLayer1Active, 0.7)
@@ -191,7 +193,7 @@ Singleton {
         property color colOnTertiary: m3colors.m3onTertiary
         property color colOnTertiaryContainer: m3colors.m3onTertiaryContainer
         // Surface
-        property color colBackgroundSurfaceContainer: ColorUtils.transparentize(m3colors.m3surfaceContainer, root.backgroundTransparency)
+        property color colBackgroundSurfaceContainer: root.lok ? colors.colLokDialog : ColorUtils.transparentize(m3colors.m3surfaceContainer, root.backgroundTransparency)
         property color colSurfaceContainerLow: ColorUtils.solveOverlayColor(m3colors.m3background, m3colors.m3surfaceContainerLow, 1 - root.contentTransparency)
         property color colSurfaceContainer: ColorUtils.solveOverlayColor(m3colors.m3surfaceContainerLow, m3colors.m3surfaceContainer, 1 - root.contentTransparency)
         property color colSurfaceContainerHigh: ColorUtils.solveOverlayColor(m3colors.m3surfaceContainer, m3colors.m3surfaceContainerHigh, 1 - root.contentTransparency)

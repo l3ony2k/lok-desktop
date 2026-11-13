@@ -155,7 +155,7 @@ WindowDialog {
                         : Appearance.colors.colLayer3Hover
                     colText: Mihomo.mode === modelData[0]
                         ? Appearance.colors.colOnPrimary
-                        : Appearance.colors.colPrimary
+                        : Appearance.colors.colAccent
                     onClicked: Mihomo.setMode(modelData[0])
                 }
             }

@@ -174,7 +174,7 @@ WindowDialog {
                     iconSize: Appearance.font.pixelSize.larger
                     color: {
                         if (modelData.isSelf)
-                            return Appearance.colors.colPrimary;
+                            return Appearance.colors.colAccent;
                         return modelData.online ? Appearance.colors.colOnSurface : Appearance.colors.colSubtext;
                     }
                     text: {

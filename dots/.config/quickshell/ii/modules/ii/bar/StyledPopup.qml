@@ -70,12 +70,12 @@ LazyLoader {
             }
             implicitWidth: root.contentItem.implicitWidth + margin * 2
             implicitHeight: root.contentItem.implicitHeight + margin * 2
-            color: Appearance.m3colors.m3surfaceContainer
+            color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.m3colors.m3surfaceContainer
             radius: Appearance.rounding.small
             children: [root.contentItem]
 
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.color: Appearance.lok ? Appearance.colors.colLokFrame : Appearance.colors.colLayer0Border
         }
     }
 }

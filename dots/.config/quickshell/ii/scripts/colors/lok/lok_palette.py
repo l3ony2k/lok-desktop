@@ -55,7 +55,7 @@ LIGHT = {
     "surface_container_highest": "#c4c4c4",
     "on_surface": "#161616", "surface_variant": "#d1d1d1", "on_surface_variant": "#4a4a4a",
     "inverse_surface": "#262626", "inverse_on_surface": "#f0f0f0",
-    "outline": "#767676", "outline_variant": "#b0b0b0",
+    "outline": "#6a6a6a", "outline_variant": "#b0b0b0",
     "shadow": "#000000", "scrim": "#000000", "surface_tint": "#1f1f1f",
     "primary": "#1f1f1f", "on_primary": "#f5f5f5",
     "primary_container": "#b8b8b8", "on_primary_container": "#141414", "inverse_primary": "#b8b8b8",
