@@ -15,15 +15,16 @@ RippleButton {
     // lok: same language as the quick toggles. Idle = dialog surface, dim
     // frame, grey icon. Selected (keyboard focus or hover) = raised fill,
     // bright frame, bright icon, 2 px status strip.
-    readonly property bool lokSelected: button.focus || button.hovered || button.down || button.keyboardDown
+    // hover alone = one step raised fill + bright icon, no frame/strip (never a second selection)
+    readonly property bool lokSelected: button.focus || button.down || button.keyboardDown
     colBackground: Appearance.lok ? (button.keyboardDown ? Appearance.colors.colPrimaryActive
             : button.focus ? Appearance.colors.colPrimary : Appearance.colors.colLokDialog)
         : button.keyboardDown ? Appearance.colors.colSecondaryContainerActive :
         button.focus ? Appearance.colors.colPrimary :
         Appearance.colors.colSecondaryContainer
-    colBackgroundHover: Appearance.colors.colPrimary
+    colBackgroundHover: Appearance.lok ? (button.focus ? Appearance.colors.colPrimaryHover : Appearance.colors.colLayer3) : Appearance.colors.colPrimary
     colRipple: Appearance.colors.colPrimaryActive
-    property color colText: Appearance.lok ? (button.lokSelected ? Appearance.colors.colOnLayer0 : Appearance.colors.colSubtext)
+    property color colText: Appearance.lok ? ((button.lokSelected || button.hovered) ? Appearance.colors.colOnLayer0 : Appearance.colors.colSubtext)
         : (button.down || button.keyboardDown || button.focus || button.hovered) ?
         Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0
     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter

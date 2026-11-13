@@ -107,6 +107,11 @@ RippleButton {
     contentItem: StyledText {
         id: keyText
         anchors.fill: parent
+        // lok: a label never touches the key edge; long ones (PrtSc) shrink to keep 8 px each side
+        anchors.leftMargin: Appearance.lok ? 8 : 0
+        anchors.rightMargin: Appearance.lok ? 8 : 0
+        fontSizeMode: Appearance.lok ? Text.HorizontalFit : Text.FixedSize
+        minimumPixelSize: 9
         font.family: (isBackspace || isEnter) ? Appearance.font.family.iconMaterial : Appearance.font.family.main
         font.pixelSize: root.shape == "fn" ? Appearance.font.pixelSize.small : 
             (isBackspace || isEnter) ? Appearance.font.pixelSize.huge :

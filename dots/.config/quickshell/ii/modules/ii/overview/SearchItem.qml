@@ -41,8 +41,9 @@ RippleButton {
     property int buttonVerticalPadding: 6
     property bool keyboardDown: false
     readonly property bool selected: (root.hovered || root.focus)
-    // lok: selected row = raised fill + bright hairline frame, like every other selection
-    borderWidth: (Appearance.lok && root.selected) ? 1 : 0
+    // lok: the keyboard-current row gets the selection frame; hover is only the raised fill,
+    // so a hovered row never looks like a second selection
+    borderWidth: (Appearance.lok && root.focus) ? 1 : 0
     borderColor: Appearance.colors.colSelectedEdge
 
     implicitHeight: rowLayout.implicitHeight + root.buttonVerticalPadding * 2
@@ -51,7 +52,8 @@ RippleButton {
     colBackground: (root.down || root.keyboardDown) ? Appearance.colors.colPrimaryContainerActive : 
         (selected ? Appearance.colors.colPrimaryContainer : 
         ColorUtils.transparentize(Appearance.colors.colPrimaryContainer, 1))
-    colBackgroundHover: Appearance.colors.colPrimaryContainer
+    // lok: hover is one step up from the panel surface, below the keyboard-current fill
+    colBackgroundHover: Appearance.lok ? Appearance.colors.colLayer3 : Appearance.colors.colPrimaryContainer
     colRipple: Appearance.colors.colPrimaryContainerActive
     property color colForeground: selected ? Appearance.colors.colOnPrimaryContainer : Appearance.m3colors.m3onSurface
 

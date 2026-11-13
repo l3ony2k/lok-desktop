@@ -217,7 +217,17 @@ MouseArea {
                             onClicked: Wallpapers.setDirectory(quickDirButton.modelData.path)
                             enabled: modelData.icon.length > 0
                             toggled: Wallpapers.directory === Qt.resolvedUrl(modelData.path)
-                            colBackgroundToggled: Appearance.colors.colSecondaryContainer
+                            // lok: the shared selected style (raised fill + bright hairline frame)
+                            colBackgroundToggled: Appearance.lok ? Appearance.colors.colPrimary : Appearance.colors.colSecondaryContainer
+                            borderWidth: (Appearance.lok && toggled) ? 1 : 0
+                            borderColor: Appearance.colors.colSelectedEdge
+                            readonly property bool lokSeparator: Appearance.lok && modelData.icon.length === 0
+                            Rectangle { // lok: the "---" entry is a real full-width divider
+                                visible: quickDirButton.lokSeparator
+                                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter }
+                                height: Appearance.sizes.hairline
+                                color: Appearance.colors.colLokDivider
+                            }
                             colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
                             colRippleToggled: Appearance.colors.colSecondaryContainerActive
                             buttonRadius: Appearance.lok ? 0 : height / 2
@@ -234,7 +244,7 @@ MouseArea {
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignLeft
                                     color: quickDirButton.toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1
-                                    text: quickDirButton.modelData.name
+                                    text: quickDirButton.lokSeparator ? "" : quickDirButton.modelData.name
                                 }
                             }
                         }
@@ -298,7 +308,8 @@ MouseArea {
                         clip: true
                         keyNavigationWraps: true
                         boundsBehavior: Flickable.StopAtBounds
-                        bottomMargin: extraOptions.implicitHeight
+                        // lok: also the toolbar 8 px offset + 8 px air, so the last row scrolls fully clear of it
+                        bottomMargin: extraOptions.implicitHeight + (Appearance.lok ? 16 : 0)
                         ScrollBar.vertical: StyledScrollBar {}
 
                         Component.onCompleted: {
@@ -323,6 +334,7 @@ MouseArea {
                             fileModelData: modelData
                             width: grid.cellWidth
                             height: grid.cellHeight
+                            lokSelected: index === grid?.currentIndex || containsMouse
                             colBackground: (index === grid?.currentIndex || containsMouse) ? Appearance.colors.colPrimary : (fileModelData.filePath === Config.options.background.wallpaperPath) ? Appearance.colors.colSecondaryContainer : ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
                             colText: (index === grid.currentIndex || containsMouse) ? Appearance.colors.colOnPrimary : (fileModelData.filePath === Config.options.background.wallpaperPath) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer0
 

@@ -288,6 +288,9 @@ ContentPage {
                     ]
                 }
             }
+        }
+
+        ConfigRow { // own row: next to Bar position its options did not fit and wrapped
             ContentSubsection {
                 title: Translation.tr("Bar style")
 

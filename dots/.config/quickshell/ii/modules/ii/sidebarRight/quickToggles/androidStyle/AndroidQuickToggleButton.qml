@@ -60,13 +60,15 @@ GroupButton {
     verticalPadding: padding
 
     colBackground: Appearance.colors.colLayer2
+    // lok: hover = one full step up the grey ramp (the generic layer-1 hover was ~1 % here)
+    colBackgroundHover: Appearance.lok ? Appearance.colors.colLayer3 : Appearance.colors.colLayer1Hover
     lokStatusStrip: !(altAction && expandedSize)
     colBackgroundToggled: (altAction && expandedSize) ? Appearance.colors.colLayer2 : Appearance.colors.colPrimary
     colBackgroundToggledHover: (altAction && expandedSize) ? Appearance.colors.colLayer2Hover : Appearance.colors.colPrimaryHover
     colBackgroundToggledActive: (altAction && expandedSize) ? Appearance.colors.colLayer2Active : Appearance.colors.colPrimaryActive
     buttonRadius: Appearance.lok ? 0 : (toggled ? Appearance.rounding.large : height / 2)
     buttonRadiusPressed: Appearance.rounding.normal
-    property color colText: (toggled && !(altAction && expandedSize) && enabled) ? Appearance.colors.colOnPrimary : ColorUtils.transparentize(Appearance.lok ? Appearance.m3colors.m3onSurfaceVariant : Appearance.colors.colOnLayer2, enabled ? 0 : 0.7)
+    property color colText: (toggled && !(altAction && expandedSize) && enabled) ? Appearance.colors.colOnPrimary : (Appearance.lok && root.hovered && enabled) ? Appearance.m3colors.m3onSurface : ColorUtils.transparentize(Appearance.lok ? Appearance.m3colors.m3onSurfaceVariant : Appearance.colors.colOnLayer2, enabled ? 0 : 0.7)
     property color colIcon: expandedSize ? ((root.toggled) ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer3) : colText
 
     onClicked: {
