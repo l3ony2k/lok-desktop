@@ -146,6 +146,8 @@ WindowDialog {
     }
 
     ListView {
+        id: peerList
+        TouchpadScrollHandler { flickable: peerList }
         Layout.fillHeight: true
         Layout.fillWidth: true
         Layout.topMargin: -15

@@ -173,6 +173,7 @@ Item { // Wrapper
 
             ListView { // App results
                 id: appResults
+                TouchpadScrollHandler { flickable: appResults }
                 visible: root.showResults
                 Layout.fillWidth: true
                 implicitHeight: Math.min(600, appResults.contentHeight + topMargin + bottomMargin)

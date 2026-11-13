@@ -26,6 +26,8 @@ WindowDialog {
         Layout.rightMargin: -Appearance.roundingSpace.large
     }
     ListView {
+        id: wifiList
+        TouchpadScrollHandler { flickable: wifiList }
         Layout.fillHeight: true
         Layout.fillWidth: true
         Layout.topMargin: -15

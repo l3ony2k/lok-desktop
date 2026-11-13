@@ -15,6 +15,11 @@ Flickable {
 
     ScrollBar.vertical: StyledScrollBar {}
 
+    TouchpadScrollHandler {
+        id: touchpadScroll
+        flickable: root
+    }
+
     MouseArea {
         visible: Config?.options.interactions.scrolling.fasterTouchpadScroll
         anchors.fill: parent
@@ -36,6 +41,7 @@ Flickable {
     }
 
     Behavior on contentY {
+        enabled: !touchpadScroll.active // touchpad follows the finger; no easing per delta
         NumberAnimation {
             id: scrollAnim
             duration: Appearance.animation.scroll.duration

@@ -344,6 +344,7 @@ Singleton {
                     property int mouseScrollDeltaThreshold: 120 // delta >= this then it gets detected as mouse scroll rather than touchpad
                     property int mouseScrollFactor: 120
                     property int touchpadScrollFactor: 450
+                    property real touchpadPixelGain: 1 // Multiplies touchpad pixel scrolling in shell lists (1 = Qt default)
                 }
                 property JsonObject deadPixelWorkaround: JsonObject { // Hyprland leaves out 1 pixel on the right for interactions
                     property bool enable: false

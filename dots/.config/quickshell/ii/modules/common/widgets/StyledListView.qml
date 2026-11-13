@@ -31,6 +31,11 @@ ListView {
     boundsBehavior: Flickable.DragOverBounds
     ScrollBar.vertical: StyledScrollBar {}
 
+    TouchpadScrollHandler {
+        id: touchpadScroll
+        flickable: root
+    }
+
     MouseArea {
         visible: Config?.options.interactions.scrolling.fasterTouchpadScroll
         anchors.fill: parent
@@ -52,6 +57,7 @@ ListView {
     }
 
     Behavior on contentY {
+        enabled: !touchpadScroll.active // touchpad follows the finger; no easing per delta
         NumberAnimation {
             id: scrollAnim
             alwaysRunToEnd: true

@@ -283,6 +283,7 @@ MouseArea {
 
                     GridView {
                         id: grid
+                        TouchpadScrollHandler { flickable: grid }
                         visible: Wallpapers.folderModel.count > 0
 
                         readonly property int columns: root.columns
