@@ -43,6 +43,22 @@ for op in _rec.value:
         _contours.append(_cur)
         _cur = []
 _contours.sort(key=lambda c: min(pt[1] for o in c for pt in o[1]))  # bottom (dot) first
+# Tabler's wifi is only ~563/1000 tall (most icons ~810), so it read a size smaller
+# than its neighbours. Scale the whole Wi-Fi family 1.25x about the icon centre;
+# every level is cut from the same scaled contours, so they stay aligned.
+_S, _CY = 1.25, 400.0
+_xs = [pt[0] for c in _contours for o in c for pt in o[1]]
+_CX = (min(_xs) + max(_xs)) / 2
+_contours = [[(op, tuple((_CX + (x - _CX) * _S, _CY + (y - _CY) * _S) for x, y in args)) for op, args in c] for c in _contours]
+_full = TTGlyphPen(None)
+for _c in _contours:
+    for _op, _args in _c:
+        getattr(_full, _op)(*_args)
+_fg = _full.glyph(); _fg.recalcBounds(font["glyf"])
+font["glyf"]["lokwifi_4"] = _fg
+font["hmtx"]["lokwifi_4"] = (font["hmtx"][_wifi][0], _fg.xMin)
+for _n in [n for n, g in pairs.items() if g == _wifi]:
+    pairs[_n] = "lokwifi_4"
 for _name, _keep in (("network_wifi_3_bar", 3), ("network_wifi_2_bar", 2),
                      ("network_wifi_1_bar", 1), ("signal_wifi_0_bar", 0)):
     if _name not in pairs:

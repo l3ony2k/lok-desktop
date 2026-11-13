@@ -322,6 +322,19 @@ Item { // Bar content region
                     property real realSpacing: 15
                     spacing: 0
 
+                    Revealer { // Keep awake (coffee): shown only while on
+                        reveal: Idle.inhibit && (Config.options.bar.indicators.keepAwake ?? true)
+                        Layout.fillHeight: true
+                        Layout.rightMargin: reveal ? indicatorsRowLayout.realSpacing : 0
+                        Behavior on Layout.rightMargin {
+                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+                        }
+                        MaterialSymbol {
+                            text: "coffee"
+                            iconSize: Appearance.font.pixelSize.larger
+                            color: rightSidebarButton.colText
+                        }
+                    }
                     Revealer {
                         reveal: (Audio.sink?.audio?.muted ?? false) && (Config.options.bar.indicators.volumeMute ?? true)
                         Layout.fillHeight: true

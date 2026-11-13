@@ -40,7 +40,9 @@ Singleton {
     Process {
         id: lidInhibitor
         running: root.inhibit
-        command: ["systemd-inhibit", "--what=handle-lid-switch",
+        // setpriv --pdeathsig: the inhibitor dies with Quickshell, so a killall/restart
+        // can't leave an orphan blocking lid suspend after coffee is turned off
+        command: ["setpriv", "--pdeathsig", "TERM", "systemd-inhibit", "--what=handle-lid-switch",
             "--who=Quickshell coffee", "--why=Keep awake (coffee toggle)",
             "--mode=block", "sleep", "infinity"]
     }
