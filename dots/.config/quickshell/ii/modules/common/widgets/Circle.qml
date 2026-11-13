@@ -1,3 +1,4 @@
+import qs.modules.common
 import QtQuick
 
 Rectangle {
@@ -5,5 +6,5 @@ Rectangle {
 
     implicitWidth: diameter
     implicitHeight: diameter
-    radius: diameter / 2
+    radius: (Appearance?.lok ?? false) ? 0 : diameter / 2
 }

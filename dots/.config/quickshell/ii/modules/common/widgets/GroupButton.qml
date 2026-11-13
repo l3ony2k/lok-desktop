@@ -45,9 +45,11 @@ Button {
     property color colBackgroundToggledHover: Appearance?.colors.colPrimaryHover ?? "#77699C"
     property color colBackgroundToggledActive: Appearance?.colors.colPrimaryActive ?? "#D6CEE2"
 
-    property real radius: root.down ? root.buttonRadiusPressed : root.buttonRadius
-    property real leftRadius: root.down ? root.buttonRadiusPressed : root.buttonRadius
-    property real rightRadius: root.down ? root.buttonRadiusPressed : root.buttonRadius
+    // lok: square everywhere, whatever radius a subclass computes (e.g. height / 2)
+    readonly property bool lokSquare: Appearance?.lok ?? false
+    property real radius: lokSquare ? 0 : root.down ? root.buttonRadiusPressed : root.buttonRadius
+    property real leftRadius: lokSquare ? 0 : root.down ? root.buttonRadiusPressed : root.buttonRadius
+    property real rightRadius: lokSquare ? 0 : root.down ? root.buttonRadiusPressed : root.buttonRadius
     property color color: root.enabled ? (root.toggled ? 
         (root.down ? colBackgroundToggledActive : 
             root.hovered ? colBackgroundToggledHover : 
@@ -122,10 +124,11 @@ Button {
     property bool tabbedTo: root.focus && (focusReason === Qt.TabFocusReason || focusReason === Qt.BacktabFocusReason)
     background: Rectangle {
         id: buttonBackground
-        topLeftRadius: root.leftRadius
-        topRightRadius: root.rightRadius
-        bottomLeftRadius: root.leftRadius
-        bottomRightRadius: root.rightRadius
+        // lok: square at the point of drawing, whatever radius a subclass sets
+        topLeftRadius: (Appearance?.lok ?? false) ? 0 : root.leftRadius
+        topRightRadius: (Appearance?.lok ?? false) ? 0 : root.rightRadius
+        bottomLeftRadius: (Appearance?.lok ?? false) ? 0 : root.leftRadius
+        bottomRightRadius: (Appearance?.lok ?? false) ? 0 : root.rightRadius
         implicitHeight: 50
 
         color: root.color

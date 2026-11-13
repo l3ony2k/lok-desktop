@@ -17,7 +17,8 @@ Button {
     property bool pointingHandCursor: true
     property real buttonRadius: Appearance?.rounding?.small ?? 4
     property real buttonRadiusPressed: buttonRadius
-    property real buttonEffectiveRadius: root.down ? root.buttonRadiusPressed : root.buttonRadius
+    // lok: square everywhere, whatever radius a subclass computes (e.g. height / 2)
+    property real buttonEffectiveRadius: (Appearance?.lok ?? false) ? 0 : root.down ? root.buttonRadiusPressed : root.buttonRadius
     property int rippleDuration: 1200
     // lok style: no ripple; pressing fills the button with the press colour instead
     property bool rippleEnabled: !(Appearance?.lok ?? false)
@@ -140,7 +141,7 @@ Button {
 
     background: Rectangle {
         id: buttonBackground
-        radius: root.buttonEffectiveRadius
+        radius: (Appearance?.lok ?? false) ? 0 : root.buttonEffectiveRadius
         implicitHeight: 30
 
         color: root.buttonColor
@@ -155,7 +156,7 @@ Button {
             maskSource: Rectangle {
                 width: buttonBackground.width
                 height: buttonBackground.height
-                radius: root.buttonEffectiveRadius
+                radius: (Appearance?.lok ?? false) ? 0 : root.buttonEffectiveRadius
             }
         }
 
