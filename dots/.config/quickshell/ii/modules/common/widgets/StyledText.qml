@@ -1,7 +1,11 @@
 import qs.modules.common
 import QtQuick
+import QtQuick.Layouts
 
 Text {
+    // Wrapping text asks a layout for a reading width, not its whole paragraph on one line,
+    // so content-sized containers don't balloon; fillWidth still lets it use the space it gets.
+    Layout.preferredWidth: wrapMode === Text.NoWrap ? -1 : Math.min(implicitWidth, 300)
     id: root
     property bool animateChange: false
     property real animationDistanceX: 0

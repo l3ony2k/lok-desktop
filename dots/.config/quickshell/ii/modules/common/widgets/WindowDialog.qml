@@ -49,7 +49,9 @@ Rectangle {
         
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
-        implicitWidth: root.backgroundWidth
+        // At least backgroundWidth, wider when the content needs it (wider fonts, translations), never past the screen
+        implicitWidth: Math.min(root.width - 2 * Appearance.sizes.hyprlandGapsOut, Math.max(root.backgroundWidth, contentColumn.implicitWidth + dialogBackground.padding * 2))
+        clip: true
         property real padding: Appearance.lok ? Appearance.roundingSpace.large : dialogBackground.radius
         // Declarative so the dialog keeps following its content (wrapped or changing text) while open
         property real naturalHeight: contentColumn.implicitHeight + dialogBackground.padding * 2
