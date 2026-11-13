@@ -22,7 +22,7 @@ MouseArea {
     readonly property color colWarn: Appearance.m3colors.m3error
 
     TextMetrics { id: pctMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "100%" }
-    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "999.9 KB/s" }
+    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "999 KB/s" }
 
     component Label: StyledText {
         font.pixelSize: root.fontSize
@@ -46,7 +46,7 @@ MouseArea {
             text: Math.round(ResourceUsage.cpuUsage * 100) + "%"
             color: ResourceUsage.cpuUsage * 100 >= Config.options.bar.resources.cpuWarningThreshold ? root.colWarn : root.colValue
         }
-        Label { text: "↑"; Layout.leftMargin: 8 }
+        Label { text: "↑"; Layout.leftMargin: 8; Layout.rightMargin: -2 }
         Value {
             Layout.preferredWidth: rateMetrics.advanceWidth
             text: ResourceUsage.formatRate(ResourceUsage.netTxRate)
@@ -59,7 +59,7 @@ MouseArea {
             text: Math.round(ResourceUsage.memoryUsedPercentage * 100) + "%"
             color: ResourceUsage.memoryUsedPercentage * 100 >= Config.options.bar.resources.memoryWarningThreshold ? root.colWarn : root.colValue
         }
-        Label { text: "↓"; Layout.leftMargin: 8 }
+        Label { text: "↓"; Layout.leftMargin: 8; Layout.rightMargin: -2 }
         Value {
             Layout.preferredWidth: rateMetrics.advanceWidth
             text: ResourceUsage.formatRate(ResourceUsage.netRxRate)

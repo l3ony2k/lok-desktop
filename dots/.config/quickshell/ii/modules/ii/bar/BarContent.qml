@@ -119,6 +119,13 @@ Item { // Bar content region
                 }
             }
 
+            Media { // centerClock: right after the workspaces; appears/disappears at the end of the left group
+                visible: root.centerClock && root.useShortenedForm < 2 && !!MprisController.activePlayer
+                Layout.leftMargin: 16
+                Layout.maximumWidth: 260
+                Layout.alignment: Qt.AlignVCenter
+            }
+
             ActiveWindow {
                 Layout.leftMargin: 10 + (leftSidebarButton.visible ? 0 : Appearance.roundingSpace.screenRounding)
                 Layout.rightMargin: Appearance.roundingSpace.screenRounding
@@ -380,8 +387,7 @@ Item { // Bar content region
                 invertSide: Config?.options.bar.bottom
             }
 
-            // centerClock: status cluster, right-to-left. Media is the leftmost item, so it
-            // appearing/disappearing never moves anything else.
+            // centerClock: status cluster, right-to-left
             Loader {
                 active: root.centerClock && Config.options.bar.weather.enable
                 visible: active
@@ -401,12 +407,6 @@ Item { // Bar content region
             SystemMonitor {
                 visible: root.centerClock
                 Layout.leftMargin: 8
-                Layout.alignment: Qt.AlignVCenter
-            }
-            Media {
-                visible: root.centerClock && root.useShortenedForm < 2 && !!MprisController.activePlayer
-                Layout.leftMargin: 8
-                Layout.maximumWidth: 260
                 Layout.alignment: Qt.AlignVCenter
             }
 

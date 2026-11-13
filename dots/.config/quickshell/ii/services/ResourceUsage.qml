@@ -25,11 +25,12 @@ Singleton {
     property real netRxRate: 0
     property real netTxRate: 0
     property var previousNet
+    // KB/s at minimum, switching to MB/s, never more than three digits: 0-999 KB/s, 1.0-9.9 MB/s, 10-999 MB/s
     function formatRate(bytesPerSec) {
-        const units = ["B/s", "KB/s", "MB/s", "GB/s"];
-        let v = Math.max(0, bytesPerSec), i = 0;
-        while (v >= 1000 && i < units.length - 1) { v /= 1024; i++; }
-        return (i === 0 || v >= 100 ? Math.round(v).toString() : v.toFixed(1)) + " " + units[i];
+        const kb = Math.max(0, bytesPerSec) / 1024;
+        if (kb < 999.5) return Math.round(kb) + " KB/s";
+        const mb = kb / 1024;
+        return (mb < 9.95 ? mb.toFixed(1) : Math.round(mb).toString()) + " MB/s";
     }
     property var previousCpuStats
 

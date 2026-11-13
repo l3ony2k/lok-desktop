@@ -48,8 +48,8 @@ Item {
         spacing: 4
         anchors.fill: parent
 
-        MaterialSymbol { // lok: a plain glyph like the rest of the bar
-            visible: Appearance.lok
+        MaterialSymbol { // lok: no glyph; the two-line block reads as media on its own
+            visible: false
             Layout.alignment: Qt.AlignVCenter
             text: activePlayer?.isPlaying ? "pause" : "music_note"
             iconSize: Appearance.font.pixelSize.larger

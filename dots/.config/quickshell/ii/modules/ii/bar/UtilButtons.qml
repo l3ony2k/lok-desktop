@@ -1,4 +1,5 @@
 import qs
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -123,8 +124,10 @@ Item {
         }
 
         Loader {
-            active: Config.options.bar.utilButtons.showPerformanceProfileToggle
-            visible: Config.options.bar.utilButtons.showPerformanceProfileToggle
+            // lok merges the power mode into the battery item (when a battery exists)
+            readonly property bool merged: Appearance.lok && Battery.available
+            active: Config.options.bar.utilButtons.showPerformanceProfileToggle && !merged
+            visible: active
             sourceComponent: CircleUtilButton {
                 Layout.alignment: Qt.AlignVCenter
                 onClicked: event => {
