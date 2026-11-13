@@ -87,7 +87,7 @@ Scope { // Scope
                 RowLayout {
                     id: oskRowLayout
                     anchors.centerIn: parent
-                    spacing: 5
+                    spacing: Appearance.lok ? 10 : 5 // lok: divider sits mid-way, keys 10 from it and from the frame
                     VerticalButtonGroup {
                         OskControlButton { // Pin button
                             toggled: root.pinned

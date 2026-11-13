@@ -92,6 +92,7 @@ Item { // Bar content region
             side: "left"
             z: 10 // above the sidebar buttons (their hover fill is opaque in lok)
             anchors.left: parent.left
+            anchors.leftMargin: Appearance.lok ? 4 : 0 // lok: off the screen edge
             anchors.verticalCenter: parent.verticalCenter
         }
 
@@ -284,6 +285,7 @@ Item { // Bar content region
             side: "right"
             z: 10 // above the sidebar buttons (their hover fill is opaque in lok)
             anchors.right: parent.right
+            anchors.rightMargin: Appearance.lok ? 4 : 0 // lok: off the screen edge
             anchors.verticalCenter: parent.verticalCenter
         }
 
