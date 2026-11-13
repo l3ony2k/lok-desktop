@@ -36,11 +36,22 @@ Item { // Wrapper
         searchBar.animateWidth = false;
     }
 
+    // Query and results always travel together: a recent query comes back with its results
+    // (selected, so typing replaces it); an old one is dropped and the box starts empty.
+    property string keptText: ""
+    property real closedAt: 0
+    function rememberSearch(keep) {
+        root.keptText = keep ? searchBar.searchInput.text : "";
+        root.closedAt = Date.now();
+    }
+
     function cancelSearch() {
-        // Start every open from an empty box (shows the full app list on Super-tap)
-        // instead of keeping the last query selected
-        searchBar.searchInput.text = "";
-        LauncherSearch.query = "";
+        const keepMs = (Config.options.search.keepQuerySeconds ?? 300) * 1000;
+        const restore = root.keptText !== "" && (Date.now() - root.closedAt) < keepMs;
+        const text = restore ? root.keptText : "";
+        searchBar.searchInput.text = text;
+        LauncherSearch.query = text;
+        if (restore) searchBar.searchInput.selectAll();
         searchBar.animateWidth = true;
     }
 

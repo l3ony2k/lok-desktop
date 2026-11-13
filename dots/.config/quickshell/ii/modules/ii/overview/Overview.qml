@@ -45,6 +45,8 @@ Scope {
             target: GlobalStates
             function onOverviewOpenChanged() {
                 if (!GlobalStates.overviewOpen) {
+                    // Clipboard/emoji opens set a prefix themselves; don't carry that into the next Super-tap
+                    searchWidget.rememberSearch(!overviewScope.dontAutoCancelSearch);
                     searchWidget.disableExpandAnimation();
                     overviewScope.dontAutoCancelSearch = false;
                     overviewScope.showOverviewWidget = true;
