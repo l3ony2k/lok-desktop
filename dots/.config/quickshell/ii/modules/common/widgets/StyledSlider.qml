@@ -46,7 +46,8 @@ Slider {
     property real handleHeight: (configuration === StyledSlider.Configuration.Wavy) ? 24 : Math.max(33, trackWidth + 9)
     property real handleWidth: root.pressed ? handlePressedWidth : handleDefaultWidth
     property real handleMargins: Appearance.lok ? 2 : 4
-    property real dividerMargins: Appearance.lok ? 2 : 2 // lok keeps the gap: it marks where brightness hands over to gamma
+    // lok: the brightness/gamma boundary is a 1 device px slit, not a 4 px break
+    property real dividerMargins: Appearance.lok ? Appearance.sizes.hairline / 2 : 2
     property real trackDotSize: 3
     property bool usePercentTooltip: true
     property string tooltipContent: usePercentTooltip ? `${Math.round(((value - from) / (to - from)) * 100)}%` : `${Math.round(value)}`
@@ -56,8 +57,10 @@ Slider {
     property real waveFrequency: 6
     property real waveFps: 60
 
-    leftPadding: handleMargins
-    rightPadding: handleMargins
+    // lok: padding = half the handle, so at 0 / 100% the handle sits on the track edge and
+    // fill | 2 px | handle | 2 px | track holds at every value
+    leftPadding: Appearance.lok ? handleWidth / 2 : handleMargins
+    rightPadding: Appearance.lok ? handleWidth / 2 : handleMargins
     property real effectiveDraggingWidth: width - leftPadding - rightPadding
 
     Layout.fillWidth: true

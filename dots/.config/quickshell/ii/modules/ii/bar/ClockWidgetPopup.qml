@@ -60,6 +60,8 @@ StyledPopup {
             }
 
             StyledText {
+                // lok: under the labels, not under the icons
+                leftPadding: Appearance.lok ? Appearance.font.pixelSize.large + 8 : 0
                 horizontalAlignment: Text.AlignLeft
                 wrapMode: Text.Wrap
                 color: Appearance.colors.colOnSurfaceVariant

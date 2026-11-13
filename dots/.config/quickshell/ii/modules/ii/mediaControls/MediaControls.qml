@@ -153,7 +153,7 @@ Scope {
                     Layout.rightMargin: Appearance.sizes.hyprlandGapsOut
                     visible: root.meaningfulPlayers.length === 0
                     implicitWidth: placeholderBackground.implicitWidth + Appearance.sizes.elevationMargin
-                    implicitHeight: placeholderBackground.implicitHeight + Appearance.sizes.elevationMargin
+                    implicitHeight: placeholderBackground.implicitHeight + (Appearance.lok ? 2 * Appearance.sizes.popupGap : Appearance.sizes.elevationMargin)
 
                     StyledRectangularShadow {
                         target: placeholderBackground
@@ -162,9 +162,10 @@ Scope {
                     Rectangle {
                         id: placeholderBackground
                         anchors.centerIn: parent
-                        color: Appearance.colors.colLayer0
+                        color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colLayer0
                         radius: root.popupRounding
-                        property real padding: 20
+                        property real padding: Appearance.lok ? 12 : 20
+                        LokFrame { visible: Appearance.lok; z: 1 }
                         implicitWidth: placeholderLayout.implicitWidth + padding * 2
                         implicitHeight: placeholderLayout.implicitHeight + padding * 2
 

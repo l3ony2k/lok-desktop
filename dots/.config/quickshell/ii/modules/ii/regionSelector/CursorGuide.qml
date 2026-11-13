@@ -65,12 +65,15 @@ Item {
         implicitWidth: root.showDescription ? contentRow.implicitWidth + padding * 2 : implicitHeight
         clip: true
 
-        topLeftRadius: 6
-        bottomLeftRadius: implicitHeight - topLeftRadius
+        // lok: a framed floating surface (colAccent is the text colour in lok, which made
+        // this a blank white pill with white text on it)
+        topLeftRadius: Appearance.lok ? 0 : 6
+        bottomLeftRadius: Appearance.lok ? 0 : implicitHeight - topLeftRadius
         bottomRightRadius: bottomLeftRadius
         topRightRadius: bottomLeftRadius
 
-        color: Appearance.colors.colAccent
+        color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colAccent
+        LokFrame { visible: Appearance.lok; z: 1 }
 
         Behavior on topLeftRadius {
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)

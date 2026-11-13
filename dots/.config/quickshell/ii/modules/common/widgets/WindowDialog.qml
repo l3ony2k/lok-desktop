@@ -59,7 +59,8 @@ Rectangle {
         // Declarative so the dialog keeps following its content (wrapped or changing text) while open
         property real naturalHeight: contentColumn.implicitHeight + dialogBackground.padding * 2
         implicitHeight: root.show ? root.backgroundHeight : 0
-        border.width: Appearance.lok ? Appearance.sizes.hairline : 0
+        border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
+        LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
         border.color: Appearance.colors.colLokFrame
         Behavior on implicitHeight {
             NumberAnimation {

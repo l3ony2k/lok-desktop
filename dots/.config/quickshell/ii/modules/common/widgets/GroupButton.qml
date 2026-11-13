@@ -142,10 +142,12 @@ Button {
         readonly property bool lok: Appearance?.lok ?? false
         readonly property bool lokFrame: lok && (root.toggled
             || root.hovered || root.down || root.colBackground.a > 0.01)
-        border.width: root.tabbedTo ? 2 : (lokFrame ? Appearance.sizes.hairline : 0)
+        border.width: root.tabbedTo ? 2 : 0 // lok: LokFrame below (border drops sides at 1.333 scale)
+        LokFrame { visible: !root.tabbedTo && parent.lokFrame; z: 99; color: parent.border.color }
         border.color: root.tabbedTo ? Appearance.colors.colSecondary
             : (lok && root.toggled) ? Appearance.colors.colSelectedEdge
-            : (root.hovered || root.down) ? Appearance.colors.colOutline : Appearance.colors.colOutlineVariant
+            : (root.hovered || root.down) ? (lok ? Appearance.colors.colLokFrame : Appearance.colors.colOutline)
+            : (lok ? Appearance.colors.colLokDivider : Appearance.colors.colOutlineVariant)
 
         Rectangle {
             visible: parent.lok && root.toggled && root.lokStatusStrip

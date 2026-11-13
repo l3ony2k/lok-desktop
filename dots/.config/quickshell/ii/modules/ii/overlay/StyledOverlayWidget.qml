@@ -202,7 +202,8 @@ AbstractOverlayWidget {
         color: ColorUtils.transparentize(Appearance.colors.colLayer1Base, (root.fancyBorders && GlobalStates.overlayOpen) ? 0 : 1)
         radius: root.radius
         border.color: ColorUtils.transparentize(Appearance.colors.colOutlineVariant, GlobalStates.overlayOpen ? 0 : 1)
-        border.width: Appearance.sizes.hairline
+        border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
+        LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
 
         layer.enabled: GlobalStates.overlayOpen
         layer.effect: OpacityMask {

@@ -19,8 +19,11 @@ Singleton {
     // lok style (Config.options.appearance.style === "lok"): flat greyscale, square corners,
     // hairline borders, no overshoot. "material" keeps every end-4 default below.
     readonly property bool lok: Config.options?.appearance?.style === "lok"
-    // physical/logical pixel ratio (1.333 here); lok hairlines are exactly 1 device px
-    readonly property real dpr: Quickshell.screens.length > 0 ? Quickshell.screens[0].devicePixelRatio : 1
+    // physical/logical pixel ratio; lok hairlines are exactly 1 device px.
+    // QScreen reports the rounded integer output scale (2), while windows render at the
+    // real fractional scale (1.333), so the bar publishes its window's ratio here.
+    property real windowDpr: 0
+    readonly property real dpr: windowDpr > 0 ? windowDpr : 1
 
     // Transparency. The quadratic functions were derived from analysis of hand-picked transparency values.
     ColorQuantizer {
@@ -132,6 +135,10 @@ Singleton {
         // Light mode floats near-white over the grey base; in-panel groups still step darker.
         property color colLokDialog: m3colors.darkmode ? "#272727" : "#fbfbfb"
         property color colLokDivider: m3colors.darkmode ? "#3d3d3d" : "#bdbdbd"
+        // lok: icons/text drawn on top of a meter fill (#a6a6a6 dark / #5c5c5c light)
+        property color colOnMeterFill: m3colors.darkmode ? "#121212" : "#fbfbfb"
+        // lok: one muted grey for de-emphasised items (outside-month days etc), ~3:1
+        property color colLokMuted: m3colors.darkmode ? "#6a6a6a" : "#8f8f8f"
         property color colLayer0Border: root.lok ? colors.colLokFrame : ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow
@@ -430,6 +437,8 @@ Singleton {
         property real barShortenScreenWidthThreshold: 1200 // Shorten if screen width is at most this value
         property real barHellaShortenScreenWidthThreshold: 1000 // Shorten even more...
         property real elevationMargin: 10
+        // lok: one distance between the bar and anything that pops out of it
+        property real popupGap: root.lok ? 8 : elevationMargin
         // a band exactly 1 device px wide always covers exactly one pixel row/column,
         // so lok frames render 1 px everywhere instead of 1 or 2 depending on position
         property real hairline: root.lok ? 1 / root.dpr : 1

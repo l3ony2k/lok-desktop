@@ -7,11 +7,13 @@ Row {
     id: root
     required property var icon
     required property var label
-    spacing: 5
+    spacing: Appearance.lok ? 8 : 5
 
     MaterialSymbol {
         anchors.verticalCenter: parent.verticalCenter
         fill: 0
+        width: Appearance.lok ? Appearance.font.pixelSize.large : implicitWidth
+        horizontalAlignment: Text.AlignHCenter
         font.weight: Font.DemiBold
         text: root.icon
         iconSize: Appearance.font.pixelSize.large

@@ -35,6 +35,13 @@ Item { // Bar content region
             target: barBackground
         }
     }
+    Binding { // publish the real (fractional) render scale for Appearance.sizes.hairline
+        target: Appearance
+        property: "windowDpr"
+        when: (root.QsWindow.window?.devicePixelRatio ?? 0) > 0
+        value: root.QsWindow.window?.devicePixelRatio ?? 1
+        restoreMode: Binding.RestoreNone
+    }
     // Background
     Rectangle {
         id: barBackground

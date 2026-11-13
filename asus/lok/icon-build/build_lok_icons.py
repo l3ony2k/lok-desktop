@@ -78,6 +78,13 @@ for _name, _keep in (("network_wifi_3_bar", 3), ("network_wifi_2_bar", 2),
     font["hmtx"][_g] = (_adv, (_glyph.xMin - _delta) if _keep else 0)
     pairs[_name] = _g
 
+# Drop Tabler's own private-use codepoints. Icons are reached by name only, and a
+# PUA cmap entry lets fontconfig fallback pick this font for unrelated Nerd Font
+# glyphs (seen while checking the cheatsheet Super keycap, U+F268).
+for _t in font["cmap"].tables:
+    for _cp in [c for c in _t.cmap if 0xE000 <= c <= 0xF8FF or c >= 0xF0000]:
+        del _t.cmap[_cp]
+
 # Blank zero-width glyphs for the characters names are spelled with.
 chars = sorted({c for n in pairs for c in n})
 glyf = font["glyf"]

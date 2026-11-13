@@ -24,7 +24,7 @@ RippleButton {
         font.weight: bold ? Font.DemiBold : Font.Normal
         color: (isToday == 1) ? Appearance.colors.colOnPrimary : 
             (isToday == 0) ? Appearance.colors.colOnLayer1 : 
-            Appearance.colors.colOutlineVariant
+            (Appearance.lok ? Appearance.colors.colLokMuted : Appearance.colors.colOutlineVariant)
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

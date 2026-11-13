@@ -160,7 +160,8 @@ RowLayout {
             anchors.fill: parent
             visible: Appearance.lok
             color: songRecButton.toggled ? Appearance.colors.colPrimary : songRecButton.hovered ? Appearance.colors.colLayer1Hover : "transparent"
-            border.width: songRecButton.toggled ? Appearance.sizes.hairline : 0
+            border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
+            LokFrame { visible: songRecButton.toggled; z: 99; color: parent.border.color }
             border.color: Appearance.colors.colSelectedEdge
           }
           MaterialShape {

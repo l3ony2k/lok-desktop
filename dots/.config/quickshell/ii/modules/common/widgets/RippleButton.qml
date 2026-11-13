@@ -145,7 +145,8 @@ Button {
         implicitHeight: 30
 
         color: root.buttonColor
-        border.width: root.borderWidth
+        border.width: (Appearance?.lok ?? false) ? 0 : root.borderWidth // lok: LokFrame below
+        LokFrame { visible: (Appearance?.lok ?? false) && root.borderWidth > 0; z: 99; color: root.borderColor }
         border.color: root.borderColor
         Behavior on color {
             animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this)

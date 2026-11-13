@@ -11,6 +11,7 @@ ColumnLayout {
 
     Layout.fillWidth: true
     Layout.topMargin: 4
+    Layout.alignment: Qt.AlignTop // side-by-side subsections share one title line
     spacing: 2
 
     RowLayout {

@@ -43,7 +43,9 @@ Rectangle {
             anchors.centerIn: parent
             font.family: Appearance.font.family.monospace
             font.pixelSize: root.pixelSize
-            text: key
+            // lok: the Super key is written out; the configured glyph (U+F268) is a
+            // Chrome logo in Nerd Fonts and the default (U+F05B3) a Windows logo
+            text: (Appearance.lok && (root.key === Config.options.cheatsheet.superKey || root.key === "\u{F05B3}")) ? "Super" : root.key
         }
     }
 }

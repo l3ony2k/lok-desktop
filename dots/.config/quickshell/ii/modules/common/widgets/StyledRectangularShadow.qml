@@ -22,7 +22,8 @@ RectangularShadow {
         visible: Appearance.lok
         anchors.fill: parent
         color: "transparent"
-        border.width: Appearance.sizes.hairline
+        border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
+        LokFrame { visible: true; z: 99; color: parent.border.color }
         border.color: Appearance.colors.colLayer0Border
     }
 }

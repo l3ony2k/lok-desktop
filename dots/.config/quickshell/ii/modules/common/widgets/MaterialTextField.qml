@@ -26,7 +26,8 @@ TextField {
     property Item lokBackground: Rectangle {
         implicitHeight: 40
         color: Appearance.colors.colLayer1
-        border.width: Appearance.sizes.hairline
+        border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
+        LokFrame { visible: true; z: 99; color: parent.border.color }
         border.color: root.activeFocus ? Appearance.colors.colSelectedEdge : Appearance.colors.colLokDivider
     }
     Binding on background {

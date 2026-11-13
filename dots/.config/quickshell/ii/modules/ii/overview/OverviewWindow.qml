@@ -107,7 +107,8 @@ Item { // Window
                 hovered ? ColorUtils.transparentize(Appearance.colors.colLayer2Hover, 0.7) : 
                 ColorUtils.transparentize(Appearance.colors.colLayer2)
             border.color : ColorUtils.transparentize(Appearance.m3colors.m3outline, 0.88)
-            border.width : Appearance.sizes.hairline
+            border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
+            LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
         }
 
         StyledImage {

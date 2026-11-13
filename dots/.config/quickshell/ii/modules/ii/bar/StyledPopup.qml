@@ -71,10 +71,10 @@ LazyLoader {
             readonly property real margin: 10
             anchors {
                 fill: parent
-                leftMargin: Appearance.sizes.elevationMargin + root.popupBackgroundMargin * (!popupWindow.anchors.left)
-                rightMargin: Appearance.sizes.elevationMargin + root.popupBackgroundMargin * (!popupWindow.anchors.right)
-                topMargin: Appearance.sizes.elevationMargin + root.popupBackgroundMargin * (!popupWindow.anchors.top)
-                bottomMargin: Appearance.sizes.elevationMargin + root.popupBackgroundMargin * (!popupWindow.anchors.bottom)
+                leftMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.left)
+                rightMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.right)
+                topMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.top)
+                bottomMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.bottom)
             }
             implicitWidth: root.contentItem.implicitWidth + margin * 2
             implicitHeight: root.contentItem.implicitHeight + margin * 2
@@ -82,7 +82,9 @@ LazyLoader {
             radius: Appearance.rounding.small
             children: [root.contentItem]
 
-            border.width: Appearance.sizes.hairline
+            border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
+
+            LokFrame { visible: Appearance.lok; z: 99; color: parent.border.color }
             border.color: Appearance.lok ? Appearance.colors.colLokFrame : Appearance.colors.colLayer0Border
         }
     }

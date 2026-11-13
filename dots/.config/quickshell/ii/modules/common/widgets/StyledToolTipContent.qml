@@ -28,7 +28,8 @@ Item {
         implicitWidth: shown ? (tooltipTextObject.implicitWidth + 2 * root.horizontalPadding) : 0
         implicitHeight: shown ? (tooltipTextObject.implicitHeight + 2 * root.verticalPadding) : 0
         clip: true
-        border.width: Appearance?.lok ? Appearance.sizes.hairline : 0
+        border.width: 0 // lok: LokFrame below (border drops sides at 1.333 scale)
+        LokFrame { visible: Appearance?.lok ?? false; z: 99; color: parent.border.color }
         border.color: Appearance?.colors.colLokFrame ?? "transparent"
 
         Behavior on implicitWidth {

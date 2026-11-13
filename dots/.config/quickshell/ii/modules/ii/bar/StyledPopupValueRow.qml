@@ -8,12 +8,14 @@ RowLayout {
     required property string icon
     required property string label
     required property string value
-    spacing: 4
+    spacing: Appearance.lok ? 8 : 4
 
     MaterialSymbol {
         text: root.icon
         color: Appearance.colors.colOnSurfaceVariant
         iconSize: Appearance.font.pixelSize.large
+        Layout.preferredWidth: Appearance.lok ? Appearance.font.pixelSize.large : implicitWidth
+        horizontalAlignment: Text.AlignHCenter
     }
     StyledText {
         text: root.label

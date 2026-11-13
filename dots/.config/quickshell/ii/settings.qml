@@ -18,6 +18,13 @@ import qs.modules.common.functions as CF
 
 ApplicationWindow {
     id: root
+    Binding { // separate process without the bar: publish this window's real scale
+        target: Appearance
+        property: "windowDpr"
+        when: root.devicePixelRatio > 0
+        value: root.devicePixelRatio
+        restoreMode: Binding.RestoreNone
+    }
     property string firstRunFilePath: CF.FileUtils.trimFileProtocol(`${Directories.state}/user/first_run.txt`)
     property string firstRunFileContent: "This file is just here to confirm you've been greeted :>"
     property real contentPadding: 8

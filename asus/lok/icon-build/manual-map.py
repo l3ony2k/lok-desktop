@@ -77,3 +77,11 @@ M = {
  "wb_twilight": "sunset", "weather_hail": "cloud-snow", "weather_mix": "cloud-rain", "widgets": "apps", "width": "arrows-horizontal",
  "wifi_find": "wifi", "work_alert": "briefcase", "workspaces": "layout-grid",
 }
+
+# audit 2026-11-13: same-name matches that read wrong in lok
+M.update({
+    "arrow_back": "arrow-left",        # Tabler arrow-back is a curved return arrow
+    "arrow_forward": "arrow-right",
+    "page_header": "app-window",       # Float bar; "toolbar" (Rect) keeps layout-navbar
+    "planner_review": "cpu",           # ii uses it as the CPU icon in Resources
+})
