@@ -236,7 +236,7 @@ Item { // Bar content region
                 }
 
                 UtilButtons {
-                    visible: (Config.options.bar.verbose && root.useShortenedForm === 0)
+                    visible: (Config.options.bar.verbose && root.useShortenedForm === 0) && hasContent
                     Layout.alignment: Qt.AlignVCenter
                 }
 
@@ -291,6 +291,8 @@ Item { // Bar content region
 
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 Layout.rightMargin: Appearance.lok ? 20 : Appearance.roundingSpace.screenRounding
+                // lok: cancel this button's 10 px side padding so tray -> Wi-Fi matches the other gaps
+                Layout.leftMargin: Appearance.lok ? -10 : 0
                 Layout.fillWidth: false
 
                 implicitWidth: indicatorsRowLayout.implicitWidth + 10 * 2
@@ -319,7 +321,7 @@ Item { // Bar content region
                 RowLayout {
                     id: indicatorsRowLayout
                     anchors.centerIn: parent
-                    property real realSpacing: 15
+                    property real realSpacing: Appearance.lok ? 13 : 15 // lok: same visual gap as the status cluster
                     spacing: 0
 
                     Revealer { // Keep awake (coffee): shown only while on
@@ -399,6 +401,7 @@ Item { // Bar content region
                 Layout.fillWidth: false
                 Layout.fillHeight: true
                 invertSide: Config?.options.bar.bottom
+                Layout.leftMargin: Appearance.lok && root.centerClock ? -2 : 0 // chevron button carries its own padding
             }
 
             // centerClock: status cluster, right-to-left
@@ -411,11 +414,11 @@ Item { // Bar content region
             }
             BatteryIndicator {
                 visible: root.centerClock && root.useShortenedForm < 2 && Battery.available
-                Layout.leftMargin: 8
+                Layout.leftMargin: Appearance.lok ? 5 : 8 // resource monitor keeps 4 px of its own padding
                 Layout.alignment: Qt.AlignVCenter
             }
             UtilButtons {
-                visible: root.centerClock && Config.options.bar.verbose && root.useShortenedForm === 0
+                visible: root.centerClock && Config.options.bar.verbose && root.useShortenedForm === 0 && hasContent
                 Layout.alignment: Qt.AlignVCenter
             }
             SystemMonitor {

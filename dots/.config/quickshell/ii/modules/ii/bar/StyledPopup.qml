@@ -34,19 +34,27 @@ LazyLoader {
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
         margins {
+            // Centred under the hovered item, but kept on screen: items near the
+            // screen edge (e.g. weather on the right) pushed the popup off-screen.
             left: {
-                if (!Config.options.bar.vertical) return root.QsWindow?.mapFromItem(
-                    root.hoverTarget, 
-                    (root.hoverTarget.width - popupBackground.implicitWidth) / 2, 0
-                ).x;
+                if (!Config.options.bar.vertical) {
+                    const x = root.QsWindow?.mapFromItem(
+                        root.hoverTarget,
+                        (root.hoverTarget.width - popupBackground.implicitWidth) / 2, 0
+                    ).x ?? 0;
+                    const screenW = popupWindow.screen?.width ?? (x + popupWindow.implicitWidth);
+                    return Math.max(0, Math.min(x, screenW - popupWindow.implicitWidth));
+                }
                 return Appearance.sizes.verticalBarWidth
             }
             top: {
                 if (!Config.options.bar.vertical) return Appearance.sizes.barHeight;
-                return root.QsWindow?.mapFromItem(
-                    root.hoverTarget, 
+                const y = root.QsWindow?.mapFromItem(
+                    root.hoverTarget,
                     (root.hoverTarget.height - popupBackground.implicitHeight) / 2, 0
-                ).y;
+                ).y ?? 0;
+                const screenH = popupWindow.screen?.height ?? (y + popupWindow.implicitHeight);
+                return Math.max(0, Math.min(y, screenH - popupWindow.implicitHeight));
             }
             right: Appearance.sizes.verticalBarWidth
             bottom: Appearance.sizes.barHeight

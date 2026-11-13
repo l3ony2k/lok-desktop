@@ -12,7 +12,9 @@ import Quickshell.Services.UPower
 Item {
     id: root
     property bool borderless: Config.options.bar.borderless
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
+    // all buttons can be switched off; an empty group must not keep its padding
+    readonly property bool hasContent: rowLayout.implicitWidth > 0
+    implicitWidth: hasContent ? rowLayout.implicitWidth + rowLayout.spacing * 2 : 0
     implicitHeight: rowLayout.implicitHeight
 
     RowLayout {
