@@ -27,6 +27,7 @@ Column {
         anchors {
             left: parent.left
             right: parent.right
+            leftMargin: Appearance.lok ? 6 : 0 // + caller 4 = 10 = back on the content edge (column bleeds -10)
         }
     }
     StyledSlider {
@@ -34,8 +35,8 @@ Column {
         anchors {
             left: parent.left
             right: parent.right
-            leftMargin: 4
-            rightMargin: 4
+            leftMargin: Appearance.lok ? 6 : 4
+            rightMargin: Appearance.lok ? 6 : 4
         }
         configuration: StyledSlider.Configuration.S
         onMoved: root.moved()

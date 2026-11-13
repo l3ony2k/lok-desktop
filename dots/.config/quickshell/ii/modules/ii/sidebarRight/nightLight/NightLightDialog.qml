@@ -35,6 +35,9 @@ WindowDialog {
         id: nightLightColumn
         Layout.topMargin: -16
         Layout.fillWidth: true
+        // lok: switch rows keep their 10 px hover padding outside the content edge
+        Layout.leftMargin: Appearance.lok ? -10 : 0
+        Layout.rightMargin: Appearance.lok ? -10 : 0
 
         ConfigSwitch {
             anchors {
@@ -95,6 +98,9 @@ WindowDialog {
         id: antiFlashbangColumn
         Layout.topMargin: -16
         Layout.fillWidth: true
+        // lok: switch rows keep their 10 px hover padding outside the content edge
+        Layout.leftMargin: Appearance.lok ? -10 : 0
+        Layout.rightMargin: Appearance.lok ? -10 : 0
 
         ConfigSwitch {
             anchors {
@@ -146,6 +152,9 @@ WindowDialog {
         id: brightnessColumn
         Layout.topMargin: -16
         Layout.fillWidth: true
+        // lok: switch rows keep their 10 px hover padding outside the content edge
+        Layout.leftMargin: Appearance.lok ? -10 : 0
+        Layout.rightMargin: Appearance.lok ? -10 : 0
 
         WindowDialogSlider {
             anchors {
@@ -173,6 +182,9 @@ WindowDialog {
         id: gammaColumn
         Layout.topMargin: -16
         Layout.fillWidth: true
+        // lok: switch rows keep their 10 px hover padding outside the content edge
+        Layout.leftMargin: Appearance.lok ? -10 : 0
+        Layout.rightMargin: Appearance.lok ? -10 : 0
         Layout.fillHeight: true
 
         WindowDialogSlider {
@@ -189,6 +201,9 @@ WindowDialog {
         }
     }
     
+    WindowDialogSeparator { // footer divider like the other dialogs
+        visible: Appearance.lok
+    }
     WindowDialogButtonRow {
         Layout.fillWidth: true
 

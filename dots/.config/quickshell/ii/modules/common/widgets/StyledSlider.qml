@@ -78,6 +78,7 @@ Slider {
     }
 
     component TrackDot: Rectangle {
+        visible: !Appearance.lok // lok: no Material stop dots
         required property real value
         property real normalizedValue: (value - root.from) / (root.to - root.from)
         anchors.verticalCenter: parent.verticalCenter

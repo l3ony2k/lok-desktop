@@ -12,6 +12,12 @@ RippleButton {
     Layout.fillWidth: true
     implicitHeight: contentItem.implicitHeight + 8 * 2
     font.pixelSize: Appearance.font.pixelSize.small
+    // lok: icon, label and switch sit on the content edges like every other dialog row;
+    // the 10 px padding (hover fill) bleeds outwards instead of indenting the content
+    Binding on leftPadding { when: Appearance.lok; value: 10 }
+    Binding on rightPadding { when: Appearance.lok; value: 10 }
+    Layout.leftMargin: Appearance.lok ? -10 : 0
+    Layout.rightMargin: Appearance.lok ? -10 : 0
     
     onClicked: checked = !checked
 
