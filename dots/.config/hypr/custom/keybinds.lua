@@ -84,6 +84,7 @@ hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee open")
 -- (Loses the dots' fuzzel fallback for when Quickshell is not running.)
 hl.unbind("SUPER + SUPER_L")
 hl.unbind("SUPER + SUPER_R")
+-- Release-only bind: Hyprland sends the shortcut a "released" event.
 hl.bind("SUPER + SUPER_L", hl.dsp.global("quickshell:searchOnlyToggle"),
     { release = true, description = "Shell: Toggle search" })
 hl.bind("SUPER + SUPER_R", hl.dsp.global("quickshell:searchOnlyToggle"), { release = true })

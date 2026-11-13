@@ -18,11 +18,12 @@ Item {
     property real valueIndicatorLeftPadding: 10
     property real valueIndicatorRightPadding: 20 // An icon is circle ish, a column isn't, hence the extra padding
 
-    implicitWidth: (Appearance.lok ? 300 : Appearance.sizes.osdWidth) + 2 * Appearance.sizes.elevationMargin
+    implicitWidth: (Appearance.lok ? 280 : Appearance.sizes.osdWidth) + 2 * Appearance.sizes.elevationMargin
     implicitHeight: valueIndicator.implicitHeight + 2 * Appearance.sizes.elevationMargin
 
     StyledRectangularShadow {
         target: valueIndicator
+        visible: !Appearance.lok // lok draws its own 1 px frame below
     }
     Rectangle {
         id: valueIndicator
@@ -34,15 +35,91 @@ Item {
         // lok: a raised surface with a visible frame so it stands off any window
         // lok: topmost surface. Dark mode lifts it to the brightest layer grey,
         // light mode to white; the outline comes from the shadow component.
-        color: !Appearance.lok ? Appearance.colors.colLayer0
-            : Appearance.m3colors.darkmode ? Appearance.m3colors.m3surfaceContainerHighest
-            : Appearance.m3colors.m3surfaceContainerLowest
+        // lok: same surface + frame as every other floating dialog
+        color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colLayer0
+        border.width: Appearance.lok ? 1 : 0
+        border.color: Appearance.colors.colLokFrame
 
-        implicitWidth: valueRow.implicitWidth
-        implicitHeight: valueRow.implicitHeight
+        implicitWidth: Appearance.lok ? lokRow.implicitWidth + 2 * lokRow.anchors.margins : valueRow.implicitWidth
+        implicitHeight: Appearance.lok ? lokRow.implicitHeight + 2 * lokRow.anchors.margins : valueRow.implicitHeight
+
+        // lok: one row -- icon | slider-styled bar | value. The bar uses the
+        // sidebar slider's pieces: fill, 2 px handle, track, 2 px gaps between.
+        RowLayout {
+            id: lokRow
+            visible: Appearance.lok
+            anchors {
+                fill: parent
+                margins: Appearance.roundingSpace.normal
+            }
+            spacing: Appearance.roundingSpace.normal
+
+            MaterialSymbol {
+                Layout.alignment: Qt.AlignVCenter
+                text: root.icon
+                iconSize: 18
+                color: Appearance.colors.colOnLayer0
+            }
+
+            Item {
+                id: lokBar
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                implicitHeight: 24
+                readonly property real frac: Math.max(0, Math.min(1,
+                    (root.value - root.from) / Math.max(0.0001, root.to - root.from)))
+                property real shownFrac: frac
+                Behavior on shownFrac {
+                    animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
+                }
+                readonly property real trackHeight: 18
+                readonly property real gap: 2
+                readonly property real handleWidth: 2
+                readonly property real handleX: shownFrac * (width - handleWidth)
+
+                Rectangle { // filled part
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: 0
+                    width: Math.max(0, lokBar.handleX - lokBar.gap)
+                    height: lokBar.trackHeight
+                    color: root.value > root.to ? Appearance.colors.colError : Appearance.colors.colMeterFill
+                }
+                Rectangle { // remaining track
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: lokBar.handleX + lokBar.handleWidth + lokBar.gap
+                    width: Math.max(0, lokBar.width - x)
+                    height: lokBar.trackHeight
+                    color: Appearance.colors.colSecondaryContainer
+                }
+                Rectangle { // handle
+                    x: lokBar.handleX
+                    width: lokBar.handleWidth
+                    height: parent.height
+                    color: Appearance.colors.colAccent
+                }
+            }
+
+            StyledText {
+                id: lokValue
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: lokValueMetrics.width
+                horizontalAlignment: Text.AlignRight
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: Appearance.colors.colOnLayer0
+                text: Math.round(root.value * 100) + "%"
+            }
+            TextMetrics {
+                id: lokValueMetrics
+                font.family: lokValue.font.family
+                font.pixelSize: lokValue.font.pixelSize
+                font.weight: lokValue.font.weight
+                text: "100%"
+            }
+        }
 
         RowLayout { // Icon on the left, stuff on the right
             id: valueRow
+            visible: !Appearance.lok
             Layout.margins: 10
             anchors.fill: parent
             spacing: 10

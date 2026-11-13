@@ -172,7 +172,10 @@ Scope {
         name: "searchOnlyToggle"
         description: "Toggles the search box (no workspace overview) on press"
 
-        onPressed: {
+        // custom/keybinds.lua binds this on Super *release* only (same trigger as
+        // the dots' `qs ipc call search toggle` bind it replaces). Hyprland
+        // delivers a release bind as a "released" event, so act there.
+        onReleased: {
             if (GlobalStates.overviewOpen) {
                 GlobalStates.overviewOpen = false;
             } else {
