@@ -170,7 +170,22 @@ Singleton {
         return AppSearch.list.slice().sort((a, b) => {
             const d = LauncherFrequency.score(b.id) - LauncherFrequency.score(a.id);
             return d !== 0 ? d : a.name.localeCompare(b.name);
-        }).map(entry => root.appResult(entry));
+        }).map(entry => root.cachedAppResult(entry));
+    }
+
+    // One result object per desktop entry, reused across opens and keystrokes. Building
+    // ~200 results (plus their actions) on every Super-tap was what made the open stutter.
+    property var appResultCache: new Map()
+    Connections {
+        target: AppSearch
+        function onListChanged() { root.appResultCache = new Map(); }
+    }
+    function cachedAppResult(entry) {
+        const hit = root.appResultCache.get(entry.id);
+        if (hit && hit.entry === entry) return hit.result;
+        const result = root.appResult(entry);
+        root.appResultCache.set(entry.id, { entry: entry, result: result });
+        return result;
     }
 
     function appResult(entry) {
@@ -287,7 +302,7 @@ Singleton {
                 Quickshell.clipboardText = root.mathResult;
             }
         });
-        const appResultObjects = AppSearch.fuzzyQuery(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.app)).map(entry => root.appResult(entry));
+        const appResultObjects = AppSearch.fuzzyQuery(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.app)).map(entry => root.cachedAppResult(entry));
         const commandResultObject = resultComp.createObject(null, {
             name: StringUtils.cleanPrefix(root.query, Config.options.search.prefix.shellCommand).replace("file://", ""),
             verb: Translation.tr("Run"),

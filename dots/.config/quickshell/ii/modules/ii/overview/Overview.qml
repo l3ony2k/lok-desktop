@@ -166,6 +166,22 @@ Scope {
     }
 
     GlobalShortcut {
+        // Super-tap: search box only. Bound via hl.dsp.global so the key goes straight
+        // into this process; `qs ipc call` spawned a whole Quickshell client per tap
+        // (~130 ms warm, close to 1 s cold).
+        name: "searchOnlyToggle"
+        description: "Toggles the search box (no workspace overview) on press"
+
+        onPressed: {
+            if (GlobalStates.overviewOpen) {
+                GlobalStates.overviewOpen = false;
+            } else {
+                overviewScope.showOverviewWidget = false;
+                GlobalStates.overviewOpen = true;
+            }
+        }
+    }
+    GlobalShortcut {
         name: "searchToggle"
         description: "Toggles search on press"
 

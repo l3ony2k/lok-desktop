@@ -76,3 +76,14 @@ hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee close")
     { locked = true, description = "Lid closed: lock + panel off when coffee is on" })
 hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee open"),
     { locked = true, description = "Lid opened: panel on" })
+
+--##! Super-tap search without spawning a process (2026-11-13)
+-- The dots bind Super-tap to `qs -c ii ipc call search toggle`, which starts a
+-- full Quickshell client on every tap (~130 ms warm, up to ~1 s cold) before
+-- the search box can open. Send it straight to the running shell instead.
+-- (Loses the dots' fuzzel fallback for when Quickshell is not running.)
+hl.unbind("SUPER + SUPER_L")
+hl.unbind("SUPER + SUPER_R")
+hl.bind("SUPER + SUPER_L", hl.dsp.global("quickshell:searchOnlyToggle"),
+    { release = true, description = "Shell: Toggle search" })
+hl.bind("SUPER + SUPER_R", hl.dsp.global("quickshell:searchOnlyToggle"), { release = true })
