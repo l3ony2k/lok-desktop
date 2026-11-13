@@ -228,6 +228,8 @@ Singleton {
             }
 
             property JsonObject bar: JsonObject {
+                property bool centerClock: false // Clock in the centre; workspaces move to the top-left, weather next to the clock
+                property bool showActiveWindow: true // Active window title on the left
                 property JsonObject autoHide: JsonObject {
                     property bool enable: false
                     property int hoverRegionWidth: 2

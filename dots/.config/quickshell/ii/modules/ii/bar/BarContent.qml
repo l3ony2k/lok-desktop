@@ -15,6 +15,7 @@ Item { // Bar content region
     property var screen: root.QsWindow.window?.screen
     property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
     property real useShortenedForm: (Appearance.sizes.barHellaShortenScreenWidthThreshold >= screen?.width) ? 2 : (Appearance.sizes.barShortenScreenWidthThreshold >= screen?.width) ? 1 : 0
+    readonly property bool centerClock: Config.options.bar.centerClock ?? false
     readonly property int centerSideModuleWidth: (useShortenedForm == 2) ? Appearance.sizes.barCenterSideModuleWidthHellaShortened : (useShortenedForm == 1) ? Appearance.sizes.barCenterSideModuleWidthShortened : Appearance.sizes.barCenterSideModuleWidth
 
     component VerticalBarSeparator: Rectangle {
@@ -90,13 +91,34 @@ Item { // Bar content region
                 colBackground: barLeftSideMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
             }
 
+            Loader { // Workspaces in the top-left (centerClock layout)
+                active: root.centerClock
+                visible: active
+                Layout.alignment: Qt.AlignVCenter
+                Layout.leftMargin: leftSidebarButton.visible ? 8 : (Appearance.lok ? 20 : Appearance.roundingSpace.screenRounding)
+                sourceComponent: BarGroup {
+                    padding: leftWorkspaces.widgetPadding
+                    Workspaces {
+                        id: leftWorkspaces
+                        Layout.fillHeight: true
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.RightButton
+                            onPressed: GlobalStates.overviewOpen = !GlobalStates.overviewOpen
+                        }
+                    }
+                }
+            }
+
             ActiveWindow {
                 Layout.leftMargin: 10 + (leftSidebarButton.visible ? 0 : Appearance.roundingSpace.screenRounding)
                 Layout.rightMargin: Appearance.roundingSpace.screenRounding
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                visible: root.useShortenedForm === 0
+                visible: root.useShortenedForm === 0 && (Config.options.bar.showActiveWindow ?? true)
             }
+
+            Item { Layout.fillWidth: true } // keeps the left content packed left when the title is off
         }
     }
 
@@ -106,6 +128,8 @@ Item { // Bar content region
             top: parent.top
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
+            // centerClock: put the clock itself on the screen's centre line, whatever the side groups' widths
+            horizontalCenterOffset: root.centerClock ? (middleSection.width / 2 - (centerClockArea.x + centerClockArea.width / 2)) : 0
         }
         spacing: 4
 
@@ -129,8 +153,26 @@ Item { // Bar content region
             visible: Config.options?.bar.borderless
         }
 
+        MouseArea { // Centred clock (centerClock layout)
+            id: centerClockArea
+            visible: root.centerClock
+            anchors.verticalCenter: parent.verticalCenter
+            implicitWidth: centerClockGroup.implicitWidth
+            implicitHeight: centerClockGroup.implicitHeight
+            onPressed: GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen
+            BarGroup {
+                id: centerClockGroup
+                anchors.fill: parent
+                ClockWidget {
+                    showDate: (Config.options.bar.verbose && root.useShortenedForm < 2)
+                    Layout.alignment: Qt.AlignVCenter
+                }
+            }
+        }
+
         BarGroup {
             id: middleCenterGroup
+            visible: !root.centerClock
             anchors.verticalCenter: parent.verticalCenter
             padding: workspacesWidget.widgetPadding
 
@@ -170,6 +212,7 @@ Item { // Bar content region
                 anchors.fill: parent
 
                 ClockWidget {
+                    visible: !root.centerClock
                     showDate: (Config.options.bar.verbose && root.useShortenedForm < 2)
                     Layout.alignment: Qt.AlignVCenter
                     Layout.fillWidth: true
@@ -184,6 +227,15 @@ Item { // Bar content region
                     visible: (root.useShortenedForm < 2 && Battery.available)
                     Layout.alignment: Qt.AlignVCenter
                 }
+
+                Loader { // Weather next to the clock (centerClock layout)
+                    active: root.centerClock && Config.options.bar.weather.enable
+                    visible: active
+                    Layout.alignment: Qt.AlignVCenter
+                    sourceComponent: WeatherBar {}
+                }
+
+                Item { visible: root.centerClock; Layout.fillWidth: true } // keep the group packed toward the clock
             }
         }
     }
@@ -334,7 +386,7 @@ Item { // Bar content region
             // Weather
             Loader {
                 Layout.leftMargin: 4
-                active: Config.options.bar.weather.enable
+                active: Config.options.bar.weather.enable && !root.centerClock
 
                 sourceComponent: BarGroup {
                     WeatherBar {}
