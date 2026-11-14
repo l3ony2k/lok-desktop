@@ -1,0 +1,16 @@
+[package]
+name = "rust-fp-fprintd"
+version = "0.1.0"
+edition = "2021"
+description = "fprintd-compatible D-Bus shim (net.reactivated.Fprint) on top of rust-fp, for hyprlock"
+
+[dependencies]
+async-std = { version = "1.12.0", features = ["attributes"] }
+libc = "0.2"
+log = "0.4.21"
+postcard = { version = "1.0.8", default-features = false, features = ["alloc"] }
+rmp-serde = "1.3.0"
+rust-fp = { path = "../rust-fp", features = ["serde"] }
+rust-fp-common = { path = "../common" }
+simple_logger = "5.0.0"
+zbus = "4.3.1"

@@ -5,4 +5,4 @@
 
 - `material-shapes-lok-square.patch`: adds `getLokSquare()`, used by MaterialShape
   in lok style. Re-apply after a dots update that resets the submodule:
-  `patch -p1 -d dots/.config/quickshell/ii/modules/common/widgets/shapes < asus/patches/material-shapes-lok-square.patch`
+  `patch -p1 -d dots/.config/quickshell/ii/modules/common/widgets/shapes < asus/lok/patches/material-shapes-lok-square.patch`

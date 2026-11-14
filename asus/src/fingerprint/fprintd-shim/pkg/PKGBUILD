@@ -1,0 +1,22 @@
+# fprintd-compatible D-Bus shim over rust-fp, so hyprlock's native fingerprint
+# auth (auth:fingerprint) works with the ChromeOS FPMCU. Separate from
+# rust-fp-cros-local on purpose: removing this package fully reverts it.
+# Source: ~/Projects/rust-fp-sandbox/src/fprintd-shim. See asus-arch-ops 2026-11-12.
+pkgname=rust-fp-fprintd-local
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="net.reactivated.Fprint (fprintd API subset) backed by rust-fp, for hyprlock"
+arch=('x86_64')
+license=('custom:unknown')
+depends=('rust-fp-cros' 'dbus' 'systemd')
+conflicts=('fprintd')
+source=()
+_sb=/home/leon/Projects/rust-fp-sandbox
+_files=$_sb/pkg-fprintd/files
+
+package() {
+  install -Dm755 "$_sb/src/target/release/rust-fp-fprintd" "$pkgdir/usr/bin/rust-fp-fprintd"
+  install -Dm644 "$_files/net.reactivated.Fprint.conf"    "$pkgdir/usr/share/dbus-1/system.d/net.reactivated.Fprint.conf"
+  install -Dm644 "$_files/net.reactivated.Fprint.service" "$pkgdir/usr/share/dbus-1/system-services/net.reactivated.Fprint.service"
+  install -Dm644 "$_files/rust-fp-fprintd.service"        "$pkgdir/usr/lib/systemd/system/rust-fp-fprintd.service"
+}

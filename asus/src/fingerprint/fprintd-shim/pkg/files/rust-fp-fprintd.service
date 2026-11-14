@@ -1,0 +1,21 @@
+[Unit]
+Description=fprintd-compatible D-Bus shim over rust-fp (net.reactivated.Fprint)
+Wants=rust-fp-dbus-interface.service
+After=rust-fp-dbus-interface.service
+
+[Service]
+Type=dbus
+BusName=net.reactivated.Fprint
+ExecStart=/usr/bin/rust-fp-fprintd
+Restart=on-failure
+RestartSec=2
+# Needs: system bus, read access to ~/.var/cros-fp-templates. Nothing else.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
