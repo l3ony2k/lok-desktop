@@ -19,7 +19,7 @@ ListView {
 
     orientation: ListView.Horizontal
     clip: true
-    spacing: 2
+    spacing: Appearance.lok ? Math.round(2 * Appearance.dpr) / Appearance.dpr : 2
 
     model: breadcrumbDirectory.split("/")
     delegate: SelectionGroupButton {
@@ -32,6 +32,7 @@ ListView {
             return index === directory.split("/").length - 1
         }
         height: Appearance.lok ? Math.floor(root.height * Appearance.dpr) / Appearance.dpr : implicitHeight
+        width: Appearance.lok ? Math.ceil(implicitWidth * Appearance.dpr) / Appearance.dpr : implicitWidth
         leftmost: index === 0
         rightmost: index === breadcrumbDirectory.split("/").length - 1
 

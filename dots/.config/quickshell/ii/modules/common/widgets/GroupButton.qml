@@ -52,7 +52,7 @@ Button {
     property real rightRadius: lokSquare ? 0 : root.down ? root.buttonRadiusPressed : root.buttonRadius
     property color color: root.enabled ? (root.toggled ? 
         (root.down ? colBackgroundToggledActive : 
-            root.hovered ? colBackgroundToggledHover : 
+            root.hovered ? ((Appearance?.lok ?? false) ? ColorUtils.mix(colBackgroundToggled, Appearance.m3colors.m3onSurface, 0.92) : colBackgroundToggledHover) : // lok: selection wins over hover
             colBackgroundToggled) :
         (root.down ? colBackgroundActive : 
             root.hovered ? colBackgroundHover : 

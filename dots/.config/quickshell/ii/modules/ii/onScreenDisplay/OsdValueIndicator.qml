@@ -30,6 +30,7 @@ Item {
         anchors {
             fill: parent
             margins: Appearance.sizes.elevationMargin
+            topMargin: Appearance.lok ? Appearance.sizes.popupGap : Appearance.sizes.elevationMargin // lok: same gap as other popups
         }
         radius: Appearance.rounding.full
         // lok: a raised surface with a visible frame so it stands off any window

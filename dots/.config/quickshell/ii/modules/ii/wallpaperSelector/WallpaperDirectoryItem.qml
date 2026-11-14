@@ -22,6 +22,7 @@ MouseArea {
 
     // lok: focus/hover gets the shared selection frame; the current wallpaper only a raised fill
     property bool lokSelected: false
+    property bool lokCurrent: false
 
     signal activated()
 
@@ -32,7 +33,7 @@ MouseArea {
         id: background
         anchors.fill: parent
         radius: Appearance.rounding.normal
-        LokFrame { visible: Appearance.lok && root.lokSelected; z: 99; color: Appearance.colors.colSelectedEdge }
+        LokFrame { visible: Appearance.lok && (root.lokSelected || root.lokCurrent); z: 99; color: Appearance.colors.colSelectedEdge }
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }

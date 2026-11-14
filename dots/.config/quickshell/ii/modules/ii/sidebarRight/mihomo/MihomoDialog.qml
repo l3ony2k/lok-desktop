@@ -145,6 +145,7 @@ WindowDialog {
                 DialogButton {
                     required property var modelData
                     Layout.fillWidth: true
+                    Layout.preferredWidth: 1 // equal segments
                     buttonText: modelData[1]
                     enabled: Mihomo.active
                     colBackground: Mihomo.mode === modelData[0]

@@ -22,7 +22,7 @@ RippleButton {
         : button.keyboardDown ? Appearance.colors.colSecondaryContainerActive :
         button.focus ? Appearance.colors.colPrimary :
         Appearance.colors.colSecondaryContainer
-    colBackgroundHover: Appearance.lok ? (button.focus ? Appearance.colors.colPrimaryHover : Appearance.colors.colLayer3) : Appearance.colors.colPrimary
+    colBackgroundHover: Appearance.lok ? (button.focus ? Appearance.colors.colPrimaryHover : Appearance.colors.colLokDialogHover) : Appearance.colors.colPrimary
     colRipple: Appearance.colors.colPrimaryActive
     property color colText: Appearance.lok ? ((button.lokSelected || button.hovered) ? Appearance.colors.colOnLayer0 : Appearance.colors.colSubtext)
         : (button.down || button.keyboardDown || button.focus || button.hovered) ?

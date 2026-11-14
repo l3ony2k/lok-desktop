@@ -93,6 +93,11 @@ ComboBox {
         required property var model
         required property int index
         property color color: {
+            if (Appearance.lok) { // lok: selected = raised fill + edge; hover = one step; selection wins
+                if (root.currentIndex === itemDelegate.index) return itemDelegate.hovered ? Appearance.colors.colPrimaryHover : Appearance.colors.colPrimary;
+                if (itemDelegate.down) return Appearance.colors.colLayer3Active;
+                return itemDelegate.hovered ? Appearance.colors.colLokDialogHover : "transparent";
+            }
             if (root.currentIndex === itemDelegate.index) {
                 if (itemDelegate.down) return Appearance.colors.colSecondaryContainerActive;
                 if (itemDelegate.hovered) return Appearance.colors.colSecondaryContainerHover;
@@ -103,12 +108,13 @@ ComboBox {
                 return ColorUtils.transparentize(Appearance.colors.colLayer3);
             }
         }
-        property color colText: (root.currentIndex === itemDelegate.index) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer3
+        property color colText: Appearance.lok ? Appearance.colors.colOnLayer0 : (root.currentIndex === itemDelegate.index) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer3
 
         background: Rectangle {
             anchors.fill: parent
-            radius: Appearance.rounding.small
+            radius: Appearance.lok ? 0 : Appearance.rounding.small
             color: itemDelegate.color
+            LokFrame { visible: Appearance.lok && root.currentIndex === itemDelegate.index; z: 99; color: Appearance.colors.colSelectedEdge }
 
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

@@ -38,7 +38,8 @@ Button {
     property color buttonColor: ColorUtils.transparentize(
         ((Appearance?.lok ?? false) && root.down) ? root.rippleColor :
         root.toggled ? 
-        (root.hovered ? colBackgroundToggledHover : 
+        // lok: selection wins over hover -- hovering a selected button keeps its selected fill, one step lighter
+        (root.hovered ? ((Appearance?.lok ?? false) ? ColorUtils.mix(colBackgroundToggled, Appearance.m3colors.m3onSurface, 0.92) : colBackgroundToggledHover) : 
             colBackgroundToggled) :
         (root.hovered ? colBackgroundHover : 
             colBackground), root.enabled ? 0 : 1)

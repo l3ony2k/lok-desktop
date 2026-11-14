@@ -53,7 +53,7 @@ TabButton {
             implicitWidth: root.visualWidth
             radius: Appearance.rounding.full
             color: Appearance.lok ? (toggled && root.showToggledHighlight ? Appearance.colors.colPrimary
-                    : (root.down || root.hovered) ? Appearance.colors.colLayer2 : "transparent")
+                    : ((root.down || root.hovered) && !root.toggled) ? Appearance.colors.colLayer2 : "transparent") // lok: selection wins over hover (the rail indicator shows through)
                 : toggled ? 
                 root.showToggledHighlight ?
                     (root.down ? Appearance.colors.colSecondaryContainerActive : root.hovered ? Appearance.colors.colSecondaryContainerHover : Appearance.colors.colSecondaryContainer)

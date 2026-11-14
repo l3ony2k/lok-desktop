@@ -55,7 +55,7 @@ RippleButton {
         (selected ? Appearance.colors.colPrimaryContainer : 
         ColorUtils.transparentize(Appearance.colors.colPrimaryContainer, 1))
     // lok: hover is one step up from the panel surface, below the keyboard-current fill
-    colBackgroundHover: Appearance.lok ? (root.focus ? root.colBackground : Appearance.colors.colLayer3) : Appearance.colors.colPrimaryContainer
+    colBackgroundHover: Appearance.lok ? (root.focus ? root.colBackground : Appearance.colors.colLokDialogHover) : Appearance.colors.colPrimaryContainer
     colRipple: Appearance.colors.colPrimaryContainerActive
     property color colForeground: selected ? Appearance.colors.colOnPrimaryContainer : Appearance.m3colors.m3onSurface
 

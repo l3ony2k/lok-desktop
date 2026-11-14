@@ -22,8 +22,10 @@ Rectangle {
     z: 2
     color: fillColor
     border.color: borderColor
-    border.width: targeted ? 4 : 2
-    radius: 4
+    border.width: Appearance.lok ? 0 : (targeted ? 4 : 2)
+    radius: Appearance.lok ? 0 : 4
+    // lok: hairline outline; the targeted window gets the selected edge
+    LokFrame { visible: Appearance.lok; z: 99; color: root.targeted ? Appearance.colors.colSelectedEdge : Appearance.colors.colLokFrame }
 
     Behavior on color {
         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

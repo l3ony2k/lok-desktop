@@ -18,16 +18,17 @@ AbstractQuickPanel {
     Behavior on implicitHeight {
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
     }
-    property real spacing: Appearance.lok ? 8 : 6
+    // lok: spacing and cells in whole device pixels (scale 1.333), so every gap renders the same
+    property real spacing: Appearance.lok ? 9 : 6 // lok: 9 logical = 12 device px at 1.333
     property real padding: Appearance.lok ? 8 : 6
     readonly property real baseCellWidth: {
         // This is the wrong calculation, but it looks correct in reality???
         // (theoretically spacing should be multiplied by 1 column less)
         // The panel is one spacing wider than its visible card, so subtracting `columns` spacings is the exact grid
         const availableWidth = root.width - (root.padding * 2) - (root.spacing * (root.columns))
-        return availableWidth / root.columns
+        return Appearance.lok ? Math.floor(availableWidth / root.columns / 3) * 3 : availableWidth / root.columns
     }
-    readonly property real baseCellHeight: 56
+    readonly property real baseCellHeight: Appearance.lok ? 57 : 56
 
     // Toggles
     readonly property list<string> availableToggleTypes: ["network", "bluetooth", "camera", "idleInhibitor", "easyEffects", "nightLight", "darkMode", "mihomo", "tailscale", "sshLan", "batteryLimit", "gameMode", "screenSnip", "colorPicker", "onScreenKeyboard", "mic", "audio", "notifications", "powerProfile","musicRecognition", "antiFlashbang"]
@@ -71,6 +72,8 @@ AbstractQuickPanel {
         Column {
             id: usedRows
             spacing: root.spacing
+            // lok: centre the grid; offset in whole device pixels
+            x: Appearance.lok ? Math.round((contentItem.width - (root.baseCellWidth * root.columns + root.spacing * (root.columns - 1))) / 2 * Appearance.dpr) / Appearance.dpr : 0
 
             Repeater {
                 id: usedRowsRepeater

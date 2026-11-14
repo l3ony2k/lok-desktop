@@ -18,12 +18,16 @@ Rectangle {
 
     property real contentWidth: {
         let total = 0;
+        let count = 0;
         for (let i = 0; i < rowLayout.children.length; ++i) {
             const child = rowLayout.children[i];
             if (!child.visible) continue;
-            total += child.baseWidth ?? child.implicitWidth ?? child.width;
+            const w = child.baseWidth ?? child.implicitWidth ?? child.width;
+            total += w;
+            if (w > 0) count++;
         }
-        return total + rowLayout.spacing * (rowLayout.children.length - 1);
+        // lok: spacing only between real items (a Repeater child added a phantom gap that the layout spread out)
+        return total + rowLayout.spacing * ((Appearance?.lok ?? false) ? Math.max(0, count - 1) : (rowLayout.children.length - 1));
     }
 
     topLeftRadius: Appearance.lok ? 0 : rowLayout.children.length > 0 ? (rowLayout.children[0].radius + padding) : 
