@@ -23,7 +23,8 @@ import qs.modules.ii.sidebarRight.wifiNetworks
 Item {
     id: root
     property int sidebarWidth: Appearance.sizes.sidebarWidth
-    property int sidebarPadding: 10
+    // lok: 9 logical = 12 device px at 1.333, so every inset and gap between cards is a whole pixel (same on both sidebars)
+    property int sidebarPadding: Appearance.lok ? 9 : 10
     property string settingsQmlPath: Quickshell.shellPath("settings.qml")
     property bool showAudioOutputDialog: false
     property bool showAudioInputDialog: false
@@ -254,7 +255,7 @@ Item {
                 bottom: parent.bottom
                 left: parent.left
             }
-            color: Appearance.colors.colLayer1
+            color: Appearance.lok ? "transparent" : Appearance.colors.colLayer1 // lok: on the panel, no pill
             radius: Appearance.lok ? 0 : height / 2
             implicitWidth: uptimeRow.implicitWidth + 24
             implicitHeight: uptimeRow.implicitHeight + 8
@@ -289,7 +290,7 @@ Item {
                 bottom: parent.bottom
                 right: parent.right
             }
-            color: Appearance.colors.colLayer1
+            color: Appearance.lok ? "transparent" : Appearance.colors.colLayer1 // lok: on the panel, no pill
             padding: 4
 
             QuickToggleButton {

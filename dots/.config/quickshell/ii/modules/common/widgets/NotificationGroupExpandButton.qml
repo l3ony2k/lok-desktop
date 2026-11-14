@@ -16,8 +16,9 @@ RippleButton { // Expand button
     Layout.fillHeight: false
 
     buttonRadius: Appearance.rounding.full
-    colBackground: ColorUtils.mix(Appearance?.colors.colLayer2, Appearance?.colors.colLayer2Hover, 0.5)
-    colBackgroundHover: Appearance?.colors.colLayer2Hover ?? "#E5DFED"
+    // lok: flat (count + chevron); hover fills
+    colBackground: (Appearance?.lok ?? false) ? "transparent" : ColorUtils.mix(Appearance?.colors.colLayer2, Appearance?.colors.colLayer2Hover, 0.5)
+    colBackgroundHover: (Appearance?.lok ?? false) ? Appearance.colors.colLayer3 : (Appearance?.colors.colLayer2Hover ?? "#E5DFED")
     colRipple: Appearance?.colors.colLayer2Active ?? "#D6CEE2"
 
     contentItem: Item {

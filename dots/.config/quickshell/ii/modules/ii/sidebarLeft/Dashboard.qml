@@ -19,7 +19,8 @@ import Quickshell.Services.Pipewire
  */
 Item {
     id: root
-    readonly property real gap: 8
+    // lok: 9 logical = 12 device px at 1.333, so every inset and gap between cards is a whole pixel (same on both sidebars)
+    readonly property real gap: Appearance.lok ? 9 : 8
     readonly property real pad: 12
     readonly property real minScratchHeight: 160
     // "" = card grid, otherwise the key of the card whose detail page is open

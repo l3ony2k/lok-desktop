@@ -10,7 +10,8 @@ import Qt.labs.synchronizer
 Item {
     id: root
     required property var scopeRoot
-    property int sidebarPadding: 10
+    // lok: 9 logical = 12 device px at 1.333, so every inset and gap between cards is a whole pixel (same on both sidebars)
+    property int sidebarPadding: Appearance.lok ? 9 : 10
     anchors.fill: parent
     property bool aiChatEnabled: Config.options.policies.ai !== 0
     property bool translatorEnabled: Config.options.sidebar.translator.enable

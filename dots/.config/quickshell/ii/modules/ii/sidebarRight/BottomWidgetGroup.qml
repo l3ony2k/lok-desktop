@@ -11,7 +11,9 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    // lok: a card, same as the left sidebar's (layer 2 + divider frame); the only filled container
+    color: Appearance.lok ? Appearance.colors.colLayer2 : Appearance.colors.colLayer1
+    LokFrame { visible: Appearance.lok; z: 99; color: Appearance.colors.colLokDivider }
     clip: true
     implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
     // The saved tab is a position in allTabs (not in the visible list), so hiding a tab does not shift it

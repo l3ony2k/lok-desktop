@@ -14,8 +14,9 @@ GroupButton {
 
     buttonRadius: Appearance.lok ? 0 : baseHeight / 2
     buttonRadiusPressed: Appearance.rounding.small
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
+    colBackground: Appearance.lok ? "transparent" : Appearance.colors.colLayer2 // lok: outlined inside the card
+    lokOutline: true
+    colBackgroundHover: Appearance.lok ? Appearance.colors.colLayer3 : Appearance.colors.colLayer2Hover
     colBackgroundActive: Appearance.colors.colLayer2Active
     property color colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
 

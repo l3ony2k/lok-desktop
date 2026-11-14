@@ -41,6 +41,7 @@ Button {
     property color colBackgroundHover: (Appearance?.lok ?? false) ? Appearance.colors.colLayer2 : (Appearance?.colors.colLayer1Hover ?? "#E5DFED")
     property color colBackgroundActive: Appearance?.colors.colLayer1Active ?? "#D6CEE2"
     property bool lokStatusStrip: false // lok: show the status strip when toggled
+    property bool lokOutline: false // lok: frame a transparent button (an outlined control inside a card)
     property color colBackgroundToggled: Appearance?.colors.colPrimary ?? "#65558F"
     property color colBackgroundToggledHover: Appearance?.colors.colPrimaryHover ?? "#77699C"
     property color colBackgroundToggledActive: Appearance?.colors.colPrimaryActive ?? "#D6CEE2"
@@ -141,7 +142,7 @@ Button {
         // (colPrimary) with a brighter frame and a 2 px status strip along the bottom.
         readonly property bool lok: Appearance?.lok ?? false
         // hover never adds a frame (hover = fill one ramp step up); frames mark filled or toggled buttons
-        readonly property bool lokFrame: lok && (root.toggled || root.colBackground.a > 0.01)
+        readonly property bool lokFrame: lok && (root.toggled || root.colBackground.a > 0.01 || root.lokOutline)
         border.width: root.tabbedTo ? 2 : 0 // lok: LokFrame below (border drops sides at 1.333 scale)
         LokFrame { visible: !root.tabbedTo && parent.lokFrame; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
         border.color: root.tabbedTo ? Appearance.colors.colSecondary

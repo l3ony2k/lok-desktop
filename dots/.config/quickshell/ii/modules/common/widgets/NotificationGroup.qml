@@ -121,7 +121,16 @@ MouseArea { // Notification group area
         id: background
         anchors.left: parent.left
         width: parent.width
-        color: popup ? Appearance.colors.colBackgroundSurfaceContainer : Appearance.colors.colLayer2
+        // lok: in the sidebar notifications are rows of the notifications card, split by a divider
+        // (like the dashboard's process rows), not boxes inside the box
+        color: popup ? Appearance.colors.colBackgroundSurfaceContainer : Appearance.lok ? "transparent" : Appearance.colors.colLayer2
+        Rectangle {
+            visible: Appearance.lok && !root.popup
+            z: 99
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+            height: Appearance.sizes.hairline
+            color: Appearance.colors.colLokDivider
+        }
         radius: Appearance.rounding.normal
         anchors.leftMargin: root.xOffset
 

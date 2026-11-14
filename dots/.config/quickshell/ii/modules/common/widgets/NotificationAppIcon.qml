@@ -27,7 +27,8 @@ MaterialShape { // App icon
     ]
     shape: isUrgent ? urgentShapes[Math.floor(Math.random() * urgentShapes.length)] : MaterialShape.Shape.Circle
 
-    color: isUrgent ? Appearance.colors.colPrimaryContainer : Appearance.colors.colSecondaryContainer
+    // lok: a plain glyph; only an urgent notification keeps a shape behind its icon
+    color: isUrgent ? Appearance.colors.colPrimaryContainer : Appearance.lok ? "transparent" : Appearance.colors.colSecondaryContainer
     Loader {
         id: materialSymbolLoader
         active: root.appIcon == "" && root.image == ""
@@ -40,7 +41,7 @@ MaterialShape { // App icon
                     "priority_high" : guessedIcon
             }
             anchors.fill: parent
-            color: isUrgent ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnSecondaryContainer
+            color: isUrgent ? Appearance.colors.colOnPrimaryContainer : Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnSecondaryContainer
             iconSize: root.materialIconSize
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

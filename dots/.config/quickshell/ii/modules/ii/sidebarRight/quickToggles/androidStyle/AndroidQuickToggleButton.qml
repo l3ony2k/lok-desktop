@@ -59,7 +59,9 @@ GroupButton {
     horizontalPadding: padding
     verticalPadding: padding
 
-    colBackground: Appearance.colors.colLayer2
+    // lok: inside a card a tile at rest is outlined, not filled; only "on" fills
+    colBackground: Appearance.lok ? "transparent" : Appearance.colors.colLayer2
+    lokOutline: true
     // lok: hover = one full step up the grey ramp (the generic layer-1 hover was ~1 % here)
     colBackgroundHover: Appearance.lok ? Appearance.colors.colLayer3 : Appearance.colors.colLayer1Hover
     lokStatusStrip: !(altAction && expandedSize)

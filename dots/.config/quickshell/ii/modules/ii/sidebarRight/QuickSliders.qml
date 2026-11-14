@@ -18,7 +18,9 @@ Rectangle {
     implicitWidth: contentItem.implicitWidth + root.horizontalPadding * 2
     implicitHeight: contentItem.implicitHeight + root.verticalPadding * 2
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    // lok: a card, same as the left sidebar's (layer 2 + divider frame); the only filled container
+    color: Appearance.lok ? Appearance.colors.colLayer2 : Appearance.colors.colLayer1
+    LokFrame { visible: Appearance.lok; z: 99; color: Appearance.colors.colLokDivider }
     property real verticalPadding: 4
     property real horizontalPadding: 12
 

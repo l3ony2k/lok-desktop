@@ -18,8 +18,9 @@ RippleButton {
 
     background.anchors.fill: button
     buttonRadius: Appearance.rounding.full
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
+    // lok: flat inside the card (text/icon only); hover fills
+    colBackground: Appearance.lok ? "transparent" : Appearance.colors.colLayer2
+    colBackgroundHover: Appearance.lok ? Appearance.colors.colLayer3 : Appearance.colors.colLayer2Hover
     colRipple: Appearance.colors.colLayer2Active
 
     contentItem: StyledText {
