@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""top-apps — top applications for the ii dashboard (lok task, 2026-11-14).
+
+Groups processes by name (/proc/PID/comm), sums resident memory, and measures CPU over a short
+window (two samples, default 0.4 s), so %CPU is current rather than a lifetime average.
+%CPU is per core (100 = one core busy), like top. Output: one JSON object on stdout.
+    top-apps [N] [mem|cpu]
+"""
+import json, os, sys, time
+
+N = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+SORT = sys.argv[2] if len(sys.argv) > 2 else "mem"
+WINDOW = 0.4
+TICK = os.sysconf("SC_CLK_TCK")
+PAGE = os.sysconf("SC_PAGE_SIZE")
+ME = os.getuid()
+
+
+def sample():
+    procs = {}
+    for pid in os.listdir("/proc"):
+        if not pid.isdigit():
+            continue
+        try:
+            with open(f"/proc/{pid}/stat") as f:
+                stat = f.read()
+            # comm can contain spaces/parens: split after the last ')'
+            name = stat[stat.index("(") + 1:stat.rindex(")")]
+            fields = stat[stat.rindex(")") + 2:].split()
+            ticks = int(fields[11]) + int(fields[12])  # utime + stime
+            rss = int(fields[21]) * PAGE
+            uid = os.stat(f"/proc/{pid}").st_uid
+        except (OSError, ValueError, IndexError):
+            continue
+        if rss == 0:  # kernel threads
+            continue
+        procs[int(pid)] = (name, ticks, rss, uid)
+    return procs
+
+
+a = sample()
+time.sleep(WINDOW)
+b = sample()
+
+apps = {}
+for pid, (name, ticks, rss, uid) in b.items():
+    prev = a.get(pid)
+    cpu = (ticks - prev[1]) / TICK / WINDOW * 100 if prev and prev[0] == name else 0.0
+    app = apps.setdefault(name, {"name": name, "mem": 0, "cpu": 0.0, "pids": [], "mine": True})
+    app["mem"] += rss
+    app["cpu"] += max(0.0, cpu)
+    app["pids"].append(pid)
+    app["mine"] = app["mine"] and uid == ME
+
+ranked = sorted(apps.values(), key=lambda x: x["cpu" if SORT == "cpu" else "mem"], reverse=True)
+top = ranked[:N]
+rest = ranked[N:]
+for app in top:
+    app["cpu"] = round(app["cpu"], 1)
+print(json.dumps({
+    "top": top,
+    "restCount": sum(len(x["pids"]) for x in rest),
+    "restMem": sum(x["mem"] for x in rest),
+    "total": len(b),
+}))

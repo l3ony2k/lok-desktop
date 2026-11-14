@@ -10,6 +10,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.UPower
+import Quickshell.Services.Pipewire
 
 /**
  * Left sidebar dashboard (lok task, 2026-11-14): a scratchpad on top (same file as the
@@ -21,8 +22,18 @@ Item {
     readonly property real gap: 8
     readonly property real pad: 12
     readonly property real minScratchHeight: 160
+    // "" = card grid, otherwise the key of the card whose detail page is open
+    property string detail: ""
+    // heavier sampling (processes, per-core, meminfo...) only while the sidebar is open
+    readonly property bool live: GlobalStates.sidebarLeftOpen
 
     onActiveFocusChanged: if (activeFocus) scratchArea.focusEnd()
+    onLiveChanged: if (!live) detail = ""
+    // Esc leaves a detail page first; otherwise it falls through and closes the sidebar
+    Keys.onEscapePressed: event => {
+        if (root.detail !== "") { root.detail = ""; event.accepted = true; }
+        else event.accepted = false;
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -86,10 +97,18 @@ Item {
         }
 
         // ---------- Monitor ----------
+        Item {
+        Layout.fillWidth: true
+        Layout.preferredHeight: Math.min(monitorGrid.implicitHeight, root.height - root.minScratchHeight - root.gap * 3)
+        DetailView {
+            anchors.fill: parent
+            visible: root.detail !== ""
+            kind: root.detail
+        }
         Flickable {
             id: monitorFlick
-            Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(monitorGrid.implicitHeight, root.height - root.minScratchHeight - root.gap * 3)
+            anchors.fill: parent
+            visible: root.detail === ""
             contentHeight: monitorGrid.implicitHeight
             clip: true
             boundsBehavior: Flickable.StopAtBounds
@@ -104,6 +123,7 @@ Item {
                 // CPU
                 Card {
                     icon: "memory"
+                    detailKey: "cpu"
                     title: "CPU"
                     badge: `${Math.round(MachineStats.cpuTemp)}°C`
                     badgeAlert: MachineStats.cpuTemp >= 85
@@ -118,6 +138,7 @@ Item {
                 // GPU
                 Card {
                     icon: "monitor"
+                    detailKey: "gpu"
                     title: "GPU"
                     badge: MachineStats.gpuFreq > 0 ? `${Math.round(MachineStats.gpuFreq)} MHz` : Translation.tr("RC6")
                     BigValue {
@@ -130,6 +151,7 @@ Item {
                 // Memory
                 Card {
                     icon: "empty_dashboard"
+                    detailKey: "mem"
                     title: "MEM"
                     badge: ResourceUsage.memoryUsedPercentage >= 0.85 ? Translation.tr("High") : ""
                     badgeAlert: true
@@ -144,6 +166,7 @@ Item {
                 // Disk
                 Card {
                     icon: "save"
+                    detailKey: "disk"
                     title: Translation.tr("Free space")
                     badge: MachineStats.formatBytes(MachineStats.diskTotal, 0)
                     BigValue {
@@ -171,6 +194,7 @@ Item {
                 // Network
                 Card {
                     icon: Network.ethernet ? "lan" : "network_wifi"
+                    detailKey: "net"
                     title: Translation.tr("Network")
                     badge: Network.ethernet ? "LAN" : (Network.networkName.length > 0 ? "Wi-Fi" : Translation.tr("Offline"))
                     BigValue {
@@ -187,6 +211,7 @@ Item {
                 // Fan
                 Card {
                     icon: "air"
+                    detailKey: "fan"
                     title: Translation.tr("Fan")
                     badge: MachineStats.fanMode === "max" ? "Max" : MachineStats.fanMode === "cool" ? "Cool" : "Auto"
                     BigValue {
@@ -229,6 +254,7 @@ Item {
                     visible: MachineStats.hasBattery
                     Layout.columnSpan: 2
                     icon: MachineStats.batteryStatus === "Charging" ? "battery_charging_full" : "battery_android_full"
+                    detailKey: "battery"
                     title: Translation.tr("Battery · %1 cycles").arg(MachineStats.batteryCycles)
                     badge: Translation.tr("%1% health").arg(Math.round(MachineStats.batteryHealth * 100))
                     RowLayout {
@@ -259,7 +285,10 @@ Item {
                         }
                     }
                 }
+                ProcessesCard { Layout.columnSpan: 2 }
+                StatusRow { Layout.columnSpan: 2 }
             }
+        }
         }
     }
 
@@ -276,6 +305,454 @@ Item {
         // next tick, and skip instances the sidebar already replaced (contentChildren re-creates pages)
         onLoaded: Qt.callLater(() => { if (!scratchArea.activeFocus) if (typeof noteFile.text === "function") scratchArea.text = noteFile.text(); })
         onLoadFailed: error => { if (error === FileViewError.FileNotFound) noteFile.setText(""); }
+    }
+
+    // ---------- processes ----------
+    component ProcessesCard: Rectangle {
+        id: procCard
+        property string sort: "mem"
+        property var info: ({ top: [], restCount: 0, restMem: 0 })
+        property string menuFor: "" // app whose actions are showing
+        property string confirmFor: "" // "<app>:<signal>" armed by a first click, fires on the second
+        // ending these from here would take the session down with them
+        readonly property var protectedNames: ["qs", "quickshell", "Hyprland", "Xwayland", "systemd", "pipewire", "pipewire-pulse",
+            "wireplumber", "dbus-daemon", "dbus-broker", "greetd", "NetworkManager", "sddm", "kwin_wayland", "plasmashell"]
+        function canEnd(app) { return app.mine && !protectedNames.includes(app.name); }
+        Timer { id: confirmTimeout; interval: 3000; onTriggered: procCard.confirmFor = "" }
+        Layout.fillWidth: true
+        implicitHeight: procColumn.implicitHeight + root.pad * 2
+        color: Appearance.colors.colLayer2
+        LokFrame { color: Appearance.colors.colLokDivider }
+
+        Timer {
+            interval: Config.options?.resources?.updateInterval ?? 3000
+            running: root.live
+            repeat: true
+            triggeredOnStart: true
+            onTriggered: if (!procProc.running) procCard.refresh()
+        }
+        Process {
+            id: procProc
+            stdout: StdioCollector {
+                onStreamFinished: { try { procCard.info = JSON.parse(text); } catch (e) {} }
+            }
+        }
+        Process { id: killProc }
+        function refresh() {
+            procProc.running = false;
+            procProc.command = [Quickshell.env("HOME") + "/.local/bin/top-apps", "5", procCard.sort];
+            procProc.running = true;
+        }
+        function setSort(k) { procCard.sort = k; refresh(); }
+        function endApp(app, signal) {
+            if (!canEnd(app)) return;
+            const key = app.name + ":" + signal;
+            if (procCard.confirmFor !== key) { procCard.confirmFor = key; confirmTimeout.restart(); return; }
+            procCard.confirmFor = "";
+            killProc.command = ["kill", "-" + signal, ...app.pids.map(String)];
+            killProc.running = true;
+            procCard.menuFor = "";
+        }
+
+        ColumnLayout {
+            id: procColumn
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: root.pad }
+            spacing: 2
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.bottomMargin: 4
+                spacing: root.gap
+                MaterialSymbol { text: "list"; iconSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colSubtext }
+                StyledText { Layout.fillWidth: true; text: Translation.tr("Top processes"); color: Appearance.colors.colSubtext; font.pixelSize: Appearance.font.pixelSize.smallie }
+                SortHeader { label: Translation.tr("Memory"); key: "mem"; current: procCard.sort; onPicked: k => procCard.setSort(k); Layout.preferredWidth: 72 }
+                SortHeader { label: "% CPU"; key: "cpu"; current: procCard.sort; onPicked: k => procCard.setSort(k); Layout.preferredWidth: 52 }
+                Item { Layout.preferredWidth: 24 }
+            }
+            Repeater {
+                model: procCard.info.top
+                ColumnLayout {
+                    id: procRow
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: 2
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 24
+                        spacing: root.gap
+                        StyledText { Layout.fillWidth: true; text: procRow.modelData.name; elide: Text.ElideRight; font.pixelSize: Appearance.font.pixelSize.smallie }
+                        StyledText { Layout.preferredWidth: 72; horizontalAlignment: Text.AlignRight; text: MachineStats.formatBytes(procRow.modelData.mem, 2); font.pixelSize: Appearance.font.pixelSize.smallie }
+                        StyledText {
+                            Layout.preferredWidth: 52; horizontalAlignment: Text.AlignRight
+                            text: procRow.modelData.cpu.toFixed(1)
+                            color: procRow.modelData.cpu >= 90 ? Appearance.colors.colError : Appearance.colors.colOnLayer2
+                            font.pixelSize: Appearance.font.pixelSize.smallie
+                        }
+                        RippleButton {
+                            Layout.preferredWidth: 24; Layout.preferredHeight: 24
+                            toggled: procCard.menuFor === procRow.modelData.name
+                            colBackground: "transparent"
+                            onClicked: procCard.menuFor = toggled ? "" : procRow.modelData.name
+                            contentItem: MaterialSymbol { anchors.centerIn: parent; text: "more_vert"; iconSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colSubtext }
+                        }
+                    }
+                    RowLayout { // actions for this app
+                        visible: procCard.menuFor === procRow.modelData.name
+                        Layout.fillWidth: true
+                        Layout.bottomMargin: 4
+                        spacing: 4
+                        StyledText {
+                            Layout.fillWidth: true
+                            text: !procRow.modelData.mine ? Translation.tr("not yours: can't end")
+                                : procCard.protectedNames.includes(procRow.modelData.name) ? Translation.tr("protected")
+                                : procCard.confirmFor.startsWith(procRow.modelData.name + ":") ? Translation.tr("click again to confirm")
+                                : Translation.tr("%1 process(es)").arg(procRow.modelData.pids.length)
+                            color: Appearance.colors.colSubtext
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                        }
+                        SmallButton { label: procCard.confirmFor === procRow.modelData.name + ":TERM" ? Translation.tr("Confirm") : Translation.tr("End"); enabled: procCard.canEnd(procRow.modelData); onClicked: procCard.endApp(procRow.modelData, "TERM") }
+                        SmallButton { label: procCard.confirmFor === procRow.modelData.name + ":KILL" ? Translation.tr("Confirm") : Translation.tr("Kill"); enabled: procCard.canEnd(procRow.modelData); alert: true; onClicked: procCard.endApp(procRow.modelData, "KILL") }
+                    }
+                }
+            }
+            CardFooter {
+                Layout.topMargin: 4
+                text: Translation.tr("%1 other processes using %2").arg(procCard.info.restCount).arg(MachineStats.formatBytes(procCard.info.restMem, 0))
+            }
+        }
+    }
+
+    component SortHeader: StyledText {
+        id: sortHeader
+        property string label
+        property string key
+        property string current
+        signal picked(string key)
+        text: label
+        horizontalAlignment: Text.AlignRight
+        font.pixelSize: Appearance.font.pixelSize.smaller
+        color: current === key ? Appearance.colors.colOnLayer2 : Appearance.colors.colSubtext
+        font.underline: current === key
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: sortHeader.picked(sortHeader.key)
+        }
+    }
+
+    component SmallButton: DialogButton {
+        id: smallButton
+        property string label // not "text": AbstractButton.text is FINAL
+        property bool alert: false
+        implicitHeight: 24
+        padding: 8
+        buttonText: label
+        colBackground: Appearance.colors.colLayer2
+        colBackgroundHover: Appearance.colors.colLayer2Hover
+        colText: !enabled ? Appearance.colors.colSubtext : alert ? Appearance.colors.colError : Appearance.colors.colOnLayer2
+        borderColor: alert && enabled ? Appearance.colors.colError : Appearance.colors.colLokDivider
+    }
+
+    // ---------- status row: camera, mic, coffee, screen ----------
+    component StatusRow: Rectangle {
+        Layout.fillWidth: true
+        implicitHeight: statusRowLayout.implicitHeight + root.pad
+        color: Appearance.colors.colLayer2
+        LokFrame { color: Appearance.colors.colLokDivider }
+        readonly property bool micInUse: Pipewire.linkGroups.values.filter(g => g.source?.type === PwNodeType.AudioSource && g.target?.type === PwNodeType.AudioInStream).length > 0
+        readonly property bool micMuted: Audio.source?.audio?.muted ?? false
+        readonly property bool sharing: Pipewire.linkGroups.values.filter(g => g.source?.type === PwNodeType.VideoSource).length > 0
+        RowLayout {
+            id: statusRowLayout
+            anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: root.pad / 2 }
+            spacing: 4
+            StatusCell {
+                glyph: CameraCtl.icon
+                label: CameraCtl.privacy ? Translation.tr("Blocked") : Translation.tr("Camera")
+                onClicked: CameraCtl.toggle()
+            }
+            StatusCell {
+                glyph: parent.parent.micMuted ? "mic_off" : "mic"
+                label: parent.parent.micInUse ? Translation.tr("In use") : parent.parent.micMuted ? Translation.tr("Muted") : Translation.tr("Idle")
+                alert: parent.parent.micInUse && !parent.parent.micMuted
+                onClicked: Audio.toggleMicMute()
+            }
+            StatusCell {
+                glyph: "coffee"
+                label: Idle.inhibit ? Translation.tr("Awake") : Translation.tr("Sleep ok")
+                selected: Idle.inhibit
+                onClicked: Idle.toggleInhibit()
+            }
+            StatusCell {
+                glyph: "screen_record"
+                label: parent.parent.sharing ? Translation.tr("Sharing") : Translation.tr("Screen")
+                alert: parent.parent.sharing
+                interactive: false
+            }
+        }
+    }
+    component StatusCell: RippleButton {
+        id: cell
+        property string glyph // not "icon": AbstractButton.icon is FINAL
+        property string label
+        property bool selected: false
+        property bool alert: false
+        property bool interactive: true
+        Layout.fillWidth: true
+        Layout.preferredWidth: 1
+        implicitHeight: 32
+        enabled: interactive
+        toggled: selected
+        colBackground: Appearance.colors.colLayer2
+        colBackgroundHover: Appearance.colors.colLayer2Hover
+        borderWidth: selected ? 1 : 0
+        borderColor: Appearance.colors.colSelectedEdge
+        contentItem: RowLayout {
+            spacing: 6
+            Item { Layout.fillWidth: true }
+            MaterialSymbol { text: cell.glyph; iconSize: Appearance.font.pixelSize.normal; color: cell.alert ? Appearance.colors.colError : cell.selected ? Appearance.colors.colOnPrimary : Appearance.colors.colSubtext }
+            StyledText { text: cell.label; font.pixelSize: Appearance.font.pixelSize.smaller; color: cell.alert ? Appearance.colors.colError : cell.selected ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2 }
+            Item { Layout.fillWidth: true }
+        }
+    }
+
+    // ---------- detail pages ----------
+    component DetailView: Rectangle {
+        id: dv
+        property string kind
+        color: Appearance.colors.colLayer2
+        LokFrame { color: Appearance.colors.colLokDivider }
+        readonly property bool sampling: root.live && visible
+
+        // per-kind extra sources, only while this page is open
+        property var cores: [] // [{use, mhz}]
+        property var prevCores: []
+        property var memRows: []
+        property var ifaces: [] // [{name, rx, tx}]
+        property var prevIfaces: ({})
+        property var ecTemps: [] // [{label, c}]
+        Timer {
+            interval: Config.options?.resources?.updateInterval ?? 3000
+            running: dv.sampling
+            repeat: true
+            triggeredOnStart: true
+            onTriggered: {
+                if (dv.kind === "cpu") { statFile.reload(); if (!freqProc.running) freqProc.running = true; }
+                else if (dv.kind === "mem") memFile.reload();
+                else if (dv.kind === "net") netFile.reload();
+                else if (dv.kind === "fan" && !ecProc.running) ecProc.running = true;
+            }
+        }
+        FileView {
+            id: statFile; printErrors: false
+            // path only while its page is open: setting it loads the file (no load at creation)
+            path: dv.sampling && dv.kind === "cpu" ? "/proc/stat" : ""
+            onLoaded: {
+                const lines = text().split("\n").filter(l => /^cpu\d+ /.test(l));
+                const now = lines.map(l => { const f = l.trim().split(/\s+/).slice(1, 8).map(Number); return { total: f.reduce((a, b) => a + b, 0), idle: f[3] }; });
+                dv.cores = now.map((c, i) => {
+                    const p = dv.prevCores[i];
+                    const use = p && c.total > p.total ? 1 - (c.idle - p.idle) / (c.total - p.total) : 0;
+                    return { use: Math.max(0, Math.min(1, use)), mhz: dv.cores[i]?.mhz ?? 0 };
+                });
+                dv.prevCores = now;
+            }
+        }
+        Process {
+            id: freqProc
+            command: ["bash", "-c", "cat /sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_cur_freq"]
+            stdout: StdioCollector { onStreamFinished: {
+                const f = text.trim().split("\n").map(Number);
+                dv.cores = dv.cores.map((c, i) => ({ use: c.use, mhz: (f[i] ?? 0) / 1000 }));
+            } }
+        }
+        FileView {
+            id: memFile; printErrors: false
+            // path only while its page is open: setting it loads the file (no load at creation)
+            path: dv.sampling && dv.kind === "mem" ? "/proc/meminfo" : ""
+            onLoaded: {
+                const t = text(), kb = k => Number(t.match(new RegExp("^" + k + ":\\s+(\\d+)", "m"))?.[1] ?? 0) * 1024;
+                const total = kb("MemTotal"), avail = kb("MemAvailable");
+                dv.memRows = [
+                    [Translation.tr("Used"), MachineStats.formatBytes(total - avail)],
+                    [Translation.tr("Available"), MachineStats.formatBytes(avail)],
+                    [Translation.tr("Cached"), MachineStats.formatBytes(kb("Cached") + kb("Buffers"))],
+                    [Translation.tr("Shared"), MachineStats.formatBytes(kb("Shmem"))],
+                    [Translation.tr("Swap used"), `${MachineStats.formatBytes(kb("SwapTotal") - kb("SwapFree"))} / ${MachineStats.formatBytes(kb("SwapTotal"))}`],
+                ];
+            }
+        }
+        FileView {
+            id: netFile; printErrors: false
+            // path only while its page is open: setting it loads the file (no load at creation)
+            path: dv.sampling && dv.kind === "net" ? "/proc/net/dev" : ""
+            onLoaded: {
+                const now = Date.now(), next = {}, rows = [];
+                for (const line of text().split("\n")) {
+                    const m = line.match(/^\s*([^:\s]+):\s*(\d+)(?:\s+\d+){7}\s+(\d+)/);
+                    if (!m || m[1] === "lo") continue;
+                    const cur = { rx: Number(m[2]), tx: Number(m[3]), t: now }, p = dv.prevIfaces[m[1]];
+                    next[m[1]] = cur;
+                    const dt = p ? (now - p.t) / 1000 : 0;
+                    rows.push({ name: m[1], rx: dt > 0 ? (cur.rx - p.rx) / dt : 0, tx: dt > 0 ? (cur.tx - p.tx) / dt : 0 });
+                }
+                dv.prevIfaces = next;
+                dv.ifaces = rows;
+            }
+        }
+        Process {
+            id: ecProc
+            command: ["bash", "-c", `cd ${MachineStats.crosEcDir} 2>/dev/null && for l in temp*_label; do echo "$(cat $l) $(cat \${l%_label}_input)"; done`]
+            stdout: StdioCollector { onStreamFinished: {
+                dv.ecTemps = text.trim().split("\n").filter(l => l.length).map(l => { const p = l.split(" "); return { label: p[0], c: Number(p[1]) / 1000 }; });
+            } }
+        }
+
+        readonly property var titles: ({ cpu: "CPU", gpu: "GPU", mem: "MEM", disk: Translation.tr("Disk"), net: Translation.tr("Network"), fan: Translation.tr("Fan"), battery: Translation.tr("Battery") })
+        function peakOf(list, floor) { return Math.max(floor, ...Array.prototype.slice.call(list)); }
+        function norm(list, peak) { return Array.prototype.slice.call(list).map(v => v / peak); }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: root.pad
+            spacing: root.gap
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: root.gap
+                RippleButton {
+                    Layout.preferredWidth: 28; Layout.preferredHeight: 28
+                    colBackground: "transparent"
+                    onClicked: { root.detail = ""; root.forceActiveFocus(); }
+                    contentItem: MaterialSymbol { anchors.centerIn: parent; text: "arrow_back"; iconSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colOnLayer2 }
+                }
+                StyledText { Layout.fillWidth: true; text: dv.titles[dv.kind] ?? ""; font.pixelSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colOnLayer2 }
+                StyledText { text: Translation.tr("Esc to go back"); font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
+            }
+            Rectangle { Layout.fillWidth: true; implicitHeight: Appearance.sizes.hairline; color: Appearance.colors.colLokDivider }
+
+            Flickable {
+                id: detailFlick
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                contentHeight: detailColumn.implicitHeight
+                ColumnLayout {
+                    id: detailColumn
+                    width: detailFlick.width
+                    spacing: root.gap * 1.5
+
+                    // CPU
+                    DetailGraph { visible: dv.kind === "cpu"; label: Translation.tr("Usage"); value: `${Math.round(ResourceUsage.cpuUsage * 100)}%`; values: ResourceUsage.cpuUsageHistory }
+                    DetailGraph { visible: dv.kind === "cpu"; label: Translation.tr("Package temperature"); value: `${Math.round(MachineStats.cpuTemp)}°C`; values: MachineStats.cpuTempHistory }
+                    GridLayout {
+                        visible: dv.kind === "cpu"
+                        Layout.fillWidth: true
+                        columns: 2; columnSpacing: root.pad; rowSpacing: 6
+                        Repeater {
+                            model: dv.kind === "cpu" ? dv.cores : []
+                            RowLayout {
+                                id: coreRow
+                                required property var modelData
+                                required property int index
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 1
+                                spacing: 6
+                                StyledText { text: String(coreRow.index).padStart(2, "0"); font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
+                                Rectangle {
+                                    Layout.fillWidth: true; implicitHeight: 6; color: Appearance.colors.colLokDivider
+                                    Rectangle { width: parent.width * coreRow.modelData.use; height: parent.height; color: coreRow.modelData.use >= 0.9 ? Appearance.colors.colError : Appearance.colors.colMeterFill }
+                                }
+                                StyledText { Layout.preferredWidth: 64; horizontalAlignment: Text.AlignRight; text: `${(coreRow.modelData.mhz / 1000).toFixed(1)} GHz`; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
+                            }
+                        }
+                    }
+                    // GPU
+                    DetailGraph { visible: dv.kind === "gpu"; label: Translation.tr("Render busy"); value: `${Math.round(MachineStats.gpuUsage * 100)}%`; values: MachineStats.gpuUsageHistory }
+                    DetailRows {
+                        visible: dv.kind === "gpu"
+                        rows: [[Translation.tr("Frequency"), MachineStats.gpuFreq > 0 ? `${Math.round(MachineStats.gpuFreq)} MHz` : Translation.tr("idle (RC6)")],
+                               [Translation.tr("Max frequency"), `${MachineStats.gpuMaxFreq} MHz`],
+                               [Translation.tr("Driver"), "xe"]]
+                    }
+                    // Memory
+                    DetailGraph { visible: dv.kind === "mem"; label: Translation.tr("Used"); value: `${Math.round(ResourceUsage.memoryUsedPercentage * 100)}%`; values: ResourceUsage.memoryUsageHistory }
+                    DetailRows { visible: dv.kind === "mem"; rows: dv.memRows }
+                    // Disk
+                    DetailGraph { visible: dv.kind === "disk"; label: Translation.tr("Read"); value: `${MachineStats.formatBytes(MachineStats.diskReadRate)}/s`; values: dv.norm(MachineStats.diskReadHistory, dv.peakOf(MachineStats.diskReadHistory, 1048576)) }
+                    DetailGraph { visible: dv.kind === "disk"; label: Translation.tr("Write"); value: `${MachineStats.formatBytes(MachineStats.diskWriteRate)}/s`; values: dv.norm(MachineStats.diskWriteHistory, dv.peakOf(MachineStats.diskWriteHistory, 1048576)) }
+                    DetailRows {
+                        visible: dv.kind === "disk"
+                        rows: [[Translation.tr("Device"), MachineStats.rootDisk],
+                               [Translation.tr("Used"), MachineStats.formatBytes(MachineStats.diskTotal - MachineStats.diskFree)],
+                               [Translation.tr("Free"), MachineStats.formatBytes(MachineStats.diskFree)],
+                               [Translation.tr("Size"), MachineStats.formatBytes(MachineStats.diskTotal)]]
+                    }
+                    // Network
+                    DetailGraph { visible: dv.kind === "net"; label: Translation.tr("Download"); value: `${MachineStats.formatBytes(ResourceUsage.netRxRate)}/s`; values: dv.norm(MachineStats.netRxHistory, dv.peakOf(MachineStats.netRxHistory, 1024)) }
+                    DetailGraph { visible: dv.kind === "net"; label: Translation.tr("Upload"); value: `${MachineStats.formatBytes(ResourceUsage.netTxRate)}/s`; values: dv.norm(MachineStats.netTxHistory, dv.peakOf(MachineStats.netTxHistory, 1024)) }
+                    DetailRows {
+                        visible: dv.kind === "net"
+                        rows: [[Translation.tr("Network"), Network.networkName.length > 0 ? `${Network.networkName} · ${Network.networkStrength}%` : Translation.tr("offline")],
+                               ...dv.ifaces.map(i => [i.name, `↓ ${MachineStats.formatBytes(i.rx, 0)}/s  ↑ ${MachineStats.formatBytes(i.tx, 0)}/s`])]
+                    }
+                    // Fan
+                    DetailGraph { visible: dv.kind === "fan"; label: Translation.tr("Speed"); value: `${MachineStats.fanRpm} RPM`; values: dv.norm(MachineStats.fanRpmHistory, 6500) }
+                    DetailRows {
+                        visible: dv.kind === "fan"
+                        rows: [[Translation.tr("Mode"), MachineStats.fanMode === "cool" ? Translation.tr("Cool · %1%").arg(MachineStats.fanDuty) : MachineStats.fanMode === "max" ? Translation.tr("Max · 100%") : Translation.tr("EC automatic")],
+                               [Translation.tr("CPU package"), `${Math.round(MachineStats.cpuTemp)}°C`],
+                               ...dv.ecTemps.map(t => [Translation.tr("EC %1").arg(t.label), `${t.c.toFixed(0)}°C`])]
+                    }
+                    // Battery
+                    DetailGraph { visible: dv.kind === "battery"; label: Translation.tr("Power"); value: `${MachineStats.batteryPower.toFixed(1)} W`; values: dv.norm(MachineStats.batteryPowerHistory, dv.peakOf(MachineStats.batteryPowerHistory, 15)) }
+                    DetailRows {
+                        visible: dv.kind === "battery"
+                        rows: [[Translation.tr("Status"), MachineStats.batteryStatus],
+                               [Translation.tr("Charge"), `${MachineStats.batteryPercent}%`],
+                               [Translation.tr("Capacity"), `${Math.round(MachineStats.batteryChargeFull / 1000)} / ${Math.round(MachineStats.batteryChargeDesign / 1000)} mAh`],
+                               [Translation.tr("Health"), `${Math.round(MachineStats.batteryHealth * 100)}%`],
+                               [Translation.tr("Cycles"), `${MachineStats.batteryCycles}`],
+                               [Translation.tr("Voltage"), `${(MachineStats.batteryVoltage / 1e6).toFixed(2)} V`],
+                               [Translation.tr("Charge limit"), BatteryLimit.limit > 0 ? `${BatteryLimit.limit}%` : "—"]]
+                    }
+                }
+            }
+        }
+    }
+
+    component DetailGraph: ColumnLayout {
+        id: dg
+        property string label
+        property string value
+        property list<real> values
+        Layout.fillWidth: true
+        spacing: 4
+        RowLayout {
+            Layout.fillWidth: true
+            StyledText { Layout.fillWidth: true; text: dg.label; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
+            StyledText { text: dg.value; font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colOnLayer2 }
+        }
+        LineHistory { values: dg.values; implicitHeight: 56 }
+    }
+
+    component DetailRows: ColumnLayout {
+        id: dr
+        property var rows: []
+        Layout.fillWidth: true
+        spacing: 0
+        Repeater {
+            model: dr.rows
+            Item {
+                id: drRow
+                required property var modelData
+                required property int index
+                Layout.fillWidth: true
+                implicitHeight: 28
+                Rectangle { visible: drRow.index > 0; anchors.top: parent.top; width: parent.width; height: Appearance.sizes.hairline; color: Appearance.colors.colLokDivider }
+                StyledText { anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter; text: drRow.modelData[0]; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
+                StyledText { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: drRow.modelData[1]; font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colOnLayer2 }
+            }
+        }
     }
 
     // ---------- building blocks ----------
@@ -318,6 +795,7 @@ Item {
 
     component Card: Rectangle {
         id: card
+        property string detailKey: ""
         property alias icon: cardHeader.icon
         property alias title: cardHeader.title
         property alias badge: cardHeader.badge
@@ -328,8 +806,16 @@ Item {
         Layout.alignment: Qt.AlignTop
         Layout.preferredWidth: 1 // equal columns
         implicitHeight: cardColumn.implicitHeight + root.pad * 2
-        color: Appearance.colors.colLayer2
+        color: cardMouse.containsMouse && detailKey.length > 0 ? Appearance.colors.colLayer2Hover : Appearance.colors.colLayer2
         LokFrame { color: Appearance.colors.colLokDivider }
+        MouseArea { // under the content, so buttons inside the card keep their own clicks
+            id: cardMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            enabled: card.detailKey.length > 0
+            cursorShape: Qt.PointingHandCursor
+            onClicked: { root.detail = card.detailKey; root.forceActiveFocus(); } // so Esc reaches root
+        }
         ColumnLayout {
             id: cardColumn
             anchors { left: parent.left; right: parent.right; top: parent.top; margins: root.pad }

@@ -163,7 +163,7 @@ Singleton {
     Process {
         id: subscriber
         running: true
-        command: ["nmcli", "monitor"]
+        command: ["setpriv", "--pdeathsig", "TERM", "nmcli", "monitor"] // dies with Quickshell (killall/restart left orphans)
         stdout: SplitParser {
             onRead: root.update()
         }

@@ -60,6 +60,11 @@ Singleton {
     // Network history (bytes/s), rates themselves come from ResourceUsage
     property list<real> netRxHistory: []
     property list<real> netTxHistory: []
+    // More history for the detail pages (raw units: bytes/s, rpm, W)
+    property list<real> diskReadHistory: []
+    property list<real> diskWriteHistory: []
+    property list<real> fanRpmHistory: []
+    property list<real> batteryPowerHistory: []
 
     function push(list, value) {
         const next = [...list, value];
@@ -118,6 +123,11 @@ Singleton {
                 if (f.path.length > 0) f.reload();
             root.netRxHistory = root.push(root.netRxHistory, ResourceUsage.netRxRate);
             root.netTxHistory = root.push(root.netTxHistory, ResourceUsage.netTxRate);
+            // previous tick's loads are complete by now
+            root.diskReadHistory = root.push(root.diskReadHistory, root.diskReadRate);
+            root.diskWriteHistory = root.push(root.diskWriteHistory, root.diskWriteRate);
+            root.fanRpmHistory = root.push(root.fanRpmHistory, root.fanRpm);
+            root.batteryPowerHistory = root.push(root.batteryPowerHistory, root.batteryPower);
         }
     }
 
