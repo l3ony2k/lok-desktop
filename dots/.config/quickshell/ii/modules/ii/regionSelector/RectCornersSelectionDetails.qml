@@ -79,24 +79,24 @@ Item {
         visible: root.showAimLines && !root.breathingBorderOnly
         opacity: 0.2
         z: 2
-        x: root.mouseX
+        x: Appearance.lok ? Math.floor(root.mouseX * Appearance.dpr) / Appearance.dpr : root.mouseX
         anchors {
             top: parent.top
             bottom: parent.bottom
         }
-        width: 1
+        width: Appearance.lok ? Appearance.sizes.hairline : 1
         color: root.color
     }
     Rectangle { // Horizontal
         visible: root.showAimLines && !root.breathingBorderOnly
         opacity: 0.2
         z: 2
-        y: root.mouseY
+        y: Appearance.lok ? Math.floor(root.mouseY * Appearance.dpr) / Appearance.dpr : root.mouseY
         anchors {
             left: parent.left
             right: parent.right
         }
-        height: 1
+        height: Appearance.lok ? Appearance.sizes.hairline : 1
         color: root.color
     }
 }

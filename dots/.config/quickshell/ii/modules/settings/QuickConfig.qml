@@ -122,7 +122,7 @@ ContentPage {
                     Layout.fillWidth: true
                     materialIcon: "wallpaper"
                     StyledToolTip {
-                        text: Translation.tr("Pick wallpaper image on your system")
+                        text: Translation.tr("Pick wallpaper image on your system") + (Appearance.lok ? "  (Ctrl Super + T)" : "")
                     }
                     onClicked: {
                         Quickshell.execDetached(`${Directories.wallpaperSwitchScriptPath}`);
@@ -136,6 +136,7 @@ ContentPage {
                                 color: Appearance.colors.colOnSecondaryContainer
                             }
                             RowLayout {
+                                visible: !Appearance.lok // lok: did not fit the button; shortcut is in the tooltip
                                 spacing: 3
                                 KeyboardKey {
                                     key: "Ctrl"

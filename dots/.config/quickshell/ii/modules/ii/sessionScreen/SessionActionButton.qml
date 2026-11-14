@@ -76,6 +76,7 @@ RippleButton {
         color: Appearance.colors.colOnPrimary // same strip as the quick toggles
     }
     StyledToolTip {
+        extraVisibleCondition: !Appearance.lok // lok: the label under the grid already names the action
         text: buttonText
     }
 

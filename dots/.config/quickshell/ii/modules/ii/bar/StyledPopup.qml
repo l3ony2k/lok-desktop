@@ -38,10 +38,10 @@ LazyLoader {
             // screen edge (e.g. weather on the right) pushed the popup off-screen.
             left: {
                 if (!Config.options.bar.vertical) {
-                    const x = root.QsWindow?.mapFromItem(
+                    const x = (root.QsWindow?.mapFromItem(
                         root.hoverTarget,
                         (root.hoverTarget.width - popupBackground.implicitWidth) / 2, 0
-                    ).x ?? 0;
+                    ).x ?? 0) - popupBackground.anchors.leftMargin; // centre the visible box, not the window
                     const screenW = popupWindow.screen?.width ?? (x + popupWindow.implicitWidth);
                     return Math.max(0, Math.min(x, screenW - popupWindow.implicitWidth));
                 }

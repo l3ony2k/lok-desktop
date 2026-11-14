@@ -177,7 +177,7 @@ Singleton {
         // Text/icon accents that used primary use colAccent (plain text colour in lok).
         property color colPrimary: root.lok ? (m3colors.darkmode ? "#4a4a4a" : "#c8c8c8") /* selected = one step from the surface toward the text colour */ : m3colors.m3primary
         property color colOnPrimary: root.lok ? m3colors.m3onSurface : m3colors.m3onPrimary
-        property color colPrimaryHover: root.lok ? ColorUtils.mix(colors.colPrimary, m3colors.m3onSurface, 0.92) : ColorUtils.mix(colors.colPrimary, colLayer1Hover, 0.87)
+        property color colPrimaryHover: root.lok ? colors.colPrimary /* lok: hovering a selection keeps the selected fill */ : ColorUtils.mix(colors.colPrimary, colLayer1Hover, 0.87)
         property color colPrimaryActive: root.lok ? ColorUtils.mix(colors.colPrimary, m3colors.m3onSurface, 0.84) : ColorUtils.mix(colors.colPrimary, colLayer1Active, 0.7)
         property color colAccent: root.lok ? m3colors.m3onSurface : m3colors.m3primary
         // lok: frame + status strip of a selected surface, and fills of meters/sliders
