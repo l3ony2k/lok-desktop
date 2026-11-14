@@ -14,10 +14,21 @@ Rectangle {
     color: Appearance.colors.colLayer1
     clip: true
     implicitHeight: collapsed ? collapsedBottomWidgetGroupRow.implicitHeight : 350
-    property int selectedTab: Persistent.states.sidebar.bottomGroup.tab
+    // The saved tab is a position in allTabs (not in the visible list), so hiding a tab does not shift it
+    property int selectedTab: root.visibleIndex(Persistent.states.sidebar.bottomGroup.tab)
+    function visibleIndex(stored) {
+        const t = root.allTabs[stored];
+        const i = t ? root.tabs.findIndex(x => x.type === t.type) : -1;
+        return i >= 0 ? i : 0;
+    }
+    // clicks assign selectedTab directly; when the visible tab list changes, map the saved tab again
+    onTabsChanged: root.selectedTab = root.visibleIndex(Persistent.states.sidebar.bottomGroup.tab)
+    function storedIndex(visible) {
+        return root.allTabs.findIndex(x => x.type === root.tabs[visible].type);
+    }
     property int previousIndex: -1
     property bool collapsed: Persistent.states.sidebar.bottomGroup.collapsed
-    property var tabs: [
+    property var allTabs: [
         {
             "type": "calendar",
             "name": Translation.tr("Calendar"),
@@ -37,6 +48,7 @@ Rectangle {
             "widget": "pomodoro/PomodoroWidget.qml"
         },
     ]
+    property var tabs: root.allTabs.filter(t => t.type !== "todo" || Config.options.sidebar.todo.enable)
 
     Behavior on implicitHeight {
         NumberAnimation {
@@ -111,11 +123,11 @@ Rectangle {
         }
 
         StyledText {
-            property int remainingTasks: Todo.list.filter(task => !task.done).length
+            property int remainingTasks: Config.options.sidebar.todo.enable ? Todo.list.filter(task => !task.done).length : 0
             Layout.margins: 10
             Layout.leftMargin: 0
             // text: `${DateTime.collapsedCalendarFormat}   •   ${remainingTasks} task${remainingTasks > 1 ? "s" : ""}`
-            text: Translation.tr("%1   •   %2 tasks").arg(DateTime.collapsedCalendarFormat).arg(remainingTasks)
+            text: Config.options.sidebar.todo.enable ? Translation.tr("%1   •   %2 tasks").arg(DateTime.collapsedCalendarFormat).arg(remainingTasks) : DateTime.collapsedCalendarFormat
             font.pixelSize: Appearance.font.pixelSize.large
             color: Appearance.colors.colOnLayer1
         }
@@ -166,7 +178,7 @@ Rectangle {
                         buttonIcon: modelData.icon
                         onPressed: {
                             root.selectedTab = index;
-                            Persistent.states.sidebar.bottomGroup.tab = index;
+                            Persistent.states.sidebar.bottomGroup.tab = root.storedIndex(index);
                         }
                     }
                 }
@@ -200,7 +212,7 @@ Rectangle {
                 anchors.bottomMargin: -anchors.topMargin
 
                 Component.onCompleted: {
-                    tabStack.source = root.tabs[root.selectedTab].widget;
+                    tabStack.source = (root.tabs[root.selectedTab] ?? root.tabs[0]).widget;
                 }
 
                 Connections {
@@ -210,7 +222,7 @@ Rectangle {
                             tabSwitchBehavior.animation.down = true;
                         else if (root.currentTab < root.previousIndex)
                             tabSwitchBehavior.animation.down = false;
-                        tabStack.source = root.tabs[root.selectedTab].widget;
+                        tabStack.source = (root.tabs[root.selectedTab] ?? root.tabs[0]).widget;
                     }
                 }
 
@@ -249,7 +261,7 @@ Rectangle {
         PropertyAction {
             target: tabStack
             property: "source"
-            value: root.tabs[root.selectedTab].widget
+            value: (root.tabs[root.selectedTab] ?? root.tabs[0]).widget
         } // The source change happens here
         ParallelAnimation {
             PropertyAnimation {

@@ -9,7 +9,7 @@ StyledPopup {
     property string formattedDate: Qt.locale().toString(DateTime.clock.date, "dddd, MMMM dd, yyyy")
     property string formattedTime: DateTime.time
     property string formattedUptime: DateTime.uptime
-    property string todosSection: getUpcomingTodos()
+    property string todosSection: Config.options.sidebar.todo.enable ? getUpcomingTodos() : ""
 
     function getUpcomingTodos() {
         const unfinishedTodos = Todo.list.filter(function (item) {
@@ -50,6 +50,7 @@ StyledPopup {
 
         // Tasks
         Column {
+            visible: Config.options.sidebar.todo.enable
             spacing: 0
             Layout.fillWidth: true
 

@@ -121,7 +121,7 @@ Singleton {
     ]
 
     // Combined built-in and user actions
-    property var allActions: searchActions.concat(userActionScripts)
+    property var allActions: searchActions.filter(a => a.action !== "todo" || Config.options.sidebar.todo.enable).concat(userActionScripts)
 
     property string mathResult: ""
     property bool clipboardWorkSafetyActive: {
