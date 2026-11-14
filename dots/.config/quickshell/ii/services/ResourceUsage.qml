@@ -125,9 +125,9 @@ Singleton {
         }
 	}
 
-	FileView { id: fileMeminfo; path: "/proc/meminfo" }
-    FileView { id: fileStat; path: "/proc/stat" }
-    FileView { id: fileNetDev; path: "/proc/net/dev" }
+	FileView { id: fileMeminfo; path: "/proc/meminfo"; blockAllReads: true /* reload() is async: without this text() returns the previous read */ }
+    FileView { id: fileStat; path: "/proc/stat"; blockAllReads: true /* reload() is async: without this text() returns the previous read */ }
+    FileView { id: fileNetDev; path: "/proc/net/dev"; blockAllReads: true /* reload() is async: without this text() returns the previous read */ }
 
     Process {
         id: findCpuMaxFreqProc

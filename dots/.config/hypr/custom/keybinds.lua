@@ -88,3 +88,9 @@ hl.unbind("SUPER + SUPER_R")
 hl.bind("SUPER + SUPER_L", hl.dsp.global("quickshell:searchOnlyToggle"),
     { release = true, description = "Shell: Toggle search" })
 hl.bind("SUPER + SUPER_R", hl.dsp.global("quickshell:searchOnlyToggle"), { release = true })
+
+--##! Ctrl+Super+R through ii-restart (2026-11-15)
+-- The dots bind `killall qs; qs -c ii &`: one bad QML file and the bar is gone. ii-restart
+-- qmllints the changed files first and leaves the running shell alone if they would not load.
+hl.unbind("CTRL + SUPER + R")
+hl.bind("CTRL + SUPER + R", hl.dsp.exec_cmd("~/.local/bin/ii-restart"), { description = "Shell: Restart widgets (checked)" })

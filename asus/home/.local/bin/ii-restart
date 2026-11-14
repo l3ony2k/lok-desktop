@@ -1,0 +1,53 @@
+#!/bin/bash
+# ii-restart — restart the ii Quickshell config only if it will load (lok task, 2026-11-15).
+# Replaces the dots' Ctrl+Super+R `killall qs; qs -c ii &`, which turned one bad QML file into
+# "no bar". Live reload already keeps the old config when an edit fails to load; only a cold
+# restart throws the working instance away, so this gate sits in front of it.
+#
+# 1. qmllint the QML files changed since the last successful start (all files the first time),
+#    blocking only on what makes the config fail to load: [syntax] errors and properties that
+#    shadow a FINAL base member. (Upstream ii has many harmless lint warnings; baseline for these
+#    two classes is 0.) On a hit: notify, print, exit 1, and leave the running shell alone.
+# 2. killall -w (wait until the old instance is gone, so two never overlap), start a new one.
+# 3. Report whether it came up.
+#   ii-restart            check + restart
+#   ii-restart --check    check only (all files)
+#   ii-restart --force    restart without the check
+set -u
+CFG=${II_CONFIG:-ii}
+DIR="$HOME/.config/quickshell/$CFG"
+STAMP="$HOME/.cache/ii-restart.stamp"
+LINT=/usr/lib/qt6/bin/qmllint
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+export HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-$(ls -t "$XDG_RUNTIME_DIR/hypr" 2>/dev/null | head -1)}
+
+say() { echo "$1: $2" >&2; notify-send -a ii-restart "$1" "$2" 2>/dev/null || true; }
+
+check() { # $1 = all|changed
+    local files
+    if [ "$1" = all ] || [ ! -f "$STAMP" ]; then files=$(find "$DIR" -name '*.qml')
+    else files=$(find "$DIR" -name '*.qml' -newer "$STAMP"); fi
+    [ -z "$files" ] && return 0
+    [ -x "$LINT" ] || { echo "qmllint not found; skipping check" >&2; return 0; }
+    local bad
+    bad=$(echo "$files" | tr '\n' '\0' | xargs -0 -P8 -n40 "$LINT" -I "$DIR" 2>&1 \
+        | grep -E '\[syntax\]|shadows final member' | sed "s|$DIR/||")
+    [ -z "$bad" ] && return 0
+    echo "$bad" >&2
+    say "Quickshell not restarted" "$(echo "$bad" | head -3 | cut -c1-160)"
+    return 1
+}
+
+case "${1:-}" in
+    --check) check all; exit $? ;;
+    --force) ;;
+    *) check changed || exit 1 ;;
+esac
+
+killall ydotool 2>/dev/null
+timeout 5 killall -w qs quickshell 2>/dev/null || killall -9 qs quickshell 2>/dev/null
+hyprctl -q eval "hl.exec_cmd(\"qs -c $CFG\")"
+for _ in 1 2 3 4 5 6 7 8; do sleep 1; pgrep -x qs >/dev/null && break; done
+sleep 2
+if pgrep -x qs >/dev/null; then touch "$STAMP"; echo "qs running pid=$(pgrep -x qs)"
+else echo "qs did not start" >&2; exit 2; fi

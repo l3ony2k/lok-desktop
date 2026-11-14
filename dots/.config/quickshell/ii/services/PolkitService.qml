@@ -54,7 +54,8 @@ Singleton {
     Process {
         id: fpMatchWatcher
         running: root.active
-        command: ["gdbus", "monitor", "--system", "--dest", "org.rust_fp.RustFp",
+        // setpriv: dies with Quickshell instead of being orphaned by a restart
+        command: ["setpriv", "--pdeathsig", "TERM", "gdbus", "monitor", "--system", "--dest", "org.rust_fp.RustFp",
             "--object-path", "/org/rust_fp/RustFp"]
         stdout: SplitParser {
             onRead: line => {

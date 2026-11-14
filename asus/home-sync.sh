@@ -12,6 +12,7 @@ cd "$HOME"
 MANIFEST=(
   # dashboard helpers
   .local/bin/top-apps
+  .local/bin/ii-restart
   # shell
   .zshenv .zshrc.local .zprofile .p10k.zsh .bashrc .bash_profile
   .config/fish/functions/qs.fish .config/fish/conf.d/nvm.fish

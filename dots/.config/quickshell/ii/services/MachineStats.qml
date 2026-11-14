@@ -78,10 +78,13 @@ Singleton {
     function setFanMode(mode) {
         // Clicking the active mode again cancels it (back to automatic)
         const target = (mode === root.fanMode && mode !== "auto") ? "auto" : mode;
-        fanProc.command = ["sudo", "-n", "/usr/local/bin/fan-mode", target];
-        fanProc.running = true;
         root.fanMode = target; // optimistic; the state file confirms on the next tick
+        // Never interrupt a running fan-mode (it could stop half-applied): queue the latest click
+        // and run it when the current call exits. fan-mode itself also serialises with a lock.
+        if (fanProc.running) root.pendingFanMode = target;
+        else fanProc.run(target);
     }
+    property string pendingFanMode: ""
     function formatBytes(bytes, digits = 1) {
         const units = ["B", "KB", "MB", "GB", "TB"];
         let v = Math.max(0, bytes), i = 0;
@@ -149,7 +152,19 @@ Singleton {
             }
         }
     }
-    Process { id: fanProc }
+    Process {
+        id: fanProc
+        function run(mode) {
+            command = ["sudo", "-n", "/usr/local/bin/fan-mode", mode];
+            running = true;
+        }
+        onExited: {
+            if (root.pendingFanMode === "") return;
+            const next = root.pendingFanMode;
+            root.pendingFanMode = "";
+            run(next);
+        }
+    }
 
     component SysFile: FileView {
         printErrors: false

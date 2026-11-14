@@ -1,1 +1,2 @@
-leon ALL=(root) NOPASSWD: /usr/local/bin/fan-mode
+# fan-mode: only the three public modes; the _underscore steps are root-internal
+leon ALL=(root) NOPASSWD: /usr/local/bin/fan-mode auto, /usr/local/bin/fan-mode cool, /usr/local/bin/fan-mode max

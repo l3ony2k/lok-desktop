@@ -1,5 +1,5 @@
 #!/bin/bash
-# fan-mode — Chromebook EC fan control for the ii dashboard (lok task, 2026-11-14).
+# fan-mode — Chromebook EC fan control for the ii dashboard (lok task, 2026-11-14; hardened 2026-11-15).
 #   auto   EC automatic control (default, also after boot and before sleep)
 #   cool   boost cooling: every 2 s duty = max(40%, CPU-package curve 50C->40% .. 80C->100%,
 #          what the EC's own curve wants right now). Never quieter than auto. Ramps up at once,
@@ -7,10 +7,22 @@
 #          board sensors are below the EC fan-off point for 30 s (min 60 s, max COOL_MAX_SECS).
 #   max    ramps 55 -> 70 -> 85 -> 100% over ~5 s and stays there until auto
 #   status prints the current mode
-# State: /run/fan-mode/mode and /run/fan-mode/duty (world-readable). Watchers run as transient unit fan-mode-watch.
+# State: /run/fan-mode/mode and /run/fan-mode/duty (world-readable).
+#
+# Safety:
+# - Forced duty only exists while the transient unit fan-mode-watch runs. Its ExecStopPost puts the
+#   EC back on automatic control, so a crash, SIGKILL or `systemctl stop` can never leave the fan
+#   pinned. (max keeps its unit alive after the ramp for the same reason.)
+# - Public commands take /run/fan-mode.lock and ignore HUP/INT/TERM, so two clicks can't interleave
+#   and a killed caller can't leave a half-applied mode.
+# - If the EC's temperature table can't be read 3 ticks in a row, cool hands back to the EC instead
+#   of guessing (an unreadable table must never make cool quieter than auto).
+# - sudoers allows only `fan-mode auto|cool|max`; the _underscore steps are root-internal.
 set -u
 STATE=/run/fan-mode
 UNIT=fan-mode-watch
+SELF=/usr/local/bin/fan-mode
+ECTOOL=/usr/bin/ectool
 COOL_FLOOR=40 COOL_LOW=50 COOL_HIGH=80 COOL_TARGET=50 COOL_MAX_SECS=1800 COOL_MIN_SECS=60 COOL_STEP_DOWN=5
 
 pkg_temp() {
@@ -21,40 +33,41 @@ pkg_temp() {
     echo 0
 }
 put() { mkdir -p "$STATE"; echo "$2" > "$STATE/$1.tmp" && mv "$STATE/$1.tmp" "$STATE/$1"; chmod 644 "$STATE/$1"; }
-put_mode() { put mode "$1"; }
-set_auto() { ectool autofanctrl >/dev/null 2>&1; put_mode auto; put duty -1; }
-# highest "ratio between fan_off and fan_max" over the EC sensors = the duty auto would use now
-ec_ratio() { ectool temps all 2>/dev/null | grep -o '[0-9]*% (' | tr -dc '0-9\n' | sort -n | tail -1; }
+set_auto() { "$ECTOOL" autofanctrl >/dev/null 2>&1; put mode auto; put duty -1; }
+# highest "ratio between fan_off and fan_max" over the EC sensors = the duty auto would use now.
+# Prints nothing when the table can't be read or parsed.
+ec_ratio() { "$ECTOOL" temps all 2>/dev/null | grep -o '[0-9]*% (' | tr -dc '0-9\n' | sort -n | tail -1; }
 # CPU-package curve: <= COOL_LOW -> COOL_FLOOR, >= COOL_HIGH -> 100, linear between
 pkg_curve() { local t=$1; [ "$t" -le "$COOL_LOW" ] && { echo "$COOL_FLOOR"; return; }; [ "$t" -ge "$COOL_HIGH" ] && { echo 100; return; }
     echo $(( COOL_FLOOR + (t - COOL_LOW) * (100 - COOL_FLOOR) / (COOL_HIGH - COOL_LOW) )); }
 stop_watch() { systemctl stop "$UNIT" 2>/dev/null; systemctl reset-failed "$UNIT" 2>/dev/null; }
+start_watch() { systemd-run --quiet --unit="$UNIT" -p ExecStopPost="$SELF _restore" "$SELF" "$1"; }
+lock() { trap '' HUP INT TERM; exec 9>/run/fan-mode.lock; flock -w 15 9 || { echo "fan-mode: busy" >&2; exit 1; }; }
 
 case "${1:-status}" in
-    auto) stop_watch; set_auto ;;
-    cool)
-        stop_watch
-        ectool fanduty "$COOL_FLOOR" >/dev/null && put_mode cool && put duty "$COOL_FLOOR"
-        systemd-run --quiet --unit="$UNIT" /usr/local/bin/fan-mode _watch-cool ;;
-    max)
-        stop_watch; put_mode max; put duty 100
-        systemd-run --quiet --unit="$UNIT" /usr/local/bin/fan-mode _ramp-max ;;
+    auto) lock; stop_watch; set_auto ;;
+    cool) lock; stop_watch; put mode cool; put duty "$COOL_FLOOR"; start_watch _watch-cool ;;
+    max)  lock; stop_watch; put mode max; put duty 100; start_watch _ramp-max ;;
     status) cat "$STATE/mode" 2>/dev/null || echo auto ;;
+    _restore) set_auto ;; # ExecStopPost of the watch unit: runs however the unit ended
     _watch-cool)
-        trap 'set_auto; exit 0' TERM INT
-        start=$(date +%s); calm=0; duty=$COOL_FLOOR
-        while sleep 2; do
-            t=$(pkg_temp); ec=$(ec_ratio); ec=${ec:-0}; el=$(( $(date +%s) - start ))
+        trap 'exit 0' TERM INT   # ExecStopPost restores auto
+        start=$(date +%s); calm=0; duty=0; misses=0
+        while :; do
+            t=$(pkg_temp); ec=$(ec_ratio); el=$(( $(date +%s) - start ))
+            if [ -z "$ec" ]; then misses=$((misses + 1)); [ "$misses" -ge 3 ] && break; ec=$duty; else misses=0; fi
             want=$(pkg_curve "$t"); [ "$ec" -gt "$want" ] && want=$ec
-            if [ "$want" -lt $((duty - COOL_STEP_DOWN)) ]; then want=$((duty - COOL_STEP_DOWN)); fi
+            [ "$duty" -gt 0 ] && [ "$want" -lt $((duty - COOL_STEP_DOWN)) ] && want=$((duty - COOL_STEP_DOWN))
             [ "$want" -lt "$COOL_FLOOR" ] && want=$COOL_FLOOR
-            if [ "$want" -ne "$duty" ]; then ectool fanduty "$want" >/dev/null || break; duty=$want; put duty "$duty"; fi
+            if [ "$want" -ne "$duty" ]; then "$ECTOOL" fanduty "$want" >/dev/null || break; duty=$want; put duty "$duty"; fi
             if [ "$t" -le "$COOL_TARGET" ] && [ "$ec" -eq 0 ]; then calm=$((calm + 2)); else calm=0; fi
             [ "$calm" -ge 30 ] && [ "$el" -ge "$COOL_MIN_SECS" ] && break
             [ "$el" -ge "$COOL_MAX_SECS" ] && break
-        done
-        trap - TERM INT; set_auto ;;
+            sleep 2
+        done ;;  # unit ends -> ExecStopPost -> auto
     _ramp-max)
-        for d in 55 70 85 100; do ectool fanduty "$d" >/dev/null; sleep 1.5; done ;;
+        trap 'exit 0' TERM INT
+        for d in 55 70 85 100; do "$ECTOOL" fanduty "$d" >/dev/null || exit 1; sleep 1.5; done
+        exec sleep infinity ;;  # keep the unit (and its ExecStopPost) alive while max holds
     *) echo "usage: fan-mode auto|cool|max|status" >&2; exit 2 ;;
 esac

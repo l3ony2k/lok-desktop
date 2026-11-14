@@ -15,20 +15,20 @@ import Quickshell.Io
 Singleton {
     id: root
     property string filePath: FileUtils.trimFileProtocol(`${Directories.state}/user/launcher-frequency.json`)
-    property var data: ({})
+    property var entries: ({}) // not `data`: that shadows QtObject's default property
 
     function record(id) {
         if (!id) return;
-        const next = Object.assign({}, root.data);
+        const next = Object.assign({}, root.entries);
         const prev = next[id] ?? { count: 0, last: 0 };
         next[id] = { count: prev.count + 1, last: Date.now() };
-        root.data = next;
-        fileView.setText(JSON.stringify(root.data));
+        root.entries = next;
+        fileView.setText(JSON.stringify(root.entries));
     }
 
     // Launch count, discounted by how long ago the app was last used (halves every ~2 weeks of disuse)
     function score(id) {
-        const e = root.data[id];
+        const e = root.entries[id];
         if (!e) return 0;
         const days = Math.max(0, (Date.now() - (e.last ?? 0)) / 86400000);
         return e.count / (1 + days / 14);
@@ -38,11 +38,11 @@ Singleton {
         id: fileView
         path: root.filePath
         onLoaded: {
-            try { root.data = JSON.parse(fileView.text()) ?? {}; } catch (e) { root.data = {}; }
+            try { root.entries = JSON.parse(fileView.text()) ?? {}; } catch (e) { root.entries = {}; }
         }
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
-                root.data = {};
+                root.entries = {};
                 fileView.setText("{}");
             }
         }
