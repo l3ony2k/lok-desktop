@@ -14,9 +14,11 @@ Item {
     anchors.fill: parent
     property bool aiChatEnabled: Config.options.policies.ai !== 0
     property bool translatorEnabled: Config.options.sidebar.translator.enable
+    property bool dashboardEnabled: Config.options.sidebar.dashboard?.enable ?? false
     property bool animeEnabled: Config.options.policies.weeb !== 0
     property bool animeCloset: Config.options.policies.weeb === 2
     property var tabButtonList: [
+        ...(root.dashboardEnabled ? [{"icon": "monitoring", "name": Translation.tr("Dashboard")}] : []),
         ...(root.aiChatEnabled ? [{"icon": "neurology", "name": Translation.tr("Intelligence")}] : []),
         ...(root.translatorEnabled ? [{"icon": "translate", "name": Translation.tr("Translator")}] : []),
         ...((root.animeEnabled && !root.animeCloset) ? [{"icon": "bookmark_heart", "name": Translation.tr("Anime")}] : [])
@@ -48,7 +50,7 @@ Item {
         spacing: sidebarPadding
 
         Toolbar {
-            visible: tabButtonList.length > 0
+            visible: tabButtonList.length > (Appearance.lok ? 1 : 0) // lok: a single tab needs no tab bar
             Layout.alignment: Qt.AlignHCenter
             enableShadow: false
             ToolbarTabBar {
@@ -84,14 +86,19 @@ Item {
                 }
 
                 contentChildren: [
+                    ...(root.dashboardEnabled ? [dashboard.createObject()] : []),
                     ...(root.aiChatEnabled ? [aiChat.createObject()] : []),
                     ...(root.translatorEnabled ? [translator.createObject()] : []),
-                    ...((root.tabButtonList.length === 0 || (!root.aiChatEnabled && !root.translatorEnabled && root.animeCloset)) ? [placeholder.createObject()] : []),
+                    ...((root.tabButtonList.length === 0 || (!root.dashboardEnabled && !root.aiChatEnabled && !root.translatorEnabled && root.animeCloset)) ? [placeholder.createObject()] : []),
                     ...(root.animeEnabled ? [anime.createObject()] : []),
                 ]
             }
         }
 
+        Component {
+            id: dashboard
+            Dashboard {}
+        }
         Component {
             id: aiChat
             AiChat {}

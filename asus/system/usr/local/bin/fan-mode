@@ -1,0 +1,48 @@
+#!/bin/bash
+# fan-mode — Chromebook EC fan control for the ii dashboard (lok task, 2026-11-14).
+#   auto   EC automatic control (default, also after boot and before sleep)
+#   cool   fixed 40% duty until the CPU package is <= COOL_TARGET C for 30 s, then auto
+#          (gives up to auto above COOL_ABORT C, or after COOL_MAX_SECS)
+#   max    ramps 55 -> 70 -> 85 -> 100% over ~5 s and stays there until auto
+#   status prints the current mode
+# State: /run/fan-mode/mode (world-readable). Watchers run as transient unit fan-mode-watch.
+set -u
+STATE=/run/fan-mode
+UNIT=fan-mode-watch
+COOL_DUTY=40 COOL_TARGET=50 COOL_ABORT=85 COOL_MAX_SECS=900 COOL_MIN_SECS=60
+
+pkg_temp() {
+    local l
+    for l in /sys/class/hwmon/hwmon*/temp*_label; do
+        [ "$(cat "$l" 2>/dev/null)" = "Package id 0" ] && { echo $(( $(cat "${l%_label}_input") / 1000 )); return; }
+    done
+    echo 0
+}
+put_mode() { mkdir -p "$STATE"; echo "$1" > "$STATE/mode.tmp" && mv "$STATE/mode.tmp" "$STATE/mode"; chmod 644 "$STATE/mode"; }
+set_auto() { ectool autofanctrl >/dev/null 2>&1; put_mode auto; }
+stop_watch() { systemctl stop "$UNIT" 2>/dev/null; systemctl reset-failed "$UNIT" 2>/dev/null; }
+
+case "${1:-status}" in
+    auto) stop_watch; set_auto ;;
+    cool)
+        stop_watch
+        ectool fanduty "$COOL_DUTY" >/dev/null && put_mode cool
+        systemd-run --quiet --unit="$UNIT" /usr/local/bin/fan-mode _watch-cool ;;
+    max)
+        stop_watch; put_mode max
+        systemd-run --quiet --unit="$UNIT" /usr/local/bin/fan-mode _ramp-max ;;
+    status) cat "$STATE/mode" 2>/dev/null || echo auto ;;
+    _watch-cool)
+        trap 'set_auto; exit 0' TERM INT
+        start=$(date +%s); below=0
+        while sleep 5; do
+            t=$(pkg_temp); el=$(( $(date +%s) - start ))
+            if [ "$t" -ge "$COOL_ABORT" ] || [ "$el" -ge "$COOL_MAX_SECS" ]; then break; fi
+            if [ "$t" -le "$COOL_TARGET" ]; then below=$((below + 5)); else below=0; fi
+            [ "$below" -ge 30 ] && [ "$el" -ge "$COOL_MIN_SECS" ] && break
+        done
+        trap - TERM INT; set_auto ;;
+    _ramp-max)
+        for d in 55 70 85 100; do ectool fanduty "$d" >/dev/null; sleep 1.5; done ;;
+    *) echo "usage: fan-mode auto|cool|max|status" >&2; exit 2 ;;
+esac

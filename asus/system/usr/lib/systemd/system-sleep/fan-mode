@@ -1,0 +1,4 @@
+#!/bin/sh
+# Never sleep with a forced fan duty: go back to EC automatic control first.
+[ "$1" = pre ] && /usr/local/bin/fan-mode auto
+exit 0

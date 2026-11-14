@@ -1,0 +1,7 @@
+[Unit]
+Description=Fan back to EC automatic control at boot (fan-mode)
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fan-mode auto
+[Install]
+WantedBy=multi-user.target

@@ -525,6 +525,9 @@
     },
     "todo": {
       "enable": false
+    },
+    "dashboard": {
+      "enable": true
     }
   },
   "sounds": {

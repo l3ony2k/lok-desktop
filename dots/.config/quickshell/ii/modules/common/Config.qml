@@ -517,6 +517,9 @@ Singleton {
                 property JsonObject todo: JsonObject {
                     property bool enable: true // false: no To Do tab, clock-popup row, task count or launcher action
                 }
+                property JsonObject dashboard: JsonObject { // lok: scratchpad + machine monitor tab
+                    property bool enable: false
+                }
                 property JsonObject translator: JsonObject {
                     property bool enable: false
                     property int delay: 300 // Delay before sending request. Reduces (potential) rate limits and lag.

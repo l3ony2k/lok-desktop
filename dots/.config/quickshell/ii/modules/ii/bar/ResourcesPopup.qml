@@ -31,6 +31,33 @@ StyledPopup {
                     label: Translation.tr("Load:")
                     value: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
                 }
+                StyledPopupValueRow {
+                    visible: MachineStats.coretempDir.length > 0
+                    icon: "device_thermostat"
+                    label: Translation.tr("Temp:")
+                    value: `${Math.round(MachineStats.cpuTemp)}°C`
+                }
+            }
+
+            // GPU (MachineStats, xe idle residency)
+            StyledPopupHeaderRow {
+                visible: MachineStats.gtDir.length > 0
+                icon: "monitor"
+                label: "GPU"
+            }
+            Column {
+                visible: MachineStats.gtDir.length > 0
+                spacing: 4
+                StyledPopupValueRow {
+                    icon: "bolt"
+                    label: Translation.tr("Load:")
+                    value: `${Math.round(MachineStats.gpuUsage * 100)}%`
+                }
+                StyledPopupValueRow {
+                    icon: "speed"
+                    label: Translation.tr("Freq:")
+                    value: MachineStats.gpuFreq > 0 ? `${Math.round(MachineStats.gpuFreq)} MHz` : Translation.tr("idle")
+                }
             }
         }
 
