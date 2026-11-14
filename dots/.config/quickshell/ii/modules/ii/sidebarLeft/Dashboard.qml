@@ -100,15 +100,9 @@ Item {
         Item {
         Layout.fillWidth: true
         Layout.preferredHeight: Math.min(monitorGrid.implicitHeight, root.height - root.minScratchHeight - root.gap * 3)
-        DetailView {
-            anchors.fill: parent
-            visible: root.detail !== ""
-            kind: root.detail
-        }
         Flickable {
             id: monitorFlick
             anchors.fill: parent
-            visible: root.detail === ""
             contentHeight: monitorGrid.implicitHeight
             clip: true
             boundsBehavior: Flickable.StopAtBounds
@@ -516,12 +510,39 @@ Item {
     }
 
     // ---------- detail pages ----------
-    component DetailView: Rectangle {
+    // A modal over the whole sidebar, the same WindowDialog the right sidebar's tile dialogs use:
+    // click the scrim, press Esc or Done to dismiss. `kind` is held while the close animation runs.
+    Loader {
+        id: detailLoader
+        anchors.fill: parent
+        z: 10
+        active: false
+        property string kind: ""
+        readonly property bool wanted: root.detail !== ""
+        onWantedChanged: {
+            if (wanted) {
+                kind = root.detail;
+                if (item) { item.show = true; item.forceActiveFocus(); } else active = true;
+            } else if (item) item.show = false;
+        }
+        onLoaded: { item.show = true; item.forceActiveFocus(); }
+        sourceComponent: DetailDialog { kind: detailLoader.kind }
+        Connections {
+            target: detailLoader.item
+            function onDismiss() {
+                root.detail = "";
+                root.forceActiveFocus(); // back to the scratchpad
+            }
+            function onVisibleChanged() {
+                if (!detailLoader.item.visible && root.detail === "") detailLoader.active = false;
+            }
+        }
+    }
+
+    component DetailDialog: WindowDialog {
         id: dv
         property string kind
-        color: Appearance.colors.colLayer2
-        LokFrame { color: Appearance.colors.colLokDivider }
-        readonly property bool sampling: root.live && visible
+        readonly property bool sampling: root.live && dv.show
 
         // per-kind extra sources, only while this page is open
         property var cores: [] // [{use, mhz}]
@@ -611,28 +632,14 @@ Item {
         function peakOf(list, floor) { return Math.max(floor, ...Array.prototype.slice.call(list)); }
         function norm(list, peak) { return Array.prototype.slice.call(list).map(v => v / peak); }
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: root.pad
-            spacing: root.gap
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: root.gap
-                RippleButton {
-                    Layout.preferredWidth: 28; Layout.preferredHeight: 28
-                    colBackground: "transparent"
-                    onClicked: { root.detail = ""; root.forceActiveFocus(); }
-                    contentItem: MaterialSymbol { anchors.centerIn: parent; text: "arrow_back"; iconSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colOnLayer2 }
-                }
-                StyledText { Layout.fillWidth: true; text: dv.titles[dv.kind] ?? ""; font.pixelSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colOnLayer2 }
-                StyledText { text: Translation.tr("Esc to go back"); font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
-            }
-            Rectangle { Layout.fillWidth: true; implicitHeight: Appearance.sizes.hairline; color: Appearance.colors.colLokDivider }
+        WindowDialogTitle { text: dv.titles[dv.kind] ?? "" }
+        WindowDialogSeparator {}
 
             Flickable {
                 id: detailFlick
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+                // content-sized; scrolls only when the page is taller than the sidebar allows
+                Layout.preferredHeight: Math.min(detailColumn.implicitHeight, Math.max(160, dv.height - 220))
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 contentHeight: detailColumn.implicitHeight
@@ -716,6 +723,14 @@ Item {
                                [Translation.tr("Charge limit"), BatteryLimit.limit > 0 ? `${BatteryLimit.limit}%` : "—"]]
                     }
                 }
+            }
+
+        WindowDialogSeparator {}
+        WindowDialogButtonRow {
+            Item { Layout.fillWidth: true }
+            DialogButton {
+                buttonText: Translation.tr("Done")
+                onClicked: dv.dismiss()
             }
         }
     }
@@ -814,7 +829,7 @@ Item {
             hoverEnabled: true
             enabled: card.detailKey.length > 0
             cursorShape: Qt.PointingHandCursor
-            onClicked: { root.detail = card.detailKey; root.forceActiveFocus(); } // so Esc reaches root
+            onClicked: root.detail = card.detailKey
         }
         ColumnLayout {
             id: cardColumn
