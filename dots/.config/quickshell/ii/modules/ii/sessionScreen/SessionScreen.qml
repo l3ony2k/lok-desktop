@@ -100,6 +100,7 @@ Scope {
                 }
 
                 GridLayout {
+                    id: sessionGrid
                     columns: 4
                     columnSpacing: 15
                     rowSpacing: 15
@@ -234,7 +235,14 @@ Scope {
 
                 DescriptionLabel {
                     Layout.alignment: Qt.AlignHCenter
-                    text: sessionRoot.subtitle
+                    // lok: the label names the hovered tile (session tiles have no tooltip in lok)
+                    text: {
+                        if (Appearance.lok) for (let i = 0; i < sessionGrid.children.length; i++) {
+                            const c = sessionGrid.children[i];
+                            if (c.hovered && c.buttonText) return c.buttonText;
+                        }
+                        return sessionRoot.subtitle;
+                    }
                 }
             }
 

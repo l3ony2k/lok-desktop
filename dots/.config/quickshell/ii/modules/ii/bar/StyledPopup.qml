@@ -40,10 +40,16 @@ LazyLoader {
                 if (!Config.options.bar.vertical) {
                     const x = (root.QsWindow?.mapFromItem(
                         root.hoverTarget,
-                        (root.hoverTarget.width - popupBackground.implicitWidth) / 2, 0
+                        // lok: centre on the item's visible content (childrenRect), not on a box with trailing padding
+                        (Appearance.lok && root.hoverTarget.childrenRect.width > 0)
+                            ? root.hoverTarget.childrenRect.x + (root.hoverTarget.childrenRect.width - popupBackground.implicitWidth) / 2
+                            : (root.hoverTarget.width - popupBackground.implicitWidth) / 2, 0
                     ).x ?? 0) - popupBackground.anchors.leftMargin; // centre the visible box, not the window
                     const screenW = popupWindow.screen?.width ?? (x + popupWindow.implicitWidth);
-                    return Math.max(0, Math.min(x, screenW - popupWindow.implicitWidth));
+                    // lok: keep the visible box (not the window) on screen, with the sidebar gap at the edge
+                    const maxX = Appearance.lok ? screenW - Appearance.sizes.popupGap - popupBackground.implicitWidth - popupBackground.anchors.leftMargin
+                                                : screenW - popupWindow.implicitWidth;
+                    return Math.max(0, Math.min(x, maxX));
                 }
                 return Appearance.sizes.verticalBarWidth
             }
@@ -70,12 +76,17 @@ LazyLoader {
             id: popupBackground
             readonly property real margin: 10
             anchors {
-                fill: parent
+                fill: Appearance.lok ? undefined : parent
                 leftMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.left)
                 rightMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.right)
                 topMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.top)
                 bottomMargin: Appearance.sizes.popupGap + root.popupBackgroundMargin * (!popupWindow.anchors.bottom)
             }
+            // lok: exactly its implicit size at the computed offset (filling the window made it 4 px wider, off-centre)
+            x: anchors.leftMargin
+            y: popupWindow.anchors.bottom ? parent.height - anchors.bottomMargin - implicitHeight : anchors.topMargin
+            width: implicitWidth
+            height: implicitHeight
             implicitWidth: root.contentItem.implicitWidth + margin * 2
             implicitHeight: root.contentItem.implicitHeight + margin * 2
             color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.m3colors.m3surfaceContainer
