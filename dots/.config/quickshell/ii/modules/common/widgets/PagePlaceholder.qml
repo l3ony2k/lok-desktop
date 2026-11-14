@@ -34,6 +34,9 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             padding: 12
             iconSize: 56
+            // lok: an empty state is quiet: no shape behind the icon, icon in the text's colour
+            color: Appearance.lok ? "transparent" : Appearance.colors.colSecondaryContainer
+            colSymbol: Appearance.lok ? Appearance.m3colors.m3outline : Appearance.colors.colOnSecondaryContainer
             rotation: -30 * (1 - root.opacity)
         }
         StyledText {

@@ -38,7 +38,8 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: root.gap
+        // lok: the sidebar's own padding is the margin (the page no longer sits on a layer of its own)
+        anchors.margins: Appearance.lok ? 0 : root.gap
         spacing: root.gap
 
         // ---------- Scratchpad ----------

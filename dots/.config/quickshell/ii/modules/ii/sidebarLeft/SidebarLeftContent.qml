@@ -67,7 +67,8 @@ Item {
             implicitWidth: swipeView.implicitWidth
             implicitHeight: swipeView.implicitHeight
             radius: Appearance.rounding.normal
-            color: Appearance.colors.colLayer1
+            // lok: no extra layer between the sidebar and the pages' own cards
+            color: Appearance.lok ? "transparent" : Appearance.colors.colLayer1
 
             SwipeView { // Content pages
                 id: swipeView
