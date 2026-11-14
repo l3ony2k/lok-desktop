@@ -14,13 +14,15 @@ AbstractQuickPanel {
     Layout.fillWidth: true
 
     // Sizes
-    implicitHeight: (editMode ? contentItem.implicitHeight : usedRows.implicitHeight) + root.padding * 2
+    implicitHeight: (editMode ? contentItem.implicitHeight : usedRows.implicitHeight) + root.verticalPadding * 2
     Behavior on implicitHeight {
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
     }
     // lok: spacing and cells in whole device pixels (scale 1.333), so every gap renders the same
     property real spacing: Appearance.lok ? 9 : 6 // lok: 9 logical = 12 device px at 1.333
     property real padding: Appearance.lok ? 8 : 6
+    // lok: vertical padding equals the centred grid's side inset (17 device px at 1.333)
+    readonly property real verticalPadding: Appearance.lok ? Math.round(12.75 * Appearance.dpr) / Appearance.dpr : padding
     readonly property real baseCellWidth: {
         // This is the wrong calculation, but it looks correct in reality???
         // (theoretically spacing should be multiplied by 1 column less)
@@ -66,6 +68,8 @@ AbstractQuickPanel {
         anchors {
             fill: parent
             margins: root.padding
+            topMargin: root.verticalPadding
+            bottomMargin: root.verticalPadding
         }
         spacing: 12
         

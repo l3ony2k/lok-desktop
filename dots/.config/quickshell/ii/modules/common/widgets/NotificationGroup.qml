@@ -246,7 +246,7 @@ MouseArea { // Notification group area
                         notificationObject: modelData
                         expanded: root.expanded
                         onlyNotification: (root.notificationCount === 1)
-                        opacity: (!root.expanded && index == 1 && root.notificationCount > 2) ? (Appearance.lok ? 0.75 : 0.5) : 1
+                        opacity: (!root.expanded && index == 1 && root.notificationCount > 2) ? (Appearance.lok ? 1 : 0.5) : 1 // lok: full opacity, muted text keeps >= 4.5:1
                         visible: root.expanded || (index < 2)
                         anchors.left: parent?.left
                         anchors.right: parent?.right

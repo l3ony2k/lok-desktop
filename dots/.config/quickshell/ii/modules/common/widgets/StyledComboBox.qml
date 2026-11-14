@@ -12,8 +12,9 @@ ComboBox {
 
     property string buttonIcon: ""
     property real buttonRadius: Appearance.lok ? 0 : height / 2
-    property color colBackground: Appearance.colors.colSecondaryContainer
-    property color colBackgroundHover: Appearance.colors.colSecondaryContainerHover
+    // lok: header = one step above the dialog surface, hover = one more step (stays below the selected fill)
+    property color colBackground: Appearance.lok ? Appearance.colors.colLokDialogHover : Appearance.colors.colSecondaryContainer
+    property color colBackgroundHover: Appearance.lok ? (Appearance.m3colors.darkmode ? "#3b3b3b" : "#e3e3e3") : Appearance.colors.colSecondaryContainerHover
     property color colBackgroundActive: Appearance.colors.colSecondaryContainerActive
 
     implicitHeight: 40

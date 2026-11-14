@@ -7,7 +7,7 @@ import qs.modules.common.widgets
 Rectangle {
     id: root
     radius: Appearance.rounding.small
-    color: Appearance.colors.colSurfaceContainerHigh
+    color: Appearance.lok ? Appearance.colors.colLokDialogHover : Appearance.colors.colSurfaceContainerHigh
     implicitWidth: columnLayout.implicitWidth + (Appearance.lok ? 8 : 14) * 2 // lok: narrower so the popup centres under its item
     implicitHeight: columnLayout.implicitHeight + 14 * 2
     Layout.fillWidth: parent
