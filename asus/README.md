@@ -9,8 +9,9 @@ customisations (commits on `main`). `./setup exp-update` pulls from `origin`
   (PAM sudo fingerprint line, logind/sleep drop-ins, ASPM tmpfiles, mkinitcpio
   without `kms`, kernel cmdline with memmap, console font, keyd). Not installed
   by setup; restore by hand.
-- `asus/src/` — sources: e820-hibfix DKMS module, fingerprint (crosec FP_INFO v2
-  patch, pam_rust_fp_safe, PKGBUILD), power-key debounce, sleep-lock-delay.
+- `asus/src/` — sources: e820-hibfix DKMS module, fingerprint (full rust-fp / crosec-rs
+  working-tree snapshot, pam-safe, fprintd shim, PKGBUILDs), power-key debounce, sleep-lock-delay.
+- `asus/lok/` — the lok style (see its README); `demo_shoot.sh` + `compose.py` rebuild the README screenshots.
 - `asus/RUNBOOK-updates.md` — how to update the system and these dots safely.
 
 Full history and reasoning: ~/.local/share/claude/asus-arch-ops/ on the machine.
