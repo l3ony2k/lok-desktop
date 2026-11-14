@@ -1,15 +1,17 @@
 #!/bin/bash
 # fan-mode — Chromebook EC fan control for the ii dashboard (lok task, 2026-11-14).
 #   auto   EC automatic control (default, also after boot and before sleep)
-#   cool   fixed 40% duty until the CPU package is <= COOL_TARGET C for 30 s, then auto
-#          (gives up to auto above COOL_ABORT C, or after COOL_MAX_SECS)
+#   cool   boost cooling: every 2 s duty = max(40%, CPU-package curve 50C->40% .. 80C->100%,
+#          what the EC's own curve wants right now). Never quieter than auto. Ramps up at once,
+#          down by at most 5%/tick. Back to auto once the package is <= COOL_TARGET C and the
+#          board sensors are below the EC fan-off point for 30 s (min 60 s, max COOL_MAX_SECS).
 #   max    ramps 55 -> 70 -> 85 -> 100% over ~5 s and stays there until auto
 #   status prints the current mode
-# State: /run/fan-mode/mode (world-readable). Watchers run as transient unit fan-mode-watch.
+# State: /run/fan-mode/mode and /run/fan-mode/duty (world-readable). Watchers run as transient unit fan-mode-watch.
 set -u
 STATE=/run/fan-mode
 UNIT=fan-mode-watch
-COOL_DUTY=40 COOL_TARGET=50 COOL_ABORT=85 COOL_MAX_SECS=900 COOL_MIN_SECS=60
+COOL_FLOOR=40 COOL_LOW=50 COOL_HIGH=80 COOL_TARGET=50 COOL_MAX_SECS=1800 COOL_MIN_SECS=60 COOL_STEP_DOWN=5
 
 pkg_temp() {
     local l
@@ -18,28 +20,38 @@ pkg_temp() {
     done
     echo 0
 }
-put_mode() { mkdir -p "$STATE"; echo "$1" > "$STATE/mode.tmp" && mv "$STATE/mode.tmp" "$STATE/mode"; chmod 644 "$STATE/mode"; }
-set_auto() { ectool autofanctrl >/dev/null 2>&1; put_mode auto; }
+put() { mkdir -p "$STATE"; echo "$2" > "$STATE/$1.tmp" && mv "$STATE/$1.tmp" "$STATE/$1"; chmod 644 "$STATE/$1"; }
+put_mode() { put mode "$1"; }
+set_auto() { ectool autofanctrl >/dev/null 2>&1; put_mode auto; put duty -1; }
+# highest "ratio between fan_off and fan_max" over the EC sensors = the duty auto would use now
+ec_ratio() { ectool temps all 2>/dev/null | grep -o '[0-9]*% (' | tr -dc '0-9\n' | sort -n | tail -1; }
+# CPU-package curve: <= COOL_LOW -> COOL_FLOOR, >= COOL_HIGH -> 100, linear between
+pkg_curve() { local t=$1; [ "$t" -le "$COOL_LOW" ] && { echo "$COOL_FLOOR"; return; }; [ "$t" -ge "$COOL_HIGH" ] && { echo 100; return; }
+    echo $(( COOL_FLOOR + (t - COOL_LOW) * (100 - COOL_FLOOR) / (COOL_HIGH - COOL_LOW) )); }
 stop_watch() { systemctl stop "$UNIT" 2>/dev/null; systemctl reset-failed "$UNIT" 2>/dev/null; }
 
 case "${1:-status}" in
     auto) stop_watch; set_auto ;;
     cool)
         stop_watch
-        ectool fanduty "$COOL_DUTY" >/dev/null && put_mode cool
+        ectool fanduty "$COOL_FLOOR" >/dev/null && put_mode cool && put duty "$COOL_FLOOR"
         systemd-run --quiet --unit="$UNIT" /usr/local/bin/fan-mode _watch-cool ;;
     max)
-        stop_watch; put_mode max
+        stop_watch; put_mode max; put duty 100
         systemd-run --quiet --unit="$UNIT" /usr/local/bin/fan-mode _ramp-max ;;
     status) cat "$STATE/mode" 2>/dev/null || echo auto ;;
     _watch-cool)
         trap 'set_auto; exit 0' TERM INT
-        start=$(date +%s); below=0
-        while sleep 5; do
-            t=$(pkg_temp); el=$(( $(date +%s) - start ))
-            if [ "$t" -ge "$COOL_ABORT" ] || [ "$el" -ge "$COOL_MAX_SECS" ]; then break; fi
-            if [ "$t" -le "$COOL_TARGET" ]; then below=$((below + 5)); else below=0; fi
-            [ "$below" -ge 30 ] && [ "$el" -ge "$COOL_MIN_SECS" ] && break
+        start=$(date +%s); calm=0; duty=$COOL_FLOOR
+        while sleep 2; do
+            t=$(pkg_temp); ec=$(ec_ratio); ec=${ec:-0}; el=$(( $(date +%s) - start ))
+            want=$(pkg_curve "$t"); [ "$ec" -gt "$want" ] && want=$ec
+            if [ "$want" -lt $((duty - COOL_STEP_DOWN)) ]; then want=$((duty - COOL_STEP_DOWN)); fi
+            [ "$want" -lt "$COOL_FLOOR" ] && want=$COOL_FLOOR
+            if [ "$want" -ne "$duty" ]; then ectool fanduty "$want" >/dev/null || break; duty=$want; put duty "$duty"; fi
+            if [ "$t" -le "$COOL_TARGET" ] && [ "$ec" -eq 0 ]; then calm=$((calm + 2)); else calm=0; fi
+            [ "$calm" -ge 30 ] && [ "$el" -ge "$COOL_MIN_SECS" ] && break
+            [ "$el" -ge "$COOL_MAX_SECS" ] && break
         done
         trap - TERM INT; set_auto ;;
     _ramp-max)
