@@ -197,8 +197,10 @@ ComboBox {
             Rectangle {
                 id: popupBackground
                 anchors.fill: parent
-                radius: Appearance.rounding.normal
-                color: Appearance.m3colors.m3surfaceContainerHigh
+                radius: Appearance.lok ? 0 : Appearance.rounding.normal
+                // lok: floating surface colour, so the one-step hover (#313131 / #efefef) is visible on it
+                color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.m3colors.m3surfaceContainerHigh
+                LokFrame { visible: Appearance.lok; z: 99; color: Appearance.colors.colLokFrame }
             }
         }
 
