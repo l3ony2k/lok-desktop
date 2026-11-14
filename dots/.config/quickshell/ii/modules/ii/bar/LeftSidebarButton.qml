@@ -38,7 +38,7 @@ RippleButton {
     }
 
     Connections {
-        target: Booru
+        target: root.animeEnabled ? Booru : null // weeb off: never load the Booru service
         function onResponseFinished() {
             if (GlobalStates.sidebarLeftOpen) return;
             root.showPing = true;

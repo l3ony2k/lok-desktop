@@ -230,6 +230,7 @@ ContentPage {
 
             // Weeb policy
             ColumnLayout {
+                visible: Config.options.policies.weeb !== 0 // off: no trace in Settings (set policies.weeb in config.json)
 
                 ContentSubsectionLabel {
                     text: Translation.tr("Weeb")
