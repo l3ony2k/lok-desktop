@@ -9,6 +9,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.UPower
 
 /**
  * Left sidebar dashboard (lok task, 2026-11-14): a scratchpad on top (same file as the
@@ -193,9 +194,13 @@ Item {
                         unit: "RPM"
                     }
                     CardFooter {
-                        text: MachineStats.fanMode === "cool" ? Translation.tr("40% until ≤ 50°C")
+                        // cool = temperature-driven boost (never quieter than auto); power profile shown
+                        // because it decides how much heat there is (it never touches the fan here)
+                        readonly property string profile: PowerProfiles.profile === PowerProfile.PowerSaver ? Translation.tr("saver")
+                            : PowerProfiles.profile === PowerProfile.Performance ? Translation.tr("performance") : Translation.tr("balanced")
+                        text: MachineStats.fanMode === "cool" ? Translation.tr("Boost %1% · until ≤ 50°C").arg(Math.max(0, MachineStats.fanDuty))
                             : MachineStats.fanMode === "max" ? Translation.tr("Forced 100%")
-                            : (MachineStats.fanRpm > 0 ? Translation.tr("EC automatic") : Translation.tr("EC automatic · off"))
+                            : Translation.tr("EC auto · %1").arg(profile)
                     }
                     RowLayout {
                         Layout.fillWidth: true
