@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=OneKey
+Exec=/home/leon/Applications/OneKey-Wallet.AppImage --no-sandbox --password-store=gnome-libsecret %U
+Terminal=false
+Type=Application
+Icon=onekey-wallet
+StartupWMClass=OneKey
+Comment=Anti-scam crypto wallet for every chain.
+Categories=Utility;
+MimeType=x-scheme-handler/onekey-wallet;x-scheme-handler/wc;x-scheme-handler/ethereum;

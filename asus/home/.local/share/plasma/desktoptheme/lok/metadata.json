@@ -1,0 +1,15 @@
+{
+ "KPlugin": {
+  "Id": "lok",
+  "Name": "Lok",
+  "Version": "1",
+  "Description": "Square, shadowless, greyscale (lok.computer). Generated; colours follow the KDE colour scheme.",
+  "License": "LGPL-2.1+",
+  "Authors": [
+   {
+    "Name": "leon"
+   }
+  ]
+ },
+ "X-Plasma-API-Minimum-Version": "6.0"
+}

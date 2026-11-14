@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Run hyprlock with the machine config in ~/.config/hypr/custom/ (kept across
+# dots updates; the dots' ~/.config/hypr/hyprlock.conf is not). Fingerprint
+# there goes through the rust-fp-fprintd shim. (asus-arch-ops 2026-11-12)
+# exec keeps the process name "hyprlock", so `pidof hyprlock` still works.
+cfg="$HOME/.config/hypr/custom/hyprlock.conf"
+if [ -r "$cfg" ]; then
+    exec /usr/bin/hyprlock -c "$cfg" "$@"
+fi
+exec /usr/bin/hyprlock "$@"

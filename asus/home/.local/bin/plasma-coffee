@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# plasma-coffee on|off|toggle|status — the ii "coffee" toggle for Plasma (2026-11-12).
+#
+# Under Hyprland, ii's coffee holds a logind handle-lid-switch inhibitor and
+# lid-coffee locks + blanks the panel. Under Plasma, PowerDevil handles the lid
+# itself and ignores app inhibitions for it, so here coffee =
+#   1. a user unit `plasma-coffee.service` running `kde-inhibit --power --screenSaver`
+#      (no idle sleep, no idle lock) while coffee is on, and
+#   2. PowerDevil's lid action switched to "Lock screen" (32) for AC/Battery/LowBattery,
+#      restored by the unit's ExecStopPost — also when the Plasma session ends
+#      (PartOf=graphical-session.target), so a crash cannot leave the lid disabled.
+# With coffee on and the lid closed the machine keeps running at full power.
+set -u
+UNIT=plasma-coffee.service
+SELF=$(readlink -f "$0")
+PROFILES=(AC Battery LowBattery)
+
+reparse() {
+  gdbus call --session -d org.kde.Solid.PowerManagement -o /org/kde/Solid/PowerManagement \
+    -m org.kde.Solid.PowerManagement.reparseConfiguration >/dev/null 2>&1 || true
+}
+
+lid_lock() {
+  for p in "${PROFILES[@]}"; do
+    kwriteconfig6 --file powerdevilrc --group "$p" --group SuspendAndShutdown --key LidAction 32
+  done
+  reparse
+}
+
+lid_restore() {
+  for p in "${PROFILES[@]}"; do
+    kwriteconfig6 --file powerdevilrc --group "$p" --group SuspendAndShutdown --key LidAction --delete
+  done
+  reparse
+}
+
+active() { systemctl --user is-active --quiet "$UNIT"; }
+
+case "${1:-status}" in
+  on)
+    active && exit 0
+    lid_lock
+    systemd-run --user --quiet --unit="${UNIT%.service}" \
+      -p PartOf=graphical-session.target -p After=graphical-session.target \
+      -p ExecStopPost="$SELF restore-lid" \
+      --description="Coffee: keep awake (Plasma)" \
+      kde-inhibit --power --screenSaver sleep infinity
+    ;;
+  off)
+    systemctl --user stop "$UNIT" 2>/dev/null
+    lid_restore   # in case the unit was already gone
+    ;;
+  toggle)
+    if active; then "$SELF" off; else "$SELF" on; fi
+    ;;
+  restore-lid)
+    lid_restore
+    ;;
+  status)
+    if active; then echo on; else echo off; fi
+    ;;
+  *)
+    echo "usage: plasma-coffee on|off|toggle|status" >&2; exit 2
+    ;;
+esac

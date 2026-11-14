@@ -1,0 +1,11 @@
+[Unit]
+Description=Watch end-4 Material colors for Herdr theme sync
+
+[Path]
+# Written by quickshell's switchwall.sh after matugen + terminal palette
+# generation, so it is the first moment the whole palette is consistent.
+PathChanged=%h/.local/state/quickshell/user/generated/material_colors.scss
+Unit=herdr-end4-theme.service
+
+[Install]
+WantedBy=default.target

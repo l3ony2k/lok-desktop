@@ -1,0 +1,26 @@
+# 用户补丁：小鹤双拼 + 模糊音 + 状态栏显示 中/A
+# 不改动上游 double_pinyin_flypy.schema.yaml，更新时不会被覆盖。
+
+patch:
+  # 状态浮窗显示：中文模式首字符改为「中」
+  # fcitx5-rime 的 subModeLabel() 在中文态取 schema/name 的首字，
+  # 所以必须改方案名，而不是改 switches 的 states。
+  schema/name: 中文（小鹤双拼）
+
+  # 英文模式的短标签取 ascii_mode 的 state（需 LatinModeNameFromSchema=True）
+  switches/@0/states: [ 中, A ]
+
+  # 左右 Shift 切中英：上屏物理原始编码（commit_code），不要默认候选。
+  # 写在 schema 自己的配置里，优先于 /usr/share/rime-data/default.yaml
+  # 的 Shift_R: commit_text。
+  ascii_composer/switch_key/Shift_L: commit_code
+  ascii_composer/switch_key/Shift_R: commit_code
+
+  # 模糊音：in/ing、en/eng 双向互通
+  # 双拼下这些规则作用于转成双拼编码之前的全拼拼写，
+  # 因此 dan/dang、fen/feng、jin/jing 等会互相匹配。
+  # 注意：补丁在列表同一位置插入会互相覆盖，所以每条用不同的位置。
+  speller/algebra/@before 0: derive/^([a-z])in$/$1ing/
+  speller/algebra/@after 0: derive/^([a-z])ing$/$1in/
+  speller/algebra/@after 1: derive/^([a-z])en$/$1eng/
+  speller/algebra/@after 2: derive/^([a-z])eng$/$1en/

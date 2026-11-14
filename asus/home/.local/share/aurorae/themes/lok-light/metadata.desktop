@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Lok Light
+Comment=lok.computer windows (generated)
+X-KDE-PluginInfo-Name=lok-light
+X-KDE-PluginInfo-Author=leon
+X-KDE-PluginInfo-Version=1
+X-KDE-PluginInfo-License=GPL
+X-KDE-ServiceTypes=KWin/Decoration

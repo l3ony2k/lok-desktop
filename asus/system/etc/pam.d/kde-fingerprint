@@ -1,0 +1,14 @@
+#%PAM-1.0
+# 2026-11-12: Plasma lock screen fingerprint via rust-fp (fprintd is not installed;
+# pam_fprintd.so is missing, so the stock /usr/lib/pam.d/kde-fingerprint always failed).
+# kscreenlocker runs this stack next to the password stack (kde), so both work at once.
+# Overrides /usr/lib/pam.d/kde-fingerprint; delete this file to revert.
+auth       required                    pam_shells.so
+auth       requisite                   pam_nologin.so
+auth       requisite                   pam_faillock.so      preauth
+auth       required                    pam_rust_fp_safe.so  timeout=3600 retry
+auth       optional                    pam_permit.so
+auth       required                    pam_env.so
+account    include                     system-local-login
+password   required                    pam_deny.so
+session    include                     system-local-login

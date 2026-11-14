@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Wallpaper sync from ii
+Comment=Use the Hyprland/ii wallpaper in Plasma (desktop + lock screen)
+Exec=/home/leon/.local/bin/plasma-wallpaper-sync
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+NoDisplay=true

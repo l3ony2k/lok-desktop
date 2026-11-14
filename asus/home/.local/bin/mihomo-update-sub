@@ -1,0 +1,64 @@
+#!/bin/bash
+# Refresh /etc/mihomo/config.yaml from the subscription, then re-apply the
+# machine-specific overrides (TUN, DNS, Tailscale coexistence).
+#
+# The subscription only supplies proxies / proxy-groups / rules; everything
+# below is local policy and must survive every refresh.
+set -euo pipefail
+
+SUB_URL="${MIHOMO_SUB_URL:?set MIHOMO_SUB_URL}"  # real URL kept off git
+TARGET=/etc/mihomo/config.yaml
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+echo "==> downloading subscription"
+curl -fsSL --max-time 60 "$SUB_URL" -o "$tmp/config.yaml"
+
+echo "==> applying local overrides"
+yq -i '
+  .allow-lan = false |
+  .bind-address = "127.0.0.1" |
+  .mode = "rule" |
+  .ipv6 = true |
+  .external-ui = "ui" |
+  .external-ui-url = "https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip" |
+  .tun = {
+    "enable": true,
+    "device": "Mihomo",
+    "stack": "gvisor",
+    "auto-route": true,
+    "auto-detect-interface": true,
+    "strict-route": true,
+    "dns-hijack": ["any:53", "tcp://any:53"],
+    "exclude-interface": ["tailscale0"]
+  } |
+  .dns = {
+    "enable": true,
+    "listen": "127.0.0.1:1053",
+    "ipv6": true,
+    "enhanced-mode": "fake-ip",
+    "fake-ip-range": "198.18.0.1/16",
+    "fake-ip-filter": ["*.lan", "*.local", "localhost.ptlogin2.qq.com", "ping.archlinux.org", "1.1.1.1", "223.5.5.5", "+.ts.net", "*.tailscale.com", "*.tailscale.io"],
+    "default-nameserver": ["223.5.5.5", "119.29.29.29"],
+    "nameserver": ["https://223.5.5.5/dns-query", "https://doh.pub/dns-query"],
+    "nameserver-policy": {"+.ts.net": ["100.100.100.100#tailscale0"]}
+  } |
+  .rules = [
+    "IP-CIDR,100.100.100.100/32,DIRECT,no-resolve",
+    "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
+    "DOMAIN-SUFFIX,ts.net,DIRECT",
+    "DOMAIN-SUFFIX,tailscale.com,DIRECT",
+    "DOMAIN-SUFFIX,tailscale.io,DIRECT"
+  ] + .rules
+' "$tmp/config.yaml"
+
+echo "==> validating"
+mihomo -t -f "$tmp/config.yaml" >/dev/null
+
+echo "==> installing"
+sudo install -o mihomo -g mihomo -m 600 "$tmp/config.yaml" "$TARGET"
+sudo systemctl restart mihomo
+sleep 2
+systemctl is-active mihomo
+echo "done"

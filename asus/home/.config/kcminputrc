@@ -1,0 +1,10 @@
+[Libinput][1267][315][Elan Touchpad]
+ClickMethod=2
+DisableWhileTyping=true
+NaturalScroll=true
+ScrollFactor=0.3
+TapToClick=true
+
+[Mouse]
+cursorSize=32
+cursorTheme=McMojave-cursors

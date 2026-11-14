@@ -1,0 +1,103 @@
+--- a/modules/common/Appearance.qml
++++ b/modules/common/Appearance.qml
+@@ -216,7 +216,7 @@
+             property string main: Config.options.appearance.fonts.main
+             property string numbers: Config.options.appearance.fonts.numbers
+             property string title: Config.options.appearance.fonts.title
+-            property string iconMaterial: "Material Symbols Rounded"
++            property string iconMaterial: "Material Symbols Sharp"
+             property string iconNerd: Config.options.appearance.fonts.iconNerd
+             property string monospace: Config.options.appearance.fonts.monospace
+             property string reading: Config.options.appearance.fonts.reading
+--- a/modules/ii/bar/ClockWidget.qml
++++ b/modules/ii/bar/ClockWidget.qml
+@@ -17,21 +17,21 @@
+         spacing: 4
+ 
+         StyledText {
+-            font.pixelSize: Appearance.font.pixelSize.large
++            font.pixelSize: 14
+             color: Appearance.colors.colOnLayer1
+             text: DateTime.time
+         }
+ 
+         StyledText {
+             visible: root.showDate
+-            font.pixelSize: Appearance.font.pixelSize.small
++            font.pixelSize: 14
+             color: Appearance.colors.colOnLayer1
+             text: "•"
+         }
+ 
+         StyledText {
+             visible: root.showDate
+-            font.pixelSize: Appearance.font.pixelSize.small
++            font.pixelSize: 14
+             color: Appearance.colors.colOnLayer1
+             text: DateTime.longDate
+         }
+--- a/modules/ii/bar/ActiveWindow.qml
++++ b/modules/ii/bar/ActiveWindow.qml
+@@ -28,7 +28,7 @@
+ 
+         StyledText {
+             Layout.fillWidth: true
+-            font.pixelSize: Appearance.font.pixelSize.smaller
++            font.pixelSize: 12
+             color: Appearance.colors.colSubtext
+             elide: Text.ElideRight
+             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
+@@ -39,7 +39,7 @@
+ 
+         StyledText {
+             Layout.fillWidth: true
+-            font.pixelSize: Appearance.font.pixelSize.small
++            font.pixelSize: 14
+             color: Appearance.colors.colOnLayer0
+             elide: Text.ElideRight
+             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
+--- a/modules/ii/bar/Resource.qml
++++ b/modules/ii/bar/Resource.qml
+@@ -64,7 +64,7 @@
+                 id: percentageText
+                 anchors.centerIn: parent
+                 color: Appearance.colors.colOnLayer1
+-                font.pixelSize: Appearance.font.pixelSize.small
++                font.pixelSize: 14
+                 text: `${Math.round(percentage * 100).toString()}`
+             }
+         }
+--- a/modules/ii/bar/Media.qml
++++ b/modules/ii/bar/Media.qml
+@@ -82,6 +82,7 @@
+             elide: Text.ElideRight // Truncates the text on the right
+             color: Appearance.colors.colOnLayer1
+             text: `${cleanedTitle}${activePlayer?.trackArtist ? ' • ' + activePlayer.trackArtist : ''}`
++            font.pixelSize: 14
+         }
+ 
+     }
+--- a/modules/ii/bar/BatteryIndicator.qml
++++ b/modules/ii/bar/BatteryIndicator.qml
+@@ -49,7 +49,9 @@
+                 }
+                 StyledText {
+                     Layout.alignment: Qt.AlignVCenter
+-                    font: batteryProgress.font
++                    font.pixelSize: batteryProgress.font.pixelSize
++                    font.weight: batteryProgress.font.weight
++                    font.family: Appearance.font.family.numbers
+                     text: batteryProgress.text
+                 }
+             }
+--- a/modules/ii/bar/SysTray.qml
++++ b/modules/ii/bar/SysTray.qml
+@@ -151,7 +151,7 @@
+             font.pixelSize: Appearance.font.pixelSize.larger
+             color: Appearance.colors.colSubtext
+             text: "•"
+-            visible: root.showSeparator && SystemTray.items.values.length > 0
++            visible: false
+         }
+     }
+ }

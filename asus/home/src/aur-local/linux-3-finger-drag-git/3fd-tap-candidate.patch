@@ -1,0 +1,85 @@
+diff --git a/src/runtime/gesture.rs b/src/runtime/gesture.rs
+index 41f8b80..74e6711 100644
+--- a/src/runtime/gesture.rs
++++ b/src/runtime/gesture.rs
+@@ -37,6 +37,10 @@ use tracing::{debug, warn};
+ 
+ pub const EV_SYN: u16 = 0x00;
+ pub const EV_KEY: u16 = 0x01;
++/// Local patch (ASUS, 2026-11-12): a still 3-finger touch is a *tap*
++/// candidate until it moves this far or outlives libinput's tap timeout.
++const TAP_WINDOW: Duration = Duration::from_millis(180);
++const TAP_MOVE_MM: f64 = 1.5;
+ pub const EV_ABS: u16 = 0x03;
+ pub const SYN_REPORT: u16 = 0x00;
+ pub const SYN_DROPPED: u16 = 0x03;
+@@ -182,6 +186,8 @@ pub struct GestureMachine {
+     /// When set, the button stays held until this instant unless a new
+     /// touch resolves the lock first (see [`Timing::drag_end_delay`]).
+     lock_deadline: Option<Instant>,
++    /// (slot, x, y) where a 3-finger tap candidate started (local patch).
++    tap_origin: Option<(usize, i32, i32)>,
+ }
+ 
+ impl GestureMachine {
+@@ -207,6 +213,7 @@ impl GestureMachine {
+             settled: false,
+             held: false,
+             lock_deadline: None,
++            tap_origin: None,
+         }
+     }
+ 
+@@ -235,6 +242,8 @@ impl GestureMachine {
+             if !self.settled {
+                 let window = if self.touch_max <= 1 {
+                     self.timing.probe_delay
++                } else if self.tap_origin.is_some() {
++                    TAP_WINDOW.max(self.timing.entry_debounce)
+                 } else {
+                     self.timing.entry_debounce
+                 };
+@@ -503,6 +512,7 @@ impl GestureMachine {
+ 
+         if self.touch_start.is_none() {
+             // the first frame of a brand new touch
++            self.tap_origin = None;
+             self.touch_start = Some(now);
+             self.touch_max = count;
+             self.settled = false;
+@@ -563,11 +573,34 @@ impl GestureMachine {
+     /// release it to the compositor as an ordinary gesture.
+     fn resolve_touch_decision(&mut self, count: usize, now: Instant, out: &mut Vec<Output>) {
+         if count == 3 && self.touch_max == 3 {
+-            self.pending.clear();
+             let active = self.active_slots();
++            // Local patch: three resting fingers are a tap until they move.
++            // If they lift inside TAP_WINDOW without moving, the count == 0
++            // path flushes the buffered touch and libinput sees a 3-finger
++            // tap (middle click).
++            if let Some(start) = self.touch_start {
++                let s0 = active[0];
++                let (ox, oy) = match self.tap_origin {
++                    Some((slot, x, y)) if slot == s0 => (x, y),
++                    _ => {
++                        let o = (self.slots[s0].x, self.slots[s0].y);
++                        self.tap_origin = Some((s0, o.0, o.1));
++                        o
++                    }
++                };
++                let dx = (self.slots[s0].x - ox) as f64 / self.x_res;
++                let dy = (self.slots[s0].y - oy) as f64 / self.y_res;
++                let moved = (dx * dx + dy * dy).sqrt() >= TAP_MOVE_MM;
++                if !moved && now < start + TAP_WINDOW {
++                    return; // keep buffering: still a possible tap
++                }
++            }
++            self.tap_origin = None;
++            self.pending.clear();
+             self.commit_drag(&active, now, out);
+             return;
+         }
++        self.tap_origin = None;
+         self.settled = true;
+         self.flush_pending(out);
+     }

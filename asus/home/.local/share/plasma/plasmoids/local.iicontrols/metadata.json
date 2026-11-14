@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Authors": [ { "Name": "leon (local)" } ],
+        "Category": "System Information",
+        "Description": "Mihomo, Tailscale, SSH-LAN, camera privacy, coffee, charge limit and EasyEffects",
+        "Icon": "network-vpn",
+        "Id": "local.iicontrols",
+        "License": "MIT",
+        "Name": "Leon's Toggles",
+        "Version": "1.0"
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationArea": "true",
+    "X-Plasma-NotificationAreaCategory": "SystemServices"
+}

@@ -1,0 +1,156 @@
+diff -ruN a/modules/ii/sidebarRight/quickToggles/AbstractQuickPanel.qml b/modules/ii/sidebarRight/quickToggles/AbstractQuickPanel.qml
+--- a/modules/ii/sidebarRight/quickToggles/AbstractQuickPanel.qml	2026-11-05 22:30:28.603897488 +0800
++++ b/modules/ii/sidebarRight/quickToggles/AbstractQuickPanel.qml	2026-11-05 22:30:28.605730247 +0800
+@@ -12,4 +12,6 @@
+     signal openBluetoothDialog()
+     signal openNightLightDialog()
+     signal openWifiDialog()
++    signal openTailscaleDialog()
++    signal openMihomoDialog()
+ }
+diff -ruN a/modules/ii/sidebarRight/quickToggles/AndroidQuickPanel.qml b/modules/ii/sidebarRight/quickToggles/AndroidQuickPanel.qml
+--- a/modules/ii/sidebarRight/quickToggles/AndroidQuickPanel.qml	2026-11-05 22:30:28.612659685 +0800
++++ b/modules/ii/sidebarRight/quickToggles/AndroidQuickPanel.qml	2026-11-05 22:30:28.614517063 +0800
+@@ -29,7 +29,7 @@
+     readonly property real baseCellHeight: 56
+ 
+     // Toggles
+-    readonly property list<string> availableToggleTypes: ["network", "bluetooth", "idleInhibitor", "easyEffects", "nightLight", "darkMode", "cloudflareWarp", "gameMode", "screenSnip", "colorPicker", "onScreenKeyboard", "mic", "audio", "notifications", "powerProfile","musicRecognition", "antiFlashbang"]
++    readonly property list<string> availableToggleTypes: ["network", "bluetooth", "idleInhibitor", "easyEffects", "nightLight", "darkMode", "mihomo", "tailscale", "gameMode", "screenSnip", "colorPicker", "onScreenKeyboard", "mic", "audio", "notifications", "powerProfile","musicRecognition", "antiFlashbang"]
+     readonly property int columns: Config.options.sidebar.quickToggles.android.columns
+     readonly property list<var> toggles: Config.ready ? Config.options.sidebar.quickToggles.android.toggles : []
+     readonly property list<var> toggleRows: toggleRowsForList(toggles)
+@@ -106,6 +106,8 @@
+                             onOpenBluetoothDialog: root.openBluetoothDialog()
+                             onOpenNightLightDialog: root.openNightLightDialog()
+                             onOpenWifiDialog: root.openWifiDialog()
++                            onOpenTailscaleDialog: root.openTailscaleDialog()
++                            onOpenMihomoDialog: root.openMihomoDialog()
+                         }
+                     }
+                 }
+diff -ruN a/modules/ii/sidebarRight/quickToggles/androidStyle/AndroidToggleDelegateChooser.qml b/modules/ii/sidebarRight/quickToggles/androidStyle/AndroidToggleDelegateChooser.qml
+--- a/modules/ii/sidebarRight/quickToggles/androidStyle/AndroidToggleDelegateChooser.qml	2026-11-05 22:30:28.621479729 +0800
++++ b/modules/ii/sidebarRight/quickToggles/androidStyle/AndroidToggleDelegateChooser.qml	2026-11-05 22:30:28.623156989 +0800
+@@ -19,6 +19,8 @@
+     signal openBluetoothDialog()
+     signal openNightLightDialog()
+     signal openWifiDialog()
++    signal openTailscaleDialog()
++    signal openMihomoDialog()
+ 
+     role: "type"
+ 
+@@ -148,6 +150,34 @@
+         cellSize: modelData.size
+     } }
+ 
++    DelegateChoice { roleValue: "tailscale"; AndroidTailscaleToggle {
++        required property int index
++        required property var modelData
++        buttonIndex: root.startingIndex + index
++        buttonData: modelData
++        editMode: root.editMode
++        expandedSize: modelData.size > 1
++        baseCellWidth: root.baseCellWidth
++        baseCellHeight: root.baseCellHeight
++        cellSpacing: root.spacing
++        cellSize: modelData.size
++        onOpenMenu: root.openTailscaleDialog()
++    } }
++
++    DelegateChoice { roleValue: "mihomo"; AndroidMihomoToggle {
++        required property int index
++        required property var modelData
++        buttonIndex: root.startingIndex + index
++        buttonData: modelData
++        editMode: root.editMode
++        expandedSize: modelData.size > 1
++        baseCellWidth: root.baseCellWidth
++        baseCellHeight: root.baseCellHeight
++        cellSpacing: root.spacing
++        cellSize: modelData.size
++        onOpenMenu: root.openMihomoDialog()
++    } }
++
+     DelegateChoice { roleValue: "mic"; AndroidMicToggle {
+         required property int index
+         required property var modelData
+diff -ruN a/modules/ii/sidebarRight/quickToggles/ClassicQuickPanel.qml b/modules/ii/sidebarRight/quickToggles/ClassicQuickPanel.qml
+--- a/modules/ii/sidebarRight/quickToggles/ClassicQuickPanel.qml	2026-11-05 22:30:28.630599415 +0800
++++ b/modules/ii/sidebarRight/quickToggles/ClassicQuickPanel.qml	2026-11-05 22:30:28.632587521 +0800
+@@ -34,6 +34,11 @@
+         GameMode {}
+         IdleInhibitor {}
+         EasyEffectsToggle {}
+-        CloudflareWarp {}
++        MihomoToggle {
++            onOpenMenu: root.openMihomoDialog()
++        }
++        TailscaleToggle {
++            onOpenMenu: root.openTailscaleDialog()
++        }
+     }
+ }
+diff -ruN a/modules/ii/sidebarRight/SidebarRightContent.qml b/modules/ii/sidebarRight/SidebarRightContent.qml
+--- a/modules/ii/sidebarRight/SidebarRightContent.qml	2026-11-05 22:30:28.639477150 +0800
++++ b/modules/ii/sidebarRight/SidebarRightContent.qml	2026-11-05 22:30:28.641337727 +0800
+@@ -14,6 +14,8 @@
+ 
+ import qs.modules.ii.sidebarRight.bluetoothDevices
+ import qs.modules.ii.sidebarRight.nightLight
++import qs.modules.ii.sidebarRight.tailscale
++import qs.modules.ii.sidebarRight.mihomo
+ import qs.modules.ii.sidebarRight.volumeMixer
+ import qs.modules.ii.sidebarRight.wifiNetworks
+ 
+@@ -27,6 +29,8 @@
+     property bool showBluetoothDialog: false
+     property bool showNightLightDialog: false
+     property bool showWifiDialog: false
++    property bool showTailscaleDialog: false
++    property bool showMihomoDialog: false
+     property bool editMode: false
+ 
+     Connections {
+@@ -37,6 +41,8 @@
+                 root.showBluetoothDialog = false;
+                 root.showAudioOutputDialog = false;
+                 root.showAudioInputDialog = false;
++                root.showTailscaleDialog = false;
++                root.showMihomoDialog = false;
+             }
+         }
+     }
+@@ -144,6 +150,18 @@
+     }
+ 
+     ToggleDialog {
++        shownPropertyString: "showTailscaleDialog"
++        dialog: TailscaleDialog {}
++        onShownChanged: if (shown) Tailscale.refresh();
++    }
++
++    ToggleDialog {
++        shownPropertyString: "showMihomoDialog"
++        dialog: MihomoDialog {}
++        onShownChanged: if (shown) Mihomo.refresh();
++    }
++
++    ToggleDialog {
+         shownPropertyString: "showWifiDialog"
+         dialog: WifiDialog {}
+         onShownChanged: {
+@@ -204,6 +222,12 @@
+             function onOpenWifiDialog() {
+                 root.showWifiDialog = true;
+             }
++            function onOpenTailscaleDialog() {
++                root.showTailscaleDialog = true;
++            }
++            function onOpenMihomoDialog() {
++                root.showMihomoDialog = true;
++            }
+         }
+     }
+ 

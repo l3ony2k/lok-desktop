@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Plasma: use the wallpaper that ii (end-4, Hyprland) currently has, for the
+# desktop and the lock screen. Read-only on ii: it only reads
+# ~/.config/illogical-impulse/config.json (background.wallpaperPath).
+# Runs at Plasma login (~/.config/autostart/plasma-wallpaper-sync.desktop);
+# run it by hand to re-sync. Added 2026-11-12, see asus-arch-ops.
+set -u
+cfg="$HOME/.config/illogical-impulse/config.json"
+img=$(python3 -c 'import json,sys
+b=json.load(open(sys.argv[1])).get("background",{})
+p=b.get("wallpaperPath","")
+# video wallpapers: ii keeps a still frame in thumbnailPath
+if p.lower().endswith((".mp4",".webm",".mkv",".mov",".gif")) and b.get("thumbnailPath"):
+    p=b["thumbnailPath"]
+print(p)' "$cfg" 2>/dev/null) || exit 0
+[ -n "$img" ] && [ -f "$img" ] || { echo "no usable wallpaper in $cfg" >&2; exit 0; }
+
+# Lock screen (read by kscreenlocker at lock time, no reload needed).
+for key in Image PreviewImage; do
+  kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper \
+    --group org.kde.image --group General --key "$key" "file://$img"
+done
+
+# Desktop: plasmashell may still be starting when autostart runs.
+for _ in $(seq 1 20); do
+  plasma-apply-wallpaperimage "$img" >/dev/null 2>&1 && exit 0
+  sleep 1
+done
+echo "plasma-apply-wallpaperimage failed for $img" >&2
+exit 1

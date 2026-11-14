@@ -1,0 +1,17 @@
+# 用户补丁：默认使用小鹤双拼（只保留一个方案）
+patch:
+  schema_list:
+    - schema: double_pinyin_flypy   # 小鹤双拼
+
+  # Shift 切换中英文：左右 Shift 都提交原始编码（英文原样上屏）后再切英文。
+  # commit_code = 上屏原始编码；commit_text = 上屏默认候选（不要）。
+  ascii_composer/switch_key/Shift_L: commit_code
+  ascii_composer/switch_key/Shift_R: commit_code
+
+  key_binder/bindings/+:
+    - { when: has_menu, accept: comma, send: Page_Up }
+    - { when: has_menu, accept: period, send: Page_Down }
+
+  # 中文模式下按 ` 键（~ 键不带 Shift）输出反引号本身。
+  # Rime 默认把半角 ` 映射成 ·（default.yaml 的 punctuator/half_shape）。
+  "punctuator/half_shape/`": "`"

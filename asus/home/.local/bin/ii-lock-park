@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Toggle the ii lock screen's workspace parking (asus-arch-ops 2026-11-12).
+#   on  : while locked, monitors are parked on workspace 2147483647-N so the
+#         windows slide away (upstream behaviour; source of the huge-workspace bugs)
+#   off : lock in place, no workspace switch
+# Takes effect on the next lock; quickshell re-reads config.json live.
+set -euo pipefail
+cfg="${XDG_CONFIG_HOME:-$HOME/.config}/illogical-impulse/config.json"
+case "${1:-status}" in
+  on)  v=true ;;
+  off) v=false ;;
+  status) jq -r 'if .lock.parkWorkspaces == null then "unset (default: on)" elif .lock.parkWorkspaces then "on" else "off" end' "$cfg"; exit 0 ;;
+  *) echo "usage: ii-lock-park on|off|status" >&2; exit 2 ;;
+esac
+tmp=$(mktemp)
+jq --argjson v "$v" '.lock.parkWorkspaces = $v' "$cfg" > "$tmp"
+cat "$tmp" > "$cfg"   # write in place: keeps the inode quickshell is watching
+rm -f "$tmp"
+echo "lock workspace parking: $1"

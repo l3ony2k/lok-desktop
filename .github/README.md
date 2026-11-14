@@ -72,6 +72,8 @@ ASUS Chromebook CX54 (`SCREEBO`, Intel Core Ultra 7 155U) with Arch Linux, syste
 | Keyboard | ChromeOS top row and layout via keyd | `asus/system/etc/keyd/` |
 
 `asus/system/` holds copies of the changed system files; they are restored by hand, not by setup.
+`asus/home/` holds everything in `$HOME` that the dots don't own (Plasma session, three-finger drag,
+input method, ii's `config.json`, helper scripts); `asus/home-sync.sh restore` puts it back.
 Reasons and history are in `asus/ops/` and in the ops log on the machine.
 
 ## Layout
@@ -81,6 +83,8 @@ dots/                  upstream tree, with this fork's edits committed on top
 asus/
   lok/                 lok: README, icon font + builder, wallpapers, plasma/ generators, patches/
   src/                 sources: fingerprint, e820-hibfix, battery-limit, idle-suspend, lid / power key
+  home/                mirror of non-dots user config: Plasma, three-finger drag, fcitx5/rime, ii config.json, scripts
+  home-sync.sh         pull | diff | restore for asus/home/ (secrets are never listed; the Mihomo URL is redacted)
   system/              copies of /etc and /boot files changed on the machine
   snapshots/           restore point from before lok (restore.sh)
   ops/                 write-ups of the bigger investigations

@@ -1,0 +1,125 @@
+--- a/modules/common/Appearance.qml
++++ b/modules/common/Appearance.qml
+@@ -400,7 +400,7 @@
+         property real mediaControlsWidth: 440
+         property real mediaControlsHeight: 160
+         property real notificationPopupWidth: 410
+-        property real osdWidth: 180
++        property real osdWidth: 200
+         property real searchWidthCollapsed: 210
+         property real searchWidth: 360
+         property real sidebarWidth: 460
+--- a/modules/ii/bar/Resources.qml
++++ b/modules/ii/bar/Resources.qml
+@@ -20,31 +20,33 @@
+         anchors.rightMargin: 4
+ 
+         Resource {
++            // Chip icon reads as CPU better than the pulse glyph.
+             iconName: "memory"
++            percentage: ResourceUsage.cpuUsage
++            shown: Config.options.bar.resources.alwaysShowCpu ||
++                !(MprisController.activePlayer?.trackTitle?.length > 0) ||
++                root.alwaysShowAllResources
++            warningThreshold: Config.options.bar.resources.cpuWarningThreshold
++        }
++
++        Resource {
++            // Same glyph the popup's Total row uses (reads as a drive).
++            iconName: "empty_dashboard"
+             percentage: ResourceUsage.memoryUsedPercentage
++            Layout.leftMargin: 6
+             warningThreshold: Config.options.bar.resources.memoryWarningThreshold
+         }
+ 
+         Resource {
+             iconName: "swap_horiz"
+             percentage: ResourceUsage.swapUsedPercentage
+-            shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) || 
++            shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) ||
+                 (MprisController.activePlayer?.trackTitle == null) ||
+                 root.alwaysShowAllResources
+             Layout.leftMargin: shown ? 6 : 0
+             warningThreshold: Config.options.bar.resources.swapWarningThreshold
+         }
+ 
+-        Resource {
+-            iconName: "planner_review"
+-            percentage: ResourceUsage.cpuUsage
+-            shown: Config.options.bar.resources.alwaysShowCpu || 
+-                !(MprisController.activePlayer?.trackTitle?.length > 0) ||
+-                root.alwaysShowAllResources
+-            Layout.leftMargin: shown ? 6 : 0
+-            warningThreshold: Config.options.bar.resources.cpuWarningThreshold
+-        }
+-
+     }
+ 
+     ResourcesPopup {
+--- a/modules/ii/bar/ResourcesPopup.qml
++++ b/modules/ii/bar/ResourcesPopup.qml
+@@ -22,6 +22,24 @@
+ 
+             StyledPopupHeaderRow {
+                 icon: "memory"
++                label: "CPU"
++            }
++            Column {
++                spacing: 4
++                StyledPopupValueRow {
++                    icon: "bolt"
++                    label: Translation.tr("Load:")
++                    value: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
++                }
++            }
++        }
++
++        Column {
++            anchors.top: parent.top
++            spacing: 8
++
++            StyledPopupHeaderRow {
++                icon: "empty_dashboard"
+                 label: "RAM"
+             }
+             Column {
+@@ -72,23 +90,5 @@
+                 }
+             }
+         }
+-
+-        Column {
+-            anchors.top: parent.top
+-            spacing: 8
+-
+-            StyledPopupHeaderRow {
+-                icon: "planner_review"
+-                label: "CPU"
+-            }
+-            Column {
+-                spacing: 4
+-                StyledPopupValueRow {
+-                    icon: "bolt"
+-                    label: Translation.tr("Load:")
+-                    value: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
+-                }
+-            }
+-        }
+     }
+ }
+--- a/modules/ii/onScreenDisplay/OsdValueIndicator.qml
++++ b/modules/ii/onScreenDisplay/OsdValueIndicator.qml
+@@ -79,11 +79,13 @@
+                 RowLayout { // Name fill left, value on the right end
+                     Layout.leftMargin: valueProgressBar.height / 2 // Align text with progressbar radius curve's left end
+                     Layout.rightMargin: valueProgressBar.height / 2 // Align text with progressbar radius curve's left end
++                    spacing: 8 // Keep the mono label clear of the number
+ 
+                     StyledText {
+                         color: Appearance.colors.colOnLayer0
+                         font.pixelSize: Appearance.font.pixelSize.small
+                         Layout.fillWidth: true
++                        elide: Text.ElideRight
+                         text: root.name
+                     }
+ 

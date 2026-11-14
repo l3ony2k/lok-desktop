@@ -1,0 +1,118 @@
+--- a/modules/ii/overview/SearchBar.qml
++++ b/modules/ii/overview/SearchBar.qml
+@@ -78,6 +78,19 @@
+             }
+         }
+ 
++        Connections {
++            target: GlobalStates
++            function onOverviewOpenChanged() {
++                if (GlobalStates.overviewOpen) rimeAsciiTimer.restart();
++            }
++        }
++        Timer {
++            id: rimeAsciiTimer
++            interval: 120
++            repeat: false
++            onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
++        }
++
+         onTextChanged: LauncherSearch.query = text
+ 
+         onAccepted: {
+--- a/modules/ii/lock/LockSurface.qml
++++ b/modules/ii/lock/LockSurface.qml
+@@ -144,6 +144,23 @@
+             echoMode: TextInput.Password
+             inputMethodHints: Qt.ImhSensitiveData
+ 
++            // Keep Rime in A (ASCII) while the password field is focused.
++            // fcitx5's AllowInputMethodForPassword=false prevents Shift from
++            // switching back to Chinese here.
++            property bool rimeAsciiApplied: false
++            onActiveFocusChanged: {
++                if (activeFocus && !rimeAsciiApplied) {
++                    rimeAsciiApplied = true;
++                    rimeAsciiTimer.restart();
++                }
++            }
++            Timer {
++                id: rimeAsciiTimer
++                interval: 120
++                repeat: false
++                onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
++            }
++
+             // Synchronizing (across monitors) and unlocking
+             onTextChanged: root.context.currentText = this.text
+             onAccepted: {
+--- a/modules/ii/polkit/PolkitContent.qml
++++ b/modules/ii/polkit/PolkitContent.qml
+@@ -76,6 +76,29 @@
+             enabled: PolkitService.interactionAvailable
+             placeholderText: PolkitService.cleanPrompt
+             echoMode: root.usePasswordChars ? TextInput.Password : TextInput.Normal
++            inputMethodHints: Qt.ImhSensitiveData
++
++            // Set Rime to A once per polkit prompt.
++            property bool rimeAsciiApplied: false
++            onActiveFocusChanged: {
++                if (activeFocus && !rimeAsciiApplied) {
++                    rimeAsciiApplied = true;
++                    rimeAsciiTimer.restart();
++                }
++            }
++            Timer {
++                id: rimeAsciiTimer
++                interval: 120
++                repeat: false
++                onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
++            }
++            Connections {
++                target: PolkitService
++                function onFlowChanged() {
++                    if (!PolkitService.flow) inputField.rimeAsciiApplied = false;
++                }
++            }
++
+             onAccepted: root.submit();
+ 
+             Keys.onPressed: event => { // Esc to close
+--- a/modules/ii/sidebarRight/wifiNetworks/WifiNetworkItem.qml
++++ b/modules/ii/sidebarRight/wifiNetworks/WifiNetworkItem.qml
+@@ -5,6 +5,7 @@
+ import qs.services.network
+ import QtQuick
+ import QtQuick.Layouts
++import Quickshell
+ 
+ DialogListItem {
+     id: root
+@@ -64,6 +65,27 @@
+                 echoMode: TextInput.Password
+                 inputMethodHints: Qt.ImhSensitiveData
+ 
++                // Set Rime to A once per Wi-Fi password prompt.
++                property bool rimeAsciiApplied: false
++                onActiveFocusChanged: {
++                    if (activeFocus && !rimeAsciiApplied) {
++                        rimeAsciiApplied = true;
++                        rimeAsciiTimer.restart();
++                    }
++                }
++                Timer {
++                    id: rimeAsciiTimer
++                    interval: 120
++                    repeat: false
++                    onTriggered: Quickshell.execDetached(["busctl", "--user", "call", "org.fcitx.Fcitx5", "/rime", "org.fcitx.Fcitx.Rime1", "SetAsciiMode", "b", "true"]);
++                }
++                Connections {
++                    target: passwordPrompt
++                    function onVisibleChanged() {
++                        if (!passwordPrompt.visible) passwordField.rimeAsciiApplied = false;
++                    }
++                }
++
+                 onAccepted: {
+                     Network.changePassword(root.wifiNetwork, passwordField.text);
+                 }

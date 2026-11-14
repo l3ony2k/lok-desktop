@@ -1,0 +1,6 @@
+[Unit]
+Description=Sync Herdr theme with end-4 Material You colors
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/.local/share/herdr-end4/sync-theme.py

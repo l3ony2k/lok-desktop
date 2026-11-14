@@ -1,0 +1,59 @@
+--- a/modules/ii/overview/Overview.qml
++++ b/modules/ii/overview/Overview.qml
+@@ -14,6 +14,9 @@
+ Scope {
+     id: overviewScope
+     property bool dontAutoCancelSearch: false
++    // Super-tap opens the search box alone; the Chromebook F4/overview key
++    // sets this true to reveal the full overview widget.
++    property bool showOverviewWidget: true
+ 
+     PanelWindow {
+         id: panelWindow
+@@ -44,6 +47,7 @@
+                 if (!GlobalStates.overviewOpen) {
+                     searchWidget.disableExpandAnimation();
+                     overviewScope.dontAutoCancelSearch = false;
++                    overviewScope.showOverviewWidget = true;
+                     GlobalFocusGrab.dismiss();
+                 } else {
+                     if (!overviewScope.dontAutoCancelSearch) {
+@@ -94,7 +98,7 @@
+             Loader {
+                 id: overviewLoader
+                 anchors.horizontalCenter: parent.horizontalCenter
+-                active: GlobalStates.overviewOpen && (Config?.options.overview.enable ?? true)
++                active: GlobalStates.overviewOpen && overviewScope.showOverviewWidget && (Config?.options.overview.enable ?? true)
+                 sourceComponent: OverviewWidget {
+                     screen: panelWindow.screen
+                     visible: (panelWindow.searchingText == "")
+@@ -167,7 +171,13 @@
+         description: "Toggles overview on press"
+ 
+         onPressed: {
+-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
++            if (GlobalStates.overviewOpen && !overviewScope.showOverviewWidget) {
++                // Upgrade a Super-tap search into the full overview.
++                overviewScope.showOverviewWidget = true;
++            } else {
++                overviewScope.showOverviewWidget = true;
++                GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
++            }
+         }
+     }
+     GlobalShortcut {
+@@ -183,7 +193,13 @@
+                 GlobalStates.superReleaseMightTrigger = true;
+                 return;
+             }
+-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
++            if (GlobalStates.overviewOpen) {
++                GlobalStates.overviewOpen = false;
++            } else {
++                // Super-tap: search box only, no overview grid.
++                overviewScope.showOverviewWidget = false;
++                GlobalStates.overviewOpen = true;
++            }
+         }
+     }
+     GlobalShortcut {

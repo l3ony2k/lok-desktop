@@ -1,0 +1,41 @@
+# Machine-specific zsh settings for this Arch/Hyprland machine.
+# NOT tracked in git (the shared config is symlinked from ~/.dotfiles).
+# Loaded last by ~/.zshrc, so anything here overrides the shared config.
+
+# ---- Ported from ~/.bashrc on 2026-11-06 -------------------------------------
+# TypeSafe (fast-jev-compaction) key — sourced from a 600 file, not stored here
+[ -r "$HOME/.config/typesafe.env" ] && source "$HOME/.config/typesafe.env"
+
+# Rust (fish gets this via conf.d/rustup.fish)
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+# magpie agy wrapper (same as bash/fish)
+function agy {
+  if [ -x /usr/bin/magpie ]; then
+    /usr/bin/magpie agy run "$@"
+  else
+    command agy "$@"
+  fi
+}
+
+# ---- Ported from ~/.config/fish/config.fish ----------------------------------
+# quickshell/end-4 terminal colours live in ~/.zshenv, so they run before the
+# p10k instant prompt preamble instead of being reported as console output.
+
+# Hyprland/quickshell helpers
+alias q='qs -c ii'
+alias pamcan='pacman'
+command -v kitty >/dev/null && [ "$TERM" = xterm-kitty ] && alias ssh='kitten ssh'
+
+# ---- quickshell: always run from $HOME (asus-arch-ops 2026-11-12) -------------
+# Apps launched from the shell's launcher inherit its cwd; a qs started from a
+# directory that later disappears makes every Electron app it launches die with
+# `ENOENT: process.cwd failed ... uv_cwd`. Relative `-p PATH` is made absolute.
+function qs {
+  local -a args; local a prev=
+  for a in "$@"; do
+    [[ $prev == (-p|--path) ]] && a=${a:a}
+    args+=("$a"); prev=$a
+  done
+  env -C "$HOME" qs "${args[@]}"
+}

@@ -1,0 +1,38 @@
+/* ==========================================================================
+   LibreWolf userContent.css
+   Square corners and neutral gray UI accents for web content.
+   Web pages keep their own colors.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Remove every rounded corner
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Neutral gray scrollbars (thumb + track)
+   -------------------------------------------------------------------------- */
+* {
+  scrollbar-color: light-dark(#8a8a8a, #6f6f6f)
+    light-dark(#e2e2e2, #242424) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Neutral gray text selection
+   -------------------------------------------------------------------------- */
+::selection {
+  background-color: light-dark(#c7c7c7, #4a4a4a) !important;
+  color: light-dark(#111111, #f0f0f0) !important;
+  text-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Gray native form controls (checkbox, radio, progress, range, ...)
+   -------------------------------------------------------------------------- */
+:root {
+  accent-color: light-dark(#6a6a6a, #909090) !important;
+}

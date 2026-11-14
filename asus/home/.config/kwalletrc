@@ -1,0 +1,6 @@
+[KSecretD]
+Enabled=false
+
+[Wallet]
+Enabled=true
+First Use=false

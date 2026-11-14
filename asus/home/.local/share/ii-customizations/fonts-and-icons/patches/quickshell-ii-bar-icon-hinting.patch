@@ -1,0 +1,30 @@
+--- a/modules/ii/bar/Resource.qml
++++ b/modules/ii/bar/Resource.qml
+@@ -41,6 +41,7 @@
+                 MaterialSymbol {
+                     anchors.centerIn: parent
+                     font.weight: Font.DemiBold
++                    font.hintingPreference: Font.PreferFullHinting
+                     fill: 1
+                     text: iconName
+                     iconSize: Appearance.font.pixelSize.normal
+--- a/modules/ii/bar/Media.qml
++++ b/modules/ii/bar/Media.qml
+@@ -64,6 +64,7 @@
+                 
+                 MaterialSymbol {
+                     anchors.centerIn: parent
++                    font.hintingPreference: Font.PreferFullHinting
+                     fill: 1
+                     text: activePlayer?.isPlaying ? "pause" : "music_note"
+                     iconSize: Appearance.font.pixelSize.normal
+--- a/modules/ii/bar/BatteryIndicator.qml
++++ b/modules/ii/bar/BatteryIndicator.qml
+@@ -40,6 +40,7 @@
+                 MaterialSymbol {
+                     id: boltIcon
+                     Layout.alignment: Qt.AlignVCenter
++                    font.hintingPreference: Font.PreferFullHinting
+                     Layout.leftMargin: -2
+                     Layout.rightMargin: -2
+                     fill: 1

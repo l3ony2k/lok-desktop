@@ -1,0 +1,124 @@
+/* ==========================================================================
+   LibreWolf userChrome.css
+   Flat, desaturated chrome, no rounded corners, no native tab strip.
+   Changes take effect after restarting LibreWolf.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Hide the native tab bar (Sidebery owns the tabs)
+   -------------------------------------------------------------------------- */
+#TabsToolbar {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Hide the legacy sidebar title bar
+   The revamped sidebar does not use #sidebar-header: each panel renders its
+   own <sidebar-panel-header> custom element inside the sidebar document. The
+   legacy nodes are kept hidden for the old sidebar.
+   -------------------------------------------------------------------------- */
+#sidebar-header,
+#sidebar-title,
+#sidebar-switcher-target {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   2b. Hide the revamped header for extension panels (Sidebery, uBlock, ...)
+   Extension sidebars load in chrome://browser/content/webext-panels.xhtml,
+   which contains <sidebar-panel-header> (title + switcher + close button).
+   Scoped to that document so built-in panels keep their search/tool slot.
+   This removes the "Sidebery  v  x" row and all of its padding.
+   -------------------------------------------------------------------------- */
+@-moz-document url-prefix("chrome://browser/content/webext-panels.xhtml") {
+  sidebar-panel-header {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2c. Remove the sidebar padding / card inset
+   The revamped sidebar is a floating card: #sidebar-box carries a bottom
+   padding and #sidebar a shadow, which leaves a visible frame around the
+   panel. Zero the padding/margins and drop the shadow so it sits flush.
+   -------------------------------------------------------------------------- */
+#sidebar-container,
+#sidebar-box,
+#sidebar-box > .sidebar-browser-stack,
+#sidebar-box > .sidebar-browser-stack > #sidebar {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Zero any inset inside the extension-panel wrapper document too. */
+@-moz-document url-prefix("chrome://browser/content/webext-panels.xhtml") {
+  :root,
+  #webext-panels-stack,
+  #webext-panels-browser {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2d. Thin the sidebar/page splitter
+   Revamp gives #sidebar-splitter a 12px hit area (width: --space-medium) with
+   transparent borders, so the #browser background shows through as a wide gray
+   strip between the panel and the page. Collapse it to a 1px line.
+   -------------------------------------------------------------------------- */
+#sidebar-splitter {
+  width: 1px !important;
+  min-width: 1px !important;
+  border-inline: 0 !important;
+  margin: 0 !important;
+  background-color: var(--sidebar-border-color) !important;
+  background-clip: border-box !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Remove every rounded corner
+   Kill the design-system radius tokens (they inherit into shadow DOM, which
+   covers the revamped sidebar and panel components) and then the edges CSS
+   itself can reach.
+   -------------------------------------------------------------------------- */
+:root {
+  --border-radius-xsmall: 0 !important;
+  --border-radius-small: 0 !important;
+  --border-radius-medium: 0 !important;
+  --border-radius-large: 0 !important;
+  --border-radius-xlarge: 0 !important;
+  --border-radius-circle: 0 !important;
+
+  --panel-border-radius: 0 !important;
+  --tab-border-radius: 0 !important;
+  --urlbar-border-radius: 0 !important;
+  --button-border-radius: 0 !important;
+}
+
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Grayscale
+   force grayscale everything the chrome renders, including the Sidebery
+   panel and all XUL popups/menus. Web pages are untouched; userContent.css
+   handles those.
+   -------------------------------------------------------------------------- */
+#navigator-toolbox,
+#sidebar-box,
+#sidebar-container,
+#browser-bottombox,
+#findbar,
+#statuspanel,
+menupopup,
+panel,
+tooltip {
+  filter: grayscale(1) !important;
+}
