@@ -1,0 +1,10 @@
+{
+    "sans": "Sarasa UI SC",
+    "serif": "Noto Serif CJK SC",
+    "mono": "IoskeleyMonoTerm Nerd Font",
+    "mono_cjk": "Sarasa Mono SC",
+    "rgba": "rgb",
+    "ui_size": 10.5,
+    "doc_size": 10.0,
+    "mono_size": 10.0
+}

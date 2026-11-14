@@ -11,13 +11,17 @@ cd "$HOME"
 
 MANIFEST=(
   # shell
-  .zshenv .zshrc.local .zprofile .config/fish/functions/qs.fish
+  .zshenv .zshrc.local .zprofile .p10k.zsh .bashrc .bash_profile
+  .config/fish/functions/qs.fish .config/fish/conf.d/nvm.fish
+  # (.zshrc and fastfetch/config.jsonc are symlinks into the separate dotfiles repo)
   # ii runtime config, ii customisation scripts, hyprlock wrapper, helper scripts
   .config/illogical-impulse/config.json .local/share/ii-customizations
   .local/bin/hyprlock .local/bin/ii-lock-park .local/bin/ii-net-tiles-customize .local/bin/ii-rounding-customize
   .local/bin/system-font .local/bin/watch-hypr-fullscreen-color.sh .local/bin/dots-cleanup.sh
   .local/bin/mihomo-update-sub
-  .config/hypr/custom/scripts
+  .config/hypr/custom/scripts .config/system-fonts/config.json
+  .local/share/claude/hibernate-fix/apply.sh .local/share/claude/hibernate-fix/verify.sh
+  .config/orca/linux-orca-cli-shim/orca
   # KDE Plasma session: KWin, shortcuts, input, power, lock, wallet -> Secret Service, panel layout
   .config/kwinrc .config/kglobalshortcutsrc .config/kcminputrc .config/kscreenlockerrc .config/plasmarc
   .config/powerdevilrc .config/kwalletrc .config/kwinoutputconfig.json .config/plasma-org.kde.plasma.desktop-appletsrc

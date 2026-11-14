@@ -1,0 +1,1 @@
+/home/leon/.dotfiles/.p10k.zsh
