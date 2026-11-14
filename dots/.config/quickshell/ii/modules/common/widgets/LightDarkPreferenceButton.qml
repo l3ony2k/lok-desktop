@@ -16,6 +16,9 @@ RippleButton {
     Layout.fillWidth: true
     colBackground: Appearance.colors.colLayer2
     toggled: Appearance.m3colors.darkmode === dark
+    colBackgroundToggled: Appearance.colors.colPrimary
+    borderWidth: (Appearance.lok && toggled) ? 1 : 0 // lok: shared selected style
+    borderColor: Appearance.colors.colSelectedEdge
     onClicked: {
         Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`])
     }
@@ -33,9 +36,10 @@ RippleButton {
                 radius: lightDarkButtonRoot.buttonRadius - lightDarkButtonRoot.padding
                 color: lightDarkButtonRoot.previewBg
                 border {
-                    width: 1
+                    width: Appearance.lok ? 0 : 1
                     color: Appearance.m3colors.m3outlineVariant
                 }
+                LokFrame { visible: Appearance.lok; z: 99; color: Appearance.colors.colLokDivider }
 
                 // Some skeleton items
                 ColumnLayout {

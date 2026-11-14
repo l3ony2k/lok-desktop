@@ -49,7 +49,9 @@ RippleButton {
     implicitHeight: rowLayout.implicitHeight + root.buttonVerticalPadding * 2
     implicitWidth: rowLayout.implicitWidth + root.buttonHorizontalPadding * 2
     buttonRadius: Appearance.rounding.normal
-    colBackground: (root.down || root.keyboardDown) ? Appearance.colors.colPrimaryContainerActive : 
+    colBackground: Appearance.lok ? ((root.down || root.keyboardDown) ? Appearance.colors.colPrimaryActive
+            : root.focus ? Appearance.colors.colPrimary : "transparent") // lok: shared selected fill
+        : (root.down || root.keyboardDown) ? Appearance.colors.colPrimaryContainerActive : 
         (selected ? Appearance.colors.colPrimaryContainer : 
         ColorUtils.transparentize(Appearance.colors.colPrimaryContainer, 1))
     // lok: hover is one step up from the panel surface, below the keyboard-current fill

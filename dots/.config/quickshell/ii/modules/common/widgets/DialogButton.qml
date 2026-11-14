@@ -21,7 +21,7 @@ RippleButton {
     // lok: a hairline frame so the button reads as a control, not loose text
     borderWidth: (Appearance?.lok ?? false) ? 1 : 0
     borderColor: root.enabled ? Appearance.colors.colLokFrame : Appearance.colors.colLokDivider
-    colBackgroundHover: Appearance.colors.colLayer3Hover
+    colBackgroundHover: (Appearance?.lok ?? false) ? Appearance.colors.colLokDialogHover : Appearance.colors.colLayer3Hover
     colRipple: Appearance.colors.colLayer3Active
     property alias colText: buttonTextWidget.color
 

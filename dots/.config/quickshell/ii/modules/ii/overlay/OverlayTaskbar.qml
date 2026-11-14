@@ -130,8 +130,10 @@ Rectangle {
         }
         implicitWidth: implicitHeight
 
-        colBackgroundToggled: Appearance.colors.colSecondaryContainer
-        colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
+        colBackgroundToggled: Appearance.lok ? Appearance.colors.colPrimary : Appearance.colors.colSecondaryContainer
+        colBackgroundToggledHover: Appearance.lok ? Appearance.colors.colPrimaryHover : Appearance.colors.colSecondaryContainerHover
+        borderWidth: (Appearance.lok && toggled) ? 1 : 0 // lok: shared selected style
+        borderColor: Appearance.colors.colSelectedEdge
         colRippleToggled: Appearance.colors.colSecondaryContainerActive
 
         buttonRadius: root.radius - (root.height - height) / 2

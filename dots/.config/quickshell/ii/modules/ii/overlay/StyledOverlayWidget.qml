@@ -74,8 +74,9 @@ AbstractOverlayWidget {
     }
 
     // Positioning & sizing
-    x: Math.round(persistentStateEntry.x) // Round or it'll be blurry
-    y: Math.round(persistentStateEntry.y) // Round or it'll be blurry
+    // lok: snap the frame (x + resizeMargin) to whole device pixels (scale 1.333), else the hairlines smear
+    x: Appearance.lok ? Math.round((persistentStateEntry.x + resizeMargin) * Appearance.dpr) / Appearance.dpr - resizeMargin : Math.round(persistentStateEntry.x) // Round or it'll be blurry
+    y: Appearance.lok ? Math.round((persistentStateEntry.y + resizeMargin) * Appearance.dpr) / Appearance.dpr - resizeMargin : Math.round(persistentStateEntry.y) // Round or it'll be blurry
     pinned: persistentStateEntry.pinned
     clickthrough: persistentStateEntry.clickthrough
     drag {
@@ -198,6 +199,9 @@ AbstractOverlayWidget {
         anchors {
             fill: parent
             margins: root.resizeMargin
+            // lok: whole-device-pixel width/height so the right/bottom hairlines are crisp
+            rightMargin: Appearance.lok ? root.width - root.resizeMargin - Math.floor((root.width - 2 * root.resizeMargin) * Appearance.dpr) / Appearance.dpr : root.resizeMargin
+            bottomMargin: Appearance.lok ? root.height - root.resizeMargin - Math.floor((root.height - 2 * root.resizeMargin) * Appearance.dpr) / Appearance.dpr : root.resizeMargin
         }
         color: ColorUtils.transparentize(Appearance.colors.colLayer1Base, (root.fancyBorders && GlobalStates.overlayOpen) ? 0 : 1)
         radius: root.radius
@@ -205,7 +209,7 @@ AbstractOverlayWidget {
         border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
         LokFrame { visible: Appearance.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
 
-        layer.enabled: GlobalStates.overlayOpen
+        layer.enabled: GlobalStates.overlayOpen && !Appearance.lok // lok: square corners, the mask texture blurred the frame
         layer.effect: OpacityMask {
             maskSource: Rectangle {
                 width: border.width

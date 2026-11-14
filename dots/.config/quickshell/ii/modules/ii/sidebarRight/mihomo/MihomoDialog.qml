@@ -152,10 +152,12 @@ WindowDialog {
                         : ColorUtils.transparentize(Appearance.colors.colLayer3)
                     colBackgroundHover: Mihomo.mode === modelData[0]
                         ? Appearance.colors.colPrimaryHover
-                        : Appearance.colors.colLayer3Hover
+                        : (Appearance.lok ? Appearance.colors.colLokDialogHover : Appearance.colors.colLayer3Hover)
                     colText: Mihomo.mode === modelData[0]
                         ? Appearance.colors.colOnPrimary
                         : Appearance.colors.colAccent
+                    borderColor: (Appearance.lok && Mihomo.mode === modelData[0]) ? Appearance.colors.colSelectedEdge
+                        : (enabled ? Appearance.colors.colLokFrame : Appearance.colors.colLokDivider)
                     onClicked: Mihomo.setMode(modelData[0])
                 }
             }

@@ -31,6 +31,8 @@ ContentPage {
         Layout.fillWidth: true
         toggled: Appearance.m3colors.darkmode === dark
         colBackground: Appearance.colors.colLayer2
+        borderWidth: (Appearance.lok && toggled) ? 1 : 0 // lok: shared selected style
+        borderColor: Appearance.colors.colSelectedEdge
         onClicked: {
             Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`]);
         }

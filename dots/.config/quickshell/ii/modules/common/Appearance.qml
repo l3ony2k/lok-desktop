@@ -137,6 +137,8 @@ Singleton {
         // Light mode floats near-white over the grey base; in-panel groups still step darker.
         property color colLokDialog: m3colors.darkmode ? "#272727" : "#fbfbfb"
         property color colLokDivider: m3colors.darkmode ? "#3d3d3d" : "#bdbdbd"
+        // lok: hover on the dialog surface = one ramp step (never deeper than the selected fill)
+        property color colLokDialogHover: m3colors.darkmode ? "#313131" : "#efefef"
         // lok: icons/text drawn on top of a meter fill (#a6a6a6 dark / #5c5c5c light)
         property color colOnMeterFill: m3colors.darkmode ? "#121212" : "#fbfbfb"
         // lok: one muted grey for de-emphasised items (outside-month days etc), ~3:1

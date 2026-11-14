@@ -151,7 +151,7 @@ Button {
 
         Rectangle {
             visible: parent.lok && root.toggled && root.lokStatusStrip
-            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 1 }
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: Appearance.lok ? Appearance.sizes.hairline : 1 }
             height: Appearance.lok ? 2 * Appearance.sizes.hairline : 2
             color: Appearance.colors.colOnPrimary
         }

@@ -31,6 +31,7 @@ ListView {
             if (directory.trim() === "/") return index === 0;
             return index === directory.split("/").length - 1
         }
+        height: Appearance.lok ? Math.floor(root.height * Appearance.dpr) / Appearance.dpr : implicitHeight
         leftmost: index === 0
         rightmost: index === breadcrumbDirectory.split("/").length - 1
 

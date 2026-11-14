@@ -69,6 +69,7 @@ RippleButton {
             left: parent.left
             right: parent.right
             bottom: parent.bottom
+            margins: Appearance.sizes.hairline // inside the frame, like the quick toggles
         }
         height: 2 * Appearance.sizes.hairline
         z: 2
