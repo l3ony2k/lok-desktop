@@ -21,14 +21,14 @@ OverlayBackground {
     property real maxCopyButtonSize: 20
 
     Component.onCompleted: {
-        noteFile.reload();
+        root.content = Notes.content; // lok: the shared Notes service owns the file
         updateCopyListEntries();
     }
 
     function saveContent() {
         if (!textInput)
             return;
-        noteFile.setText(root.content);
+        Notes.save(root.content);
     }
 
     function focusAtEnd() {
@@ -258,35 +258,17 @@ OverlayBackground {
         onTriggered: updateCopylistPositions()
     }
 
-    FileView {
-        id: noteFile
-        path: Qt.resolvedUrl(Directories.notesPath)
-        onLoaded: {
-            root.content = noteFile.text();
-            if (root.content !== root.content) {
-                const previousCursor = textInput.cursorPosition;
-                const previousAnchor = textInput.selectionStart;
-                root.content = root.content;
-                applySelection(previousCursor, previousAnchor);
-            }
-            if (pendingReload) {
-                pendingReload = false;
-                Qt.callLater(root.focusAtEnd);
-            }
+    // lok: follow the shared notes file (dashboard scratchpad, external edits) while not typing
+    // here; this used to read the file once and write back over newer edits from elsewhere
+    Connections {
+        target: Notes
+        function onContentChanged() {
+            if (!textInput || textInput.activeFocus || root.content === Notes.content) return;
+            const previousCursor = textInput.cursorPosition;
+            const previousAnchor = textInput.selectionStart;
+            root.content = Notes.content;
+            root.applySelection(previousCursor, previousAnchor); // clamps to the new length
             Qt.callLater(root.updateCopyListEntries);
-        }
-        onLoadFailed: error => {
-            if (error === FileViewError.FileNotFound) {
-                root.content = "";
-                noteFile.setText(root.content);
-                if (pendingReload) {
-                    pendingReload = false;
-                    Qt.callLater(root.focusAtEnd);
-                }
-                Qt.callLater(root.updateCopyListEntries);
-            } else {
-                console.log("[Overlay Notes] Error loading file: " + error);
-            }
         }
     }
 }

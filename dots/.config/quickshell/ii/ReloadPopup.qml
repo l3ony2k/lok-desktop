@@ -66,8 +66,13 @@ Scope {
 				id: rect
 				anchors.centerIn: parent
 				color: root.lok ? root.c("surface_container_high", "#313131") : (failed ?  "#ffe99195" : "#ffD1E8D5")
-				border.width: root.lok ? 1 : 0
-				border.color: root.lok ? (failed ? root.c("error", "#ff6e64") : root.c("outline", "#808080")) : "transparent"
+				// lok: four inside lines, 1 device px; Qt's border dropped sides at 1.333 scale
+				readonly property real hair: 1 / (rect.QsWindow.window?.devicePixelRatio || 1)
+				readonly property color lineColor: failed ? root.c("error", "#ff6e64") : root.c("outline", "#808080")
+				Rectangle { visible: root.lok; z: 10; color: rect.lineColor; x: 0; y: 0; width: rect.width; height: rect.hair }
+				Rectangle { visible: root.lok; z: 10; color: rect.lineColor; x: 0; y: rect.height - rect.hair; width: rect.width; height: rect.hair }
+				Rectangle { visible: root.lok; z: 10; color: rect.lineColor; x: 0; y: 0; width: rect.hair; height: rect.height }
+				Rectangle { visible: root.lok; z: 10; color: rect.lineColor; x: rect.width - rect.hair; y: 0; width: rect.hair; height: rect.height }
 
 				implicitHeight: layout.implicitHeight + 30
 				implicitWidth: layout.implicitWidth + 30

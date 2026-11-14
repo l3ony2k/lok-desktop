@@ -86,3 +86,17 @@ Copy it into dots/ and commit, otherwise the next exp-update reports a conflict:
    `ii-rounding-customize`, `system-font --apply` (close Brave first).
 3. `~/.local/share/claude/asus-arch-ops/audit.sh`.
 4. Test Super-tap, Super+key (no search), F4, power button, Ctrl+RightAlt VT switch, lock-screen fingerprint.
+
+### lok / ii checks after merging upstream (added 2026-11-15)
+- `~/.local/bin/ii-restart --check` — qmllints every ii file for what stops the config loading
+  (`[syntax]`, properties shadowing a FINAL base member). Must print nothing. Then restart with
+  Ctrl+Super+R (it refuses and keeps the running shell if anything changed would not load).
+- `grep -rn "border.width" ~/.config/quickshell/ii --include=*.qml | grep -v "lok\|LokFrame\|: 0"` —
+  new upstream borders: in lok they must be a `LokFrame` (Qt's border drops the right/bottom side
+  at the 1.333 scale). Same for new `layer.enabled` (gate with `!Appearance.lok`).
+- Super-tap: `custom/keybinds.lua` unbinds the dots' `SUPER + SUPER_L` / `SUPER_R` by name. If
+  upstream renames or moves that bind, both fire (search opens and closes) — re-check the unbind.
+- Ctrl+Super+R: same, `custom/keybinds.lua` unbinds `CTRL + SUPER + R` and binds `ii-restart`.
+- Long-running `Process` commands added upstream (monitors, `sleep infinity`, `gdbus monitor`):
+  wrap them in `setpriv --pdeathsig TERM` or they orphan on every restart. Check with
+  `ps -eo ppid,cmd | awk '$1==1' | grep -E "nmcli|gdbus|inhibit|cava"` after two restarts.

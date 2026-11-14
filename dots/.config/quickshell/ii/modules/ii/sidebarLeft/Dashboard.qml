@@ -25,7 +25,8 @@ Item {
     // "" = card grid, otherwise the key of the card whose detail page is open
     property string detail: ""
     // heavier sampling (processes, per-core, meminfo...) only while the sidebar is open
-    readonly property bool live: GlobalStates.sidebarLeftOpen
+    // parent check: the sidebar re-creates pages with createObject(); a replaced instance stops sampling
+    readonly property bool live: GlobalStates.sidebarLeftOpen && root.parent !== null
 
     onActiveFocusChanged: if (activeFocus) scratchArea.focusEnd()
     onLiveChanged: if (!live) detail = ""
@@ -289,23 +290,30 @@ Item {
     Timer {
         id: saveDebounce
         interval: 500
-        onTriggered: noteFile.setText(scratchArea.text)
+        onTriggered: Notes.save(scratchArea.text)
     }
-    FileView {
-        id: noteFile
-        path: Qt.resolvedUrl(Directories.notesPath)
-        watchChanges: true
-        onFileChanged: if (!scratchArea.activeFocus) reload()
-        // next tick, and skip instances the sidebar already replaced (contentChildren re-creates pages)
-        onLoaded: Qt.callLater(() => { if (!scratchArea.activeFocus) if (typeof noteFile.text === "function") scratchArea.text = noteFile.text(); })
-        onLoadFailed: error => { if (error === FileViewError.FileNotFound) noteFile.setText(""); }
+    // follow the shared notes file (Super+G Notes, external edits) while not typing here
+    Component.onCompleted: scratchArea.text = Notes.content
+    Connections {
+        target: Notes
+        function onContentChanged() {
+            if (!scratchArea.activeFocus && scratchArea.text !== Notes.content) scratchArea.text = Notes.content;
+        }
     }
 
     // ---------- processes ----------
     component ProcessesCard: Rectangle {
         id: procCard
-        property string sort: "mem"
-        property var info: ({ top: [], restCount: 0, restMem: 0 })
+        readonly property string sort: TopApps.sort
+        readonly property var info: TopApps.info
+        function setSort(k) { TopApps.setSort(k); }
+        // column widths measured in the real font from the widest values, not fixed pixels
+        StyledText { id: memProbe; visible: false; text: "1023.99 MB"; font.pixelSize: Appearance.font.pixelSize.smallie }
+        StyledText { id: memHeadProbe; visible: false; text: Translation.tr("Memory"); font.pixelSize: Appearance.font.pixelSize.smallie }
+        StyledText { id: cpuProbe; visible: false; text: "100.0"; font.pixelSize: Appearance.font.pixelSize.smallie }
+        StyledText { id: cpuHeadProbe; visible: false; text: "% CPU"; font.pixelSize: Appearance.font.pixelSize.smallie }
+        readonly property real memCol: Math.ceil(Math.max(memProbe.implicitWidth, memHeadProbe.implicitWidth)) + 2
+        readonly property real cpuCol: Math.ceil(Math.max(cpuProbe.implicitWidth, cpuHeadProbe.implicitWidth)) + 2
         property string menuFor: "" // app whose actions are showing
         property string confirmFor: "" // "<app>:<signal>" armed by a first click, fires on the second
         // ending these from here would take the session down with them
@@ -318,26 +326,7 @@ Item {
         color: Appearance.colors.colLayer2
         LokFrame { color: Appearance.colors.colLokDivider }
 
-        Timer {
-            interval: Config.options?.resources?.updateInterval ?? 3000
-            running: root.live
-            repeat: true
-            triggeredOnStart: true
-            onTriggered: if (!procProc.running) procCard.refresh()
-        }
-        Process {
-            id: procProc
-            stdout: StdioCollector {
-                onStreamFinished: { try { procCard.info = JSON.parse(text); } catch (e) {} }
-            }
-        }
         Process { id: killProc }
-        function refresh() {
-            procProc.running = false;
-            procProc.command = [Quickshell.env("HOME") + "/.local/bin/top-apps", "5", procCard.sort];
-            procProc.running = true;
-        }
-        function setSort(k) { procCard.sort = k; refresh(); }
         function endApp(app, signal) {
             if (!canEnd(app)) return;
             const key = app.name + ":" + signal;
@@ -358,8 +347,8 @@ Item {
                 spacing: root.gap
                 MaterialSymbol { text: "list"; iconSize: Appearance.font.pixelSize.normal; color: Appearance.colors.colSubtext }
                 StyledText { Layout.fillWidth: true; text: Translation.tr("Top processes"); color: Appearance.colors.colSubtext; font.pixelSize: Appearance.font.pixelSize.smallie }
-                SortHeader { label: Translation.tr("Memory"); key: "mem"; current: procCard.sort; onPicked: k => procCard.setSort(k); Layout.preferredWidth: 72 }
-                SortHeader { label: "% CPU"; key: "cpu"; current: procCard.sort; onPicked: k => procCard.setSort(k); Layout.preferredWidth: 52 }
+                SortHeader { label: Translation.tr("Memory"); key: "mem"; current: procCard.sort; onPicked: k => procCard.setSort(k); Layout.preferredWidth: procCard.memCol }
+                SortHeader { label: "% CPU"; key: "cpu"; current: procCard.sort; onPicked: k => procCard.setSort(k); Layout.preferredWidth: procCard.cpuCol }
                 Item { Layout.preferredWidth: 24 }
             }
             Repeater {
@@ -374,9 +363,9 @@ Item {
                         Layout.preferredHeight: 24
                         spacing: root.gap
                         StyledText { Layout.fillWidth: true; text: procRow.modelData.name; elide: Text.ElideRight; font.pixelSize: Appearance.font.pixelSize.smallie }
-                        StyledText { Layout.preferredWidth: 72; horizontalAlignment: Text.AlignRight; text: MachineStats.formatBytes(procRow.modelData.mem, 2); font.pixelSize: Appearance.font.pixelSize.smallie }
+                        StyledText { Layout.preferredWidth: procCard.memCol; horizontalAlignment: Text.AlignRight; text: MachineStats.formatBytes(procRow.modelData.mem, 2); font.pixelSize: Appearance.font.pixelSize.smallie }
                         StyledText {
-                            Layout.preferredWidth: 52; horizontalAlignment: Text.AlignRight
+                            Layout.preferredWidth: procCard.cpuCol; horizontalAlignment: Text.AlignRight
                             text: procRow.modelData.cpu.toFixed(1)
                             color: procRow.modelData.cpu >= 90 ? Appearance.colors.colError : Appearance.colors.colOnLayer2
                             font.pixelSize: Appearance.font.pixelSize.smallie
@@ -628,6 +617,7 @@ Item {
             } }
         }
 
+        StyledText { id: freqProbe; visible: false; text: "10.0 GHz"; font.pixelSize: Appearance.font.pixelSize.smaller }
         readonly property var titles: ({ cpu: "CPU", gpu: "GPU", mem: "MEM", disk: Translation.tr("Disk"), net: Translation.tr("Network"), fan: Translation.tr("Fan"), battery: Translation.tr("Battery") })
         function peakOf(list, floor) { return Math.max(floor, ...Array.prototype.slice.call(list)); }
         function norm(list, peak) { return Array.prototype.slice.call(list).map(v => v / peak); }
@@ -669,7 +659,7 @@ Item {
                                     Layout.fillWidth: true; implicitHeight: 6; color: Appearance.colors.colLokDivider
                                     Rectangle { width: parent.width * coreRow.modelData.use; height: parent.height; color: coreRow.modelData.use >= 0.9 ? Appearance.colors.colError : Appearance.colors.colMeterFill }
                                 }
-                                StyledText { Layout.preferredWidth: 64; horizontalAlignment: Text.AlignRight; text: `${(coreRow.modelData.mhz / 1000).toFixed(1)} GHz`; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
+                                StyledText { Layout.preferredWidth: freqProbe.implicitWidth + 2; horizontalAlignment: Text.AlignRight; text: `${(coreRow.modelData.mhz / 1000).toFixed(1)} GHz`; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
                             }
                         }
                     }
