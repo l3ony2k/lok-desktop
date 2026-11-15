@@ -25,6 +25,31 @@ Item {
         ...((root.animeEnabled && !root.animeCloset) ? [{"icon": "bookmark_heart", "name": Translation.tr("Anime")}] : [])
     ]
     property int tabCount: swipeView.count
+    readonly property bool placeholderNeeded: root.tabButtonList.length === 0
+        || (!root.dashboardEnabled && !root.aiChatEnabled && !root.translatorEnabled && root.animeCloset)
+
+    // Pages are created once and kept. contentChildren used to call createObject() inside its
+    // binding, so every re-evaluation (e.g. tabButtonList changing when the translation loads at
+    // startup) built a new set of pages and left the old ones alive, parentless, until garbage
+    // collection: their bindings kept running against torn-down internals ("Cannot find member
+    // data" from Dashboard's cards) and their timers kept polling.
+    property var pageCache: ({})
+    function page(key: string, comp: Component): var {
+        if (!pageCache[key])
+            pageCache[key] = comp.createObject(null);
+        return pageCache[key];
+    }
+    function dropPage(key: string): void {
+        if (pageCache[key]) {
+            pageCache[key].destroy();
+            delete pageCache[key];
+        }
+    }
+    onDashboardEnabledChanged: if (!dashboardEnabled) dropPage("dashboard")
+    onAiChatEnabledChanged: if (!aiChatEnabled) dropPage("aiChat")
+    onTranslatorEnabledChanged: if (!translatorEnabled) dropPage("translator")
+    onAnimeEnabledChanged: if (!animeEnabled) dropPage("anime")
+    onPlaceholderNeededChanged: if (!placeholderNeeded) dropPage("placeholder")
 
     function focusActiveItem() {
         swipeView.currentItem.forceActiveFocus()
@@ -88,11 +113,11 @@ Item {
                 }
 
                 contentChildren: [
-                    ...(root.dashboardEnabled ? [dashboard.createObject()] : []),
-                    ...(root.aiChatEnabled ? [aiChat.createObject()] : []),
-                    ...(root.translatorEnabled ? [translator.createObject()] : []),
-                    ...((root.tabButtonList.length === 0 || (!root.dashboardEnabled && !root.aiChatEnabled && !root.translatorEnabled && root.animeCloset)) ? [placeholder.createObject()] : []),
-                    ...(root.animeEnabled ? [anime.createObject()] : []),
+                    ...(root.dashboardEnabled ? [root.page("dashboard", dashboard)] : []),
+                    ...(root.aiChatEnabled ? [root.page("aiChat", aiChat)] : []),
+                    ...(root.translatorEnabled ? [root.page("translator", translator)] : []),
+                    ...(root.placeholderNeeded ? [root.page("placeholder", placeholder)] : []),
+                    ...(root.animeEnabled ? [root.page("anime", anime)] : []),
                 ]
             }
         }
