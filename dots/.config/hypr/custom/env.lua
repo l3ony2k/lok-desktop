@@ -9,4 +9,4 @@ hl.env("QT_IM_MODULES", "wayland;fcitx")
 
 -- Cursor: McMojave (installed user-local in ~/.local/share/icons, xcursor format)
 hl.env("XCURSOR_THEME", "McMojave-cursors")
-hl.env("XCURSOR_SIZE", "32")
+hl.env("XCURSOR_SIZE", "40") -- x1.333 = 53.3 -> the nominal-54 frames (72 px) added 2026-11-15; 45 -> 60 (80 px)

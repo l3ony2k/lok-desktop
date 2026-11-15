@@ -6,5 +6,5 @@ ScrollFactor=0.3
 TapToClick=true
 
 [Mouse]
-cursorSize=32
+cursorSize=40
 cursorTheme=McMojave-cursors
