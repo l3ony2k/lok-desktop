@@ -7,8 +7,9 @@
 # 1. qmllint the QML files changed since the last successful start (all files the first time),
 #    blocking only on what makes the config fail to load: [syntax] errors, properties that
 #    shadow a FINAL base member, and a missing import of one of ii's own components ("LokFrame
-#    was not found" while LokFrame.qml exists in ii). Quickshell's native types are unresolvable
-#    to qmllint and are ignored; existing hits are in a baseline (--baseline rebuilds it).
+#    was not found" while LokFrame.qml exists in ii and the file neither sits next to it nor
+#    imports its qs.* module; decided from the source, see imported()). Quickshell's native types
+#    are unresolvable to qmllint and are ignored; old hits are in a baseline (--baseline).
 #    On a hit: notify, print, exit 1, and leave the running shell alone.
 # 2. killall -w (wait until the old instance is gone, so two never overlap), start a new one.
 # 3. Report whether it came up.
@@ -27,6 +28,23 @@ export HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-$(ls -t "$XDG_
 
 say() { echo "$1: $2" >&2; notify-send -a ii-restart "$1" "$2" 2>/dev/null || true; }
 
+# qmllint cannot resolve the qs.* module imports at all, so "X was not found" is decided from the
+# source: X is reachable when X.qml sits in the file's own directory or the file imports the
+# qs.<dir> module that holds X.qml (e.g. qs.modules.common.widgets for LokFrame).
+imported() { # $1 = file relative to $DIR, $2 = type
+    local fdir d mod
+    # not named in this file: it comes from a base type and is checked in that type's own file
+    grep -qw "$2" "$DIR/$1" || return 0
+    fdir=$(dirname "$1")
+    while IFS= read -r d; do
+        d=${d#./}
+        [ "$d" = "$fdir" ] && return 0
+        mod="qs.${d//\//.}"
+        grep -qE "^[[:space:]]*import[[:space:]]+${mod//./\\.}([[:space:]]|$)" "$DIR/$1" && return 0
+    done < <(cd "$DIR" && find . -name "$2.qml" -printf '%h\n' | sort -u)
+    return 1
+}
+
 check() { # $1 = all|changed
     local files
     if [ "$1" = all ] || [ ! -f "$STAMP" ]; then files=$(find "$DIR" -name '*.qml')
@@ -41,6 +59,7 @@ check() { # $1 = all|changed
                  t=$(echo "$l" | sed -E 's/.*: ([A-Za-z0-9_]+) was not found.*/\1/')
                  f=$(echo "$l" | sed -E 's/^Warning: ([^:]+):.*/\1/')
                  echo "$own" | grep -qx "$t" || continue
+                 imported "$f" "$t" && continue
                  grep -qx "$f $t" "$BASE" 2>/dev/null && continue
                  echo "$l"
              done; } )

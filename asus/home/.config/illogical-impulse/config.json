@@ -14,7 +14,7 @@
         "requires_key": true
       }
     ],
-    "systemPrompt": "## Style\n- Use casual tone, don't be formal!\n- Always be brief and to the point, unless asked otherwise\n- Don't repeat the user's question\n- Be approachable: Avoid using overly complicated, domain-specific terms and provide analogies when asked to explain a concept\n\n## Context (ignore when irrelevant)\n- You are a helpful and inspiring sidebar assistant on a {DISTRO} Linux system\n- Desktop environment: {DE}\n- Current date & time: {DATETIME}\n- Focused app: {WINDOWCLASS}\n\n## Presentation\n- Use Markdown features in your response: \n  - **Bold** text to **highlight keywords** in your response\n  - **Split long information into small sections** with h2 headers and a relevant emoji at the start of it (for example `## 🐧 Linux`). Bullet points are preferred over long paragraphs, unless you're offering writing support or instructed otherwise by the user.\n- Asked to compare different options? You should firstly use a table to compare the main aspects, then elaborate or include relevant comments from online forums *after* the table. Make sure to provide a final recommendation for the user's use case!\n- Use LaTeX formatting for mathematical and scientific notations whenever appropriate. Enclose all LaTeX '$$' delimiters. NEVER generate LaTeX code in a latex block unless the user explicitly asks for it. DO NOT use LaTeX for regular documents (resumes, letters, essays, CVs, etc.).\n\nThanks!\n",
+    "systemPrompt": "## Style\n- Use casual tone, don't be formal!\n- Always be brief and to the point, unless asked otherwise\n- Don't repeat the user's question\n- Be approachable: Avoid using overly complicated, domain-specific terms and provide analogies when asked to explain a concept\n\n## Context (ignore when irrelevant)\n- You are a helpful and inspiring sidebar assistant on a {DISTRO} Linux system\n- Desktop environment: {DE}\n- Current date & time: {DATETIME}\n- Focused app: {WINDOWCLASS}\n\n## Presentation\n- Use Markdown features in your response: \n  - **Bold** text to **highlight keywords** in your response\n  - **Split long information into small sections** with h2 headers and a relevant emoji at the start of it (for example `## \ud83d\udc27 Linux`). Bullet points are preferred over long paragraphs, unless you're offering writing support or instructed otherwise by the user.\n- Asked to compare different options? You should firstly use a table to compare the main aspects, then elaborate or include relevant comments from online forums *after* the table. Make sure to provide a final recommendation for the user's use case!\n- Use LaTeX formatting for mathematical and scientific notations whenever appropriate. Enclose all LaTeX '$$' delimiters. NEVER generate LaTeX code in a latex block unless the user explicitly asks for it. DO NOT use LaTeX for regular documents (resumes, letters, essays, CVs, etc.).\n\nThanks!\n",
     "tool": "functions"
   },
   "appearance": {
@@ -143,16 +143,18 @@
     },
     "borderless": true,
     "bottom": false,
+    "centerClock": true,
     "cornerStyle": 0,
     "floatStyleShadow": true,
     "indicators": {
+      "bluetooth": "connected",
+      "keepAwake": true,
+      "micMute": false,
       "notifications": {
         "showUnreadCount": false
       },
-      "volumeMute": false,
-      "micMute": false,
       "notificationsSilent": false,
-      "bluetooth": "connected"
+      "volumeMute": false
     },
     "resources": {
       "alwaysShowCpu": true,
@@ -162,6 +164,7 @@
       "swapWarningThreshold": 85
     },
     "screenList": [],
+    "showActiveWindow": false,
     "showBackground": true,
     "tooltips": {
       "clickToShow": false
@@ -196,9 +199,7 @@
       "showNumberDelay": 300,
       "shown": 10,
       "useNerdFont": false
-    },
-    "centerClock": true,
-    "showActiveWindow": false
+    }
   },
   "battery": {
     "automaticSuspend": true,
@@ -216,7 +217,7 @@
       "key": 14
     },
     "splitButtons": false,
-    "superKey": "",
+    "superKey": "\uf268",
     "useFnSymbol": false,
     "useMacSymbol": false,
     "useMouseSymbol": false
@@ -252,8 +253,8 @@
       "fasterTouchpadScroll": false,
       "mouseScrollDeltaThreshold": 120,
       "mouseScrollFactor": 120,
-      "touchpadScrollFactor": 450,
-      "touchpadPixelGain": 5
+      "touchpadPixelGain": 5,
+      "touchpadScrollFactor": 450
     }
   },
   "language": {
@@ -384,6 +385,7 @@
       "imageSearchEngineBaseUrl": "https://lens.google.com/uploadbyurl?url=",
       "useCircleSelection": false
     },
+    "keepQuerySeconds": 300,
     "nonAppResultDelay": 30,
     "prefix": {
       "action": "/",
@@ -419,6 +421,9 @@
       "enable": false,
       "valueScroll": true,
       "visualize": false
+    },
+    "dashboard": {
+      "enable": true
     },
     "keepRightSidebarLoaded": true,
     "quickSliders": {
@@ -509,6 +514,10 @@
           },
           {
             "size": 1,
+            "type": "windowGaps"
+          },
+          {
+            "size": 1,
             "type": "batteryLimit"
           },
           {
@@ -519,15 +528,12 @@
       },
       "style": "android"
     },
-    "translator": {
-      "delay": 300,
-      "enable": false
-    },
     "todo": {
       "enable": false
     },
-    "dashboard": {
-      "enable": true
+    "translator": {
+      "delay": 300,
+      "enable": false
     }
   },
   "sounds": {
@@ -604,6 +610,11 @@
   },
   "wallpaperSelector": {
     "useSystemFileDialog": false
+  },
+  "windowGaps": {
+    "large": 36,
+    "mode": "none",
+    "small": 27
   },
   "windows": {
     "centerTitle": true,
