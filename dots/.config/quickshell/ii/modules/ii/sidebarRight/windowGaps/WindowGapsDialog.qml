@@ -75,7 +75,7 @@ WindowDialog {
     WindowDialogParagraph {
         Layout.fillWidth: true
         text: WindowGaps.enabled
-            ? Translation.tr("None: neighbouring windows share one border line. Small and Large: the gap to the screen edges and the bar, and about the same between windows. Small 27 lines windows up with the workspace indicator.")
+            ? Translation.tr("None: neighbouring windows share one border line. Small and Large: the gap to the screen edges and the bar, and about the same between windows. 27 px lines windows up with the bar's workspace indicator.")
             : Translation.tr("Only used with the lok palette.")
     }
 

@@ -17,8 +17,11 @@ SpinBox {
     opacity: root.enabled ? 1 : 0.4
 
     background: Rectangle {
-        color: Appearance.colors.colLayer2
+        // lok: a control is outlined, not filled (on a dialog or a card the layer-2 fill read as a
+        // grey slab in light mode and vanished in dark); the -/+ buttons still fill on hover
+        color: Appearance.lok ? "transparent" : Appearance.colors.colLayer2
         radius: root.radius
+        LokFrame { visible: Appearance.lok; color: Appearance.colors.colLokDivider }
     }
 
     contentItem: Item {
