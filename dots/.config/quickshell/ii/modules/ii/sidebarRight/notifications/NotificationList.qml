@@ -30,13 +30,22 @@ Item {
         popup: false
     }
 
-    // Placeholder when list is empty
-    PagePlaceholder {
-        shown: Notifications.list.length === 0
-        icon: "notifications_active"
-        description: Translation.tr("Nothing")
-        shape: MaterialShape.Shape.Ghostish
-        descriptionHorizontalAlignment: Text.AlignHCenter
+    // Placeholder when list is empty: centred in the list's area, above the status row
+    Item {
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+            bottom: statusRow.top
+            bottomMargin: listview.anchors.bottomMargin
+        }
+        PagePlaceholder {
+            shown: Notifications.list.length === 0
+            icon: "notifications_active"
+            description: Translation.tr("Nothing")
+            shape: MaterialShape.Shape.Ghostish
+            descriptionHorizontalAlignment: Text.AlignHCenter
+        }
     }
 
     ButtonGroup {

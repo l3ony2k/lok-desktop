@@ -27,6 +27,10 @@ Item {
 
     ColumnLayout {
         anchors.centerIn: parent
+        // lok: the icon has no shape behind it, so only the ink is seen, and the glyph box and the
+        // text's line box both carry more space above the ink than below. Measured on "Nothing":
+        // ink 10 device px (7.5 logical at 1.333) below the centre; lift it so the ink is centred.
+        anchors.verticalCenterOffset: Appearance.lok ? -7.5 : 0
         spacing: 5
 
         MaterialShapeWrappedMaterialSymbol {
