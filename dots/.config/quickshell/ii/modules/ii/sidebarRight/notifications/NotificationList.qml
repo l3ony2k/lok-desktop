@@ -68,7 +68,7 @@ Item {
             enabled: false
             lokOutline: false // lok: a count, not a button: plain text, no frame
             Layout.fillWidth: true
-            buttonText: Translation.tr("%1 notifications").arg(Notifications.list.length)
+            buttonText: (Notifications.list.length === 1 ? Translation.tr("%1 notification") : Translation.tr("%1 notifications")).arg(Notifications.list.length)
         }
         NotificationStatusButton {
             Layout.fillWidth: false

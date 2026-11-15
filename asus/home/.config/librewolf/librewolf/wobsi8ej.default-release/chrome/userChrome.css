@@ -1,6 +1,7 @@
 /* ==========================================================================
    LibreWolf userChrome.css
-   Flat, desaturated chrome, no rounded corners, no native tab strip.
+   Flat chrome in the lok palette (ii's fixed greyscale skin), no rounded
+   corners, no native tab strip.
    Changes take effect after restarting LibreWolf.
    ========================================================================== */
 
@@ -106,19 +107,152 @@
 }
 
 /* --------------------------------------------------------------------------
-   4. Grayscale
-   force grayscale everything the chrome renders, including the Sidebery
-   panel and all XUL popups/menus. Web pages are untouched; userContent.css
-   handles those.
+   4. lok colours
+   The lok palette (ii: scripts/colors/lok/lok_palette.py, Appearance colLok*)
+   mapped onto Firefox's own colour tokens. Icons, favicons and extension icons
+   keep their colours: grey comes from the tokens, not from a filter.
+   Dark/light follows the system (lok's mode switch sets the GTK theme).
    -------------------------------------------------------------------------- */
-#navigator-toolbox,
-#sidebar-box,
-#sidebar-container,
-#browser-bottombox,
-#findbar,
-#statuspanel,
-menupopup,
-panel,
+:root {
+  /* lok dark */
+  --lok-bg: #121212;          /* panel: ii bar and sidebars */
+  --lok-field: #1c1c1c;       /* inset: url field */
+  --lok-card: #262626;        /* card / selected */
+  --lok-hover: #313131;
+  --lok-active: #3c3c3c;
+  --lok-dialog: #272727;      /* menus, popups */
+  --lok-divider: #3d3d3d;     /* 1 px lines */
+  --lok-outline: #8f8f8f;     /* focus */
+  --lok-fg: #ededed;
+  --lok-muted: #b4b4b4;
+  --lok-link: #6aaeff;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --lok-bg: #f2f2f2;
+    --lok-field: #ffffff;
+    --lok-card: #dddddd;
+    --lok-hover: #e8e8e8;
+    --lok-active: #d1d1d1;
+    --lok-dialog: #fbfbfb;
+    --lok-divider: #bdbdbd;
+    --lok-outline: #5c5c5c;
+    --lok-fg: #161616;
+    --lok-muted: #4a4a4a;
+    --lok-link: #0067b3;
+  }
+}
+
+/* Firefox re-declares several of these on the toolbox, toolbars and popups themselves (e.g. the
+   GTK system theme), which beats a value inherited from :root, so set them there too. */
+:root, #navigator-toolbox, toolbar, #nav-bar, #urlbar, #searchbar, #sidebar-box, #sidebar-main,
+menupopup, panel, #tabbrowser-tabpanels {
+  /* frame and toolbars */
+  --toolbox-bgcolor: var(--lok-bg) !important;
+  --toolbox-bgcolor-inactive: var(--lok-bg) !important;
+  --toolbox-textcolor: var(--lok-fg) !important;
+  --toolbox-textcolor-inactive: var(--lok-muted) !important;
+  --toolbar-bgcolor: var(--lok-bg) !important;
+  --toolbar-color: var(--lok-fg) !important;
+  --chrome-content-separator-color: var(--lok-divider) !important;
+  --tabpanel-background-color: var(--lok-bg) !important;
+
+  /* toolbar buttons: flat, fill on hover */
+  --toolbarbutton-hover-background: var(--lok-hover) !important;
+  --toolbarbutton-active-background: var(--lok-active) !important;
+  --toolbarbutton-icon-fill: var(--lok-fg) !important;
+
+  /* url field: inset, 1 px divider frame, focus = outline grey */
+  --toolbar-field-background-color: var(--lok-field) !important;
+  --toolbar-field-color: var(--lok-fg) !important;
+  --toolbar-field-border-color: var(--lok-divider) !important;
+  --toolbar-field-focus-background-color: var(--lok-field) !important;
+  --toolbar-field-focus-color: var(--lok-fg) !important;
+  --toolbar-field-focus-border-color: var(--lok-outline) !important;
+  --urlbar-box-bgcolor: var(--lok-card) !important;
+  --urlbar-box-hover-bgcolor: var(--lok-hover) !important;
+  --urlbar-box-active-bgcolor: var(--lok-active) !important;
+  --urlbar-box-focus-bgcolor: var(--lok-card) !important;
+  --urlbar-box-text-color: var(--lok-fg) !important;
+  --urlbarView-highlight-background: var(--lok-card) !important;
+  --urlbarView-highlight-color: var(--lok-fg) !important;
+  --urlbarView-hover-background: var(--lok-hover) !important;
+  --urlbarView-separator-color: var(--lok-divider) !important;
+  --urlbarView-url-color: var(--lok-link) !important;
+
+  /* accent: lok has none; the text colour is the accent (inversion), focus is outline grey */
+  --focus-outline-color: var(--lok-outline) !important;
+  --color-accent-primary: var(--lok-fg) !important;
+  --color-accent-primary-hover: var(--lok-muted) !important;
+  --color-accent-primary-active: var(--lok-muted) !important;
+  --button-background-color-primary: var(--lok-fg) !important;
+  --button-background-color-primary-hover: var(--lok-muted) !important;
+  --button-background-color-primary-active: var(--lok-muted) !important;
+  --button-text-color-primary: var(--lok-bg) !important;
+  --button-background-color: var(--lok-card) !important;
+  --button-background-color-hover: var(--lok-hover) !important;
+  --button-background-color-active: var(--lok-active) !important;
+  --button-text-color: var(--lok-fg) !important;
+  --link-color: var(--lok-link) !important;
+
+  /* sidebar (Sidebery's own colours are in userContent.css) */
+  --sidebar-background-color: var(--lok-bg) !important;
+  --sidebar-text-color: var(--lok-fg) !important;
+  --sidebar-border-color: var(--lok-divider) !important;
+
+  /* popups and menus: the lok dialog surface, 1 px divider frame */
+  --panel-background: var(--lok-dialog) !important;
+  --panel-color: var(--lok-fg) !important;
+  --panel-border-color: var(--lok-divider) !important;
+  --arrowpanel-background: var(--lok-dialog) !important;
+  --arrowpanel-color: var(--lok-fg) !important;
+  --arrowpanel-border-color: var(--lok-divider) !important;
+  --panel-separator-color: var(--lok-divider) !important;
+  --panel-item-hover-bgcolor: var(--lok-hover) !important;
+  --panel-item-active-bgcolor: var(--lok-active) !important;
+  --menu-background-color: var(--lok-dialog) !important;
+  --menu-color: var(--lok-fg) !important;
+  --menu-border-color: var(--lok-divider) !important;
+  --menuitem-hover-background-color: var(--lok-hover) !important;
+  --menu-disabled-color: var(--lok-muted) !important;
+
+  /* design-system tokens used by the revamped sidebar, dialogs and about: chrome */
+  --background-color-canvas: var(--lok-bg) !important;
+  --background-color-box: var(--lok-card) !important;
+  --text-color: var(--lok-fg) !important;
+  --text-color-deemphasized: var(--lok-muted) !important;
+  --border-color: var(--lok-divider) !important;
+  --border-color-card: var(--lok-divider) !important;
+}
+
+/* The toolbox paints the GTK headerbar colour itself (not from a token): set it directly. */
+#navigator-toolbox, #nav-bar, #PersonalToolbar, #titlebar, #toolbar-menubar {
+  background-color: var(--lok-bg) !important;
+  background-image: none !important;
+  color: var(--lok-fg) !important;
+}
+#navigator-toolbox {
+  border-bottom: 1px solid var(--lok-divider) !important;
+}
+
+/* Panels (app menu, extensions, downloads) paint their content box with the GTK menu colour. */
+panel::part(content), menupopup::part(content), .panel-arrowcontent, panelmultiview,
+.panel-viewcontainer, .panel-viewstack, panelview, .panel-subview-body {
+  background-color: var(--lok-dialog) !important;
+  color: var(--lok-fg) !important;
+}
+panel::part(content), menupopup::part(content) {
+  border: 1px solid var(--lok-divider) !important;
+}
+
+/* Menus and tooltips draw no shadow in lok */
+menupopup, panel, tooltip {
+  --panel-shadow: none !important;
+  --panel-shadow-margin: 0px !important;
+}
 tooltip {
-  filter: grayscale(1) !important;
+  appearance: none !important;
+  background-color: var(--lok-dialog) !important;
+  color: var(--lok-fg) !important;
+  border: 1px solid var(--lok-divider) !important;
 }

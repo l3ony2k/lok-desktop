@@ -36,3 +36,81 @@
 :root {
   accent-color: light-dark(#6a6a6a, #909090) !important;
 }
+/* --------------------------------------------------------------------------
+   5. Sidebery in the lok palette
+   Sidebery 5 takes its colours from --s-* variables on #root; set them to the
+   lok tokens (same values as userChrome.css section 4). Selected tab = lok
+   card: fill + 1 px divider frame, no shadow. Favicons keep their colours.
+   The URL is Sidebery's per-install UUID (prefs: extensions.webextensions.uuids);
+   it changes if Sidebery is removed and installed again.
+   -------------------------------------------------------------------------- */
+@-moz-document url-prefix("moz-extension://00d36041-3ec5-4dec-b595-99d47ade3a15/") {
+  #root, #root[data-frame-color-scheme], #root[data-toolbar-color-scheme] {
+    --lok-bg: #121212; --lok-card: #262626; --lok-hover: #313131; --lok-dialog: #272727;
+    --lok-divider: #3d3d3d; --lok-outline: #8f8f8f; --lok-fg: #ededed; --lok-muted: #b4b4b4;
+  }
+  @media (prefers-color-scheme: light) {
+    #root, #root[data-frame-color-scheme], #root[data-toolbar-color-scheme] {
+      --lok-bg: #f2f2f2; --lok-card: #dddddd; --lok-hover: #e8e8e8; --lok-dialog: #fbfbfb;
+      --lok-divider: #bdbdbd; --lok-outline: #5c5c5c; --lok-fg: #161616; --lok-muted: #4a4a4a;
+    }
+  }
+  #root, #root[data-frame-color-scheme], #root[data-toolbar-color-scheme] {
+    --s-frame-bg: var(--lok-bg) !important;
+    --s-frame-fg: var(--lok-fg) !important;
+    --s-toolbar-bg: var(--lok-bg) !important;
+    --s-toolbar-fg: var(--lok-fg) !important;
+    --s-toolbar-border: var(--lok-divider) !important;
+    --s-act-el-bg: var(--lok-card) !important;
+    --s-act-el-fg: var(--lok-fg) !important;
+    --s-act-el-border: var(--lok-divider) !important;
+    --s-popup-bg: var(--lok-dialog) !important;
+    --s-popup-fg: var(--lok-fg) !important;
+    --s-popup-border: var(--lok-divider) !important;
+    --s-accent: var(--lok-outline) !important;
+    --active-el-shadow: inset 0 0 0 1px var(--lok-divider) !important;
+    --tabs-activated-shadow: inset 0 0 0 1px var(--lok-divider) !important;
+    --frame-el-shadow: none !important;
+    --popup-shadow: 0 0 0 1px var(--lok-divider) !important;
+  }
+}
+/* --------------------------------------------------------------------------
+   6. Built-in pages (about:newtab, about:preferences, about:sessionrestore, ...)
+   lok tokens instead of LibreWolf's cyan accent: the accent is the text colour
+   (inverted fill), backgrounds are the lok panel/card greys. Web pages untouched.
+   -------------------------------------------------------------------------- */
+@-moz-document url-prefix("about:") {
+  :root {
+    --lok-bg: #121212; --lok-card: #262626; --lok-hover: #313131; --lok-active: #3c3c3c;
+    --lok-divider: #3d3d3d; --lok-outline: #8f8f8f; --lok-fg: #ededed; --lok-muted: #b4b4b4;
+    --lok-link: #6aaeff;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --lok-bg: #f2f2f2; --lok-card: #dddddd; --lok-hover: #e8e8e8; --lok-active: #d1d1d1;
+      --lok-divider: #bdbdbd; --lok-outline: #5c5c5c; --lok-fg: #161616; --lok-muted: #4a4a4a;
+      --lok-link: #0067b3;
+    }
+  }
+  :root {
+    --color-accent-primary: var(--lok-fg) !important;
+    --color-accent-primary-hover: var(--lok-muted) !important;
+    --color-accent-primary-active: var(--lok-muted) !important;
+    --button-background-color-primary: var(--lok-fg) !important;
+    --button-background-color-primary-hover: var(--lok-muted) !important;
+    --button-background-color-primary-active: var(--lok-muted) !important;
+    --button-text-color-primary: var(--lok-bg) !important;
+    --button-background-color: var(--lok-card) !important;
+    --button-background-color-hover: var(--lok-hover) !important;
+    --button-background-color-active: var(--lok-active) !important;
+    --focus-outline-color: var(--lok-outline) !important;
+    --link-color: var(--lok-link) !important;
+    --link-color-hover: var(--lok-link) !important;
+    --background-color-canvas: var(--lok-bg) !important;
+    --in-content-page-background: var(--lok-bg) !important;
+    --newtab-background-color: var(--lok-bg) !important;
+    --newtab-background-color-secondary: var(--lok-card) !important;
+    --border-color: var(--lok-divider) !important;
+    --border-color-card: var(--lok-divider) !important;
+  }
+}
