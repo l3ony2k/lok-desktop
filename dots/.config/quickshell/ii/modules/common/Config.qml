@@ -384,6 +384,13 @@ Singleton {
                 }
             }
 
+            // lok window gaps (services/WindowGaps.qml): "none" | "small" | "large", sizes in logical px
+            property JsonObject windowGaps: JsonObject {
+                property string mode: "none"
+                property int small: 27 // = the bar's inset before the workspace indicator
+                property int large: 36
+            }
+
             property JsonObject lock: JsonObject {
                 property bool useHyprlock: false
                 // Park monitors on temp workspaces while locked (slide-away animation).

@@ -18,4 +18,5 @@ Rectangle {
     signal openTailscaleDialog()
     signal openMihomoDialog()
     signal openSshLanDialog()
+    signal openWindowGapsDialog()
 }

@@ -33,7 +33,7 @@ AbstractQuickPanel {
     readonly property real baseCellHeight: Appearance.lok ? 57 : 56
 
     // Toggles
-    readonly property list<string> availableToggleTypes: ["network", "bluetooth", "camera", "idleInhibitor", "easyEffects", "nightLight", "darkMode", "mihomo", "tailscale", "sshLan", "batteryLimit", "gameMode", "screenSnip", "colorPicker", "onScreenKeyboard", "mic", "audio", "notifications", "powerProfile","musicRecognition", "antiFlashbang"]
+    readonly property list<string> availableToggleTypes: ["network", "bluetooth", "camera", "idleInhibitor", "easyEffects", "nightLight", "darkMode", "mihomo", "tailscale", "sshLan", "windowGaps", "batteryLimit", "gameMode", "screenSnip", "colorPicker", "onScreenKeyboard", "mic", "audio", "notifications", "powerProfile","musicRecognition", "antiFlashbang"]
     readonly property int columns: Config.options.sidebar.quickToggles.android.columns
     readonly property list<var> toggles: Config.ready ? Config.options.sidebar.quickToggles.android.toggles : []
     readonly property list<var> toggleRows: toggleRowsForList(toggles)
@@ -117,6 +117,7 @@ AbstractQuickPanel {
                             onOpenTailscaleDialog: root.openTailscaleDialog()
                             onOpenMihomoDialog: root.openMihomoDialog()
                             onOpenSshLanDialog: root.openSshLanDialog()
+                            onOpenWindowGapsDialog: root.openWindowGapsDialog()
                         }
                     }
                 }

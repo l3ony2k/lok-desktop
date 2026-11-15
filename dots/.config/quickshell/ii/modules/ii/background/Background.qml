@@ -278,5 +278,22 @@ Variants {
                 }
             }
         }
+    
+        // lok: the bar's bottom line lives on the desktop (this Bottom-layer surface, under every
+        // window). With gaps "none" the windows' top border sits on the same row and is drawn over
+        // it, so the focused window's highlight shows; elsewhere it is the bar's edge (Bar.qml).
+        Rectangle {
+            visible: Appearance.sizes.lokBarLineBelow && GlobalStates.barOpen && !GlobalStates.screenLocked
+                && ((Config.options.bar.screenList?.length ?? 0) === 0 || Config.options.bar.screenList.includes(bgRoot.modelData.name))
+            z: 100
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                topMargin: Appearance.sizes.baseBarHeight - 1
+            }
+            height: 1 / (bgRoot.modelData?.devicePixelRatio || Appearance.dpr)
+            color: Appearance.colors.colLokDivider
+        }
     }
 }

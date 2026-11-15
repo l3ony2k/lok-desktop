@@ -448,6 +448,11 @@ Singleton {
         // a band exactly 1 device px wide always covers exactly one pixel row/column,
         // so lok frames render 1 px everywhere instead of 1 or 2 depending on position
         property real hairline: root.lok ? 1 / root.dpr : 1
+        // lok, plain top bar: the bar paints 1 px short and its bottom line is drawn by the
+        // background, under windows (Background.qml), so a window's own top border is drawn over it
+        readonly property bool lokBarLineBelow: root.lok && Config.options.bar.showBackground
+            && Config.options.bar.cornerStyle !== 1 && !Config.options.bar.vertical
+            && !Config.options.bar.bottom && !Config.options.bar.autoHide.enable
         property real fabShadowRadius: 5
         property real fabHoveredShadowRadius: 7
         property real hyprlandGapsOut: 3

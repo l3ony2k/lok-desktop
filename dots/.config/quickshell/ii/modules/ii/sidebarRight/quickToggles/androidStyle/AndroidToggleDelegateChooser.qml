@@ -22,6 +22,7 @@ DelegateChooser {
     signal openTailscaleDialog()
     signal openMihomoDialog()
     signal openSshLanDialog()
+    signal openWindowGapsDialog()
 
     role: "type"
 
@@ -220,6 +221,19 @@ DelegateChooser {
         onOpenMenu: root.openSshLanDialog()
     } }
 
+    DelegateChoice { roleValue: "windowGaps"; AndroidWindowGapsToggle {
+        required property int index
+        required property var modelData
+        buttonIndex: root.startingIndex + index
+        buttonData: modelData
+        editMode: root.editMode
+        expandedSize: modelData.size > 1
+        baseCellWidth: root.baseCellWidth
+        baseCellHeight: root.baseCellHeight
+        cellSpacing: root.spacing
+        cellSize: modelData.size
+        onOpenMenu: root.openWindowGapsDialog()
+    } }
     DelegateChoice { roleValue: "mic"; AndroidMicToggle {
         required property int index
         required property var modelData

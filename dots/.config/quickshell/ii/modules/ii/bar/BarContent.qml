@@ -48,6 +48,8 @@ Item { // Bar content region
         anchors {
             fill: parent
             margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
+            // lok: stop 1 px short; that row belongs to the windows' top border / the line under them (Background.qml)
+            bottomMargin: Appearance.sizes.lokBarLineBelow ? 1 : (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
         }
         color: Config.options.bar.showBackground ? Appearance.colors.colLayer0 : "transparent"
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
@@ -56,6 +58,7 @@ Item { // Bar content region
     }
     Rectangle { // lok: hairline between the bar and the desktop, same tone as dialog dividers
         visible: Appearance.lok && Config.options.bar.showBackground && Config.options.bar.cornerStyle !== 1 && !Config.options.bar.vertical
+            && !Appearance.sizes.lokBarLineBelow // drawn under the windows instead (Background.qml)
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: Config.options.bar.bottom ? undefined : parent.bottom
