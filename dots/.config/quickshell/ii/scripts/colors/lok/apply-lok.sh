@@ -61,8 +61,11 @@ cat > "$XDG_CONFIG_HOME/hypr/custom/lok.lua" <<EOF
 hl.config({
     general = {
         border_size = 1,
-        -- lok: no gaps; 1 px borders are the only separation
-        gaps_in = 0,
+        -- lok: no gaps; 1 px borders are the only separation. gaps_in -1: neighbouring tiles
+        -- overlap by their border, so one line shows between windows (the upper window's, i.e.
+        -- the focused one's) instead of two side by side. The bar side is handled by the bar's
+        -- exclusive zone (1 px short, the window border slides under the bar's frame line).
+        gaps_in = -1,
         gaps_out = 0,
         col = {
             active_border = "rgba(${active}ff)",
