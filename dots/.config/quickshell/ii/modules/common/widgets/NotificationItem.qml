@@ -14,6 +14,8 @@ Item { // Notification item area
     property var notificationObject
     property bool expanded: false
     property bool onlyNotification: false
+    // The surface this item sits on (card, popup); the action row's scroll fade blends into it
+    property color surfaceColor: Appearance.colors.colLayer2
     property real fontSize: Appearance.font.pixelSize.small
     property real padding: onlyNotification ? 0 : 8
     property real summaryElideRatio: 0.85
@@ -227,6 +229,9 @@ Item { // Notification item area
                     ScrollEdgeFade {
                         target: actionsFlickable
                         vertical: false
+                        // fade into what is actually behind the row: the item's own fill when it has one
+                        // (expanded in a group), else the card/popup (was colLayer1Base: a darker band)
+                        color: background.color.a > 0.5 ? background.color : root.surfaceColor
                     }
 
                     StyledFlickable { // Notification actions

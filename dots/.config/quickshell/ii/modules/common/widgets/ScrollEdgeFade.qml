@@ -9,6 +9,10 @@ Item {
     property real fadeSize: Appearance.m3colors.darkmode ? 40 : 20
     property color color: Appearance.colors.colLayer1Base
     property bool vertical: true
+    // Only when the content really overflows: at fractional scales a row sized to fit exactly
+    // (e.g. two half-width notification buttons) can be a fraction of a pixel "unscrolled"
+    readonly property bool overflows: vertical ? target.contentHeight > target.height + 1
+                                               : target.contentWidth > target.width + 1
 
     anchors.fill: target
 
@@ -19,7 +23,7 @@ Item {
             right: vertical ? parent.right : undefined
             bottom: vertical ? undefined : parent.bottom
         }
-        shown: !(root.vertical ? root.target.atYBeginning : root.target.atXBeginning)
+        shown: root.overflows && !(root.vertical ? root.target.atYBeginning : root.target.atXBeginning)
     }
 
     EndGradient {
@@ -29,7 +33,7 @@ Item {
             left: vertical ? parent.left : undefined
             top: vertical ? undefined : parent.top
         }
-        shown: !(root.vertical ? root.target.atYEnd : root.target.atXEnd)
+        shown: root.overflows && !(root.vertical ? root.target.atYEnd : root.target.atXEnd)
         rotation: 180
     }
 
