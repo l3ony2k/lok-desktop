@@ -167,7 +167,7 @@ Singleton {
     // Set by the overview: Super-tap (search-only) lists every app while the query is empty
     property bool listAppsWhenEmpty: false
     function allAppsByFrequency() {
-        return AppSearch.list.slice().sort((a, b) => {
+        return AppSearch.launcherList.slice().sort((a, b) => {
             const d = LauncherFrequency.score(b.id) - LauncherFrequency.score(a.id);
             return d !== 0 ? d : a.name.localeCompare(b.name);
         }).map(entry => root.cachedAppResult(entry));
@@ -302,7 +302,7 @@ Singleton {
                 Quickshell.clipboardText = root.mathResult;
             }
         });
-        const appResultObjects = AppSearch.fuzzyQuery(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.app)).map(entry => root.cachedAppResult(entry));
+        const appResultObjects = AppSearch.launcherQuery(StringUtils.cleanPrefix(root.query, Config.options.search.prefix.app)).map(entry => root.cachedAppResult(entry));
         const commandResultObject = resultComp.createObject(null, {
             name: StringUtils.cleanPrefix(root.query, Config.options.search.prefix.shellCommand).replace("file://", ""),
             verb: Translation.tr("Run"),

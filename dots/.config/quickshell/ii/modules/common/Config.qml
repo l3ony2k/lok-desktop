@@ -502,6 +502,9 @@ Singleton {
                 property int keepQuerySeconds: 300 // Reopening within this time restores the last query and its results; later opens start empty
                 property string engineBaseUrl: "https://www.google.com/search?q="
                 property list<string> excludedSites: ["quora.com", "facebook.com"]
+                // Desktop entry ids (file name without .desktop) the launcher leaves out; other menus
+                // (Plasma) and icon guessing still see them
+                property list<string> excludedApps: []
                 property bool sloppy: false // Uses levenshtein distance based scoring instead of fuzzy sort. Very weird.
                 property JsonObject prefix: JsonObject {
                     property bool showDefaultActionsWithoutPrefix: true

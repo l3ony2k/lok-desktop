@@ -53,6 +53,15 @@ Singleton {
         entry: a
     }))
 
+    // What the launcher offers: `list` minus Config.options.search.excludedApps. Only the launcher
+    // uses this; icon guessing (guessIcon) keeps the full list, so hidden apps' windows keep their icons.
+    readonly property list<string> excludedApps: Config.options?.search?.excludedApps ?? []
+    readonly property list<DesktopEntry> launcherList: list.filter(a => !root.excludedApps.includes(a.id))
+    readonly property var preppedLauncherNames: launcherList.map(a => ({
+        name: Fuzzy.prepare(`${a.name} `),
+        entry: a
+    }))
+
     readonly property var preppedIcons: list.map(a => ({
         name: Fuzzy.prepare(`${a.icon} `),
         entry: a
@@ -77,6 +86,20 @@ Singleton {
         });
     }
 
+    function launcherQuery(search: string): var { // fuzzyQuery over launcherList
+        if (root.sloppySearch) {
+            return launcherList.map(obj => ({
+                entry: obj,
+                score: Levendist.computeScore(obj.name.toLowerCase(), search.toLowerCase())
+            })).filter(item => item.score > root.scoreThreshold)
+                .sort((a, b) => b.score - a.score)
+                .map(item => item.entry)
+        }
+        return Fuzzy.go(search, preppedLauncherNames, {
+            all: true,
+            key: "name"
+        }).map(r => r.obj.entry);
+    }
     function iconExists(iconName) {
         if (!iconName || iconName.length == 0) return false;
         return (Quickshell.iconPath(iconName, true).length > 0) 

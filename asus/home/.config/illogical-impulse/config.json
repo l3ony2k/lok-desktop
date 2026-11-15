@@ -397,7 +397,33 @@
       "showDefaultActionsWithoutPrefix": true,
       "webSearch": "?"
     },
-    "sloppy": false
+    "sloppy": false,
+    "excludedApps": [
+      "com.github.wwmm.easyeffects",
+      "fcitx5-configtool",
+      "org.fontforge.FontForge",
+      "re.fossplant.songrec",
+      "org.kde.spectacle",
+      "systemsettings",
+      "kdesystemsettings",
+      "org.kde.plasma-systemmonitor",
+      "org.kde.kinfocenter",
+      "pavucontrol-qt",
+      "org.kde.discover",
+      "org.kde.plasma.emojier",
+      "assistant",
+      "designer",
+      "linguist",
+      "qdbusviewer",
+      "qv4l2",
+      "qvidcap",
+      "lstopo",
+      "org.kde.drkonqi.coredump.gui",
+      "org.kde.kmenuedit",
+      "kbd-layout-viewer5",
+      "org.kde.plasma-welcome",
+      "org.fcitx.fcitx5-migrator"
+    ]
   },
   "sidebar": {
     "ai": {
@@ -612,9 +638,9 @@
     "useSystemFileDialog": false
   },
   "windowGaps": {
-    "large": 36,
+    "large": 25,
     "mode": "none",
-    "small": 27
+    "small": 5
   },
   "windows": {
     "centerTitle": true,
