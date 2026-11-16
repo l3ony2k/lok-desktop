@@ -34,14 +34,14 @@ Item { // Player instance
 
         property var iconName
         colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 1)
-        colBackgroundHover: blendedColors.colSecondaryContainerHover
-        colRipple: blendedColors.colSecondaryContainerActive
+        colBackgroundHover: Appearance.lok ? Appearance.colors.colLokDialogHover : blendedColors.colSecondaryContainerHover
+        colRipple: Appearance.lok ? Appearance.colors.colLokDivider : blendedColors.colSecondaryContainerActive
 
         contentItem: MaterialSymbol {
             iconSize: Appearance.font.pixelSize.huge
             fill: 1
             horizontalAlignment: Text.AlignHCenter
-            color: blendedColors.colOnSecondaryContainer
+            color: Appearance.lok ? Appearance.colors.colSubtext : blendedColors.colOnSecondaryContainer
             text: iconName
 
             Behavior on color {
@@ -130,7 +130,9 @@ Item { // Player instance
 
             Rectangle {
                 anchors.fill: parent
-                color: ColorUtils.transparentize(blendedColors.colLayer0, 0.3)
+                // lok: a neutral dialog-colour scrim at 85 % so the text reads; the art only tints it
+                color: Appearance.lok ? ColorUtils.transparentize(Appearance.colors.colLokDialog, 0.15)
+                                      : ColorUtils.transparentize(blendedColors.colLayer0, 0.3)
                 radius: root.radius
             }
         }
@@ -142,7 +144,7 @@ Item { // Player instance
             points: root.visualizerPoints
             maxVisualizerValue: root.maxVisualizerValue
             smoothing: root.visualizerSmoothing
-            color: blendedColors.colPrimary
+            color: Appearance.lok ? ColorUtils.transparentize(Appearance.colors.colSubtext, 0.8) : blendedColors.colPrimary
         }
 
         RowLayout {
@@ -190,7 +192,7 @@ Item { // Player instance
                     id: trackTitle
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.large
-                    color: blendedColors.colOnLayer0
+                    color: Appearance.lok ? Appearance.colors.colOnLayer0 : blendedColors.colOnLayer0
                     elide: Text.ElideRight
                     text: StringUtils.cleanMusicTitle(root.player?.trackTitle) || "Untitled"
                     animateChange: true
@@ -201,7 +203,7 @@ Item { // Player instance
                     id: trackArtist
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: blendedColors.colSubtext
+                    color: Appearance.lok ? Appearance.colors.colSubtext : blendedColors.colSubtext
                     elide: Text.ElideRight
                     text: root.player?.trackArtist
                     animateChange: true
@@ -219,7 +221,7 @@ Item { // Player instance
                         anchors.bottomMargin: 5
                         anchors.left: parent.left
                         font.pixelSize: Appearance.font.pixelSize.small
-                        color: blendedColors.colSubtext
+                        color: Appearance.lok ? Appearance.colors.colSubtext : blendedColors.colSubtext
                         elide: Text.ElideRight
                         text: `${StringUtils.friendlyTimeForSeconds(root.player?.position)} / ${StringUtils.friendlyTimeForSeconds(root.player?.length)}`
                     }
@@ -244,10 +246,12 @@ Item { // Player instance
                                 anchors.fill: parent
                                 active: root.player?.canSeek ?? false
                                 sourceComponent: StyledSlider { 
+                                    // lok: the same thin 4 px track, but straight, in the shared meter colours
                                     configuration: StyledSlider.Configuration.Wavy
-                                    highlightColor: blendedColors.colPrimary
-                                    trackColor: blendedColors.colSecondaryContainer
-                                    handleColor: blendedColors.colPrimary
+                                    wavy: !Appearance.lok
+                                    highlightColor: Appearance.lok ? Appearance.colors.colMeterFill : blendedColors.colPrimary
+                                    trackColor: Appearance.lok ? Appearance.colors.colLokFrame : blendedColors.colSecondaryContainer
+                                    handleColor: Appearance.lok ? Appearance.colors.colOnLayer0 : blendedColors.colPrimary
                                     value: root.player?.position / root.player?.length
                                     onMoved: {
                                         root.player.position = value * root.player.length;
@@ -264,9 +268,9 @@ Item { // Player instance
                                 }
                                 active: !(root.player?.canSeek ?? false)
                                 sourceComponent: StyledProgressBar { 
-                                    wavy: root.player?.isPlaying
-                                    highlightColor: blendedColors.colPrimary
-                                    trackColor: blendedColors.colSecondaryContainer
+                                    wavy: root.player?.isPlaying && !Appearance.lok
+                                    highlightColor: Appearance.lok ? Appearance.colors.colMeterFill : blendedColors.colPrimary
+                                    trackColor: Appearance.lok ? Appearance.colors.colLokFrame : blendedColors.colSecondaryContainer
                                     value: root.player?.position / root.player?.length
                                 }
                             }
@@ -290,15 +294,18 @@ Item { // Player instance
                         downAction: () => root.player.togglePlaying();
 
                         buttonRadius: root.player?.isPlaying ? Appearance?.rounding.normal : size / 2
-                        colBackground: root.player?.isPlaying ? blendedColors.colPrimary : blendedColors.colSecondaryContainer
-                        colBackgroundHover: root.player?.isPlaying ? blendedColors.colPrimaryHover : blendedColors.colSecondaryContainerHover
-                        colRipple: root.player?.isPlaying ? blendedColors.colPrimaryActive : blendedColors.colSecondaryContainerActive
+                        // lok: an outlined block (1 px frame), hover one ramp step; no art-derived fill
+                        borderWidth: Appearance.lok ? 1 : 0
+                        borderColor: Appearance.colors.colLokFrame
+                        colBackground: Appearance.lok ? ColorUtils.transparentize(Appearance.colors.colLokDialog, 1) : root.player?.isPlaying ? blendedColors.colPrimary : blendedColors.colSecondaryContainer
+                        colBackgroundHover: Appearance.lok ? Appearance.colors.colLokDialogHover : root.player?.isPlaying ? blendedColors.colPrimaryHover : blendedColors.colSecondaryContainerHover
+                        colRipple: Appearance.lok ? Appearance.colors.colLokDivider : root.player?.isPlaying ? blendedColors.colPrimaryActive : blendedColors.colSecondaryContainerActive
 
                         contentItem: MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.huge
                             fill: 1
                             horizontalAlignment: Text.AlignHCenter
-                            color: root.player?.isPlaying ? blendedColors.colOnPrimary : blendedColors.colOnSecondaryContainer
+                            color: Appearance.lok ? Appearance.colors.colOnLayer0 : root.player?.isPlaying ? blendedColors.colOnPrimary : blendedColors.colOnSecondaryContainer
                             text: root.player?.isPlaying ? "pause" : "play_arrow"
 
                             Behavior on color {
