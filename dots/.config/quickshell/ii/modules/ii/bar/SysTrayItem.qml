@@ -19,8 +19,10 @@ MouseArea {
 
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    implicitWidth: 20
-    implicitHeight: 20
+    // lok: 18 px; tray pixmaps carry their own margin, so this puts their ink at the
+    // ~20 device-px height of the Material status glyphs next to them
+    implicitWidth: Appearance.lok ? 18 : 20
+    implicitHeight: Appearance.lok ? 18 : 20
     onPressed: (event) => {
         switch (event.button) {
         case Qt.LeftButton:
@@ -70,15 +72,50 @@ MouseArea {
 
     IconImage {
         id: trayIcon
-        visible: !Config.options.tray.monochromeIcons
+        // lok draws the icon through the ColorOverlay below
+        visible: !Config.options.tray.monochromeIcons && !Appearance.lok
         source: root.item.icon
         anchors.centerIn: parent
         width: parent.width
         height: parent.height
     }
 
+    // lok: every tray icon is drawn in the secondary text colour, like the Material status glyphs.
+    // Dark mode maps brightness: tray icons are drawn for dark panels, so light parts become the
+    // grey glyph and dark outlines melt into the bar (Slack keeps the gaps of its "#").
+    // Light mode uses the icon's shape only: some apps keep sending white icons (Slack), others
+    // swap to a black icon on a light theme (magpie), and a brightness rule would hide one of them.
     Loader {
-        active: Config.options.tray.monochromeIcons
+        active: Appearance.lok && Appearance.m3colors.darkmode
+        anchors.fill: trayIcon
+        sourceComponent: Item {
+            Desaturate {
+                id: lokGrey
+                visible: false
+                anchors.fill: parent
+                source: trayIcon
+                desaturation: 1.0
+            }
+            LevelAdjust {
+                anchors.fill: lokGrey
+                source: lokGrey
+                // alpha is mapped too: low end transparent, high end opaque
+                readonly property color barCol: Appearance.colors.colLayer0
+                readonly property color sub: Appearance.colors.colSubtext
+                minimumOutput: Qt.rgba(barCol.r, barCol.g, barCol.b, 0)
+                maximumOutput: Qt.rgba(sub.r, sub.g, sub.b, 1)
+            }
+        }
+    }
+    ColorOverlay {
+        visible: Appearance.lok && !Appearance.m3colors.darkmode
+        anchors.fill: trayIcon
+        source: trayIcon
+        color: Appearance.colors.colSubtext
+    }
+
+    Loader {
+        active: Config.options.tray.monochromeIcons && !Appearance.lok
         anchors.fill: trayIcon
         sourceComponent: Item {
             Desaturate {

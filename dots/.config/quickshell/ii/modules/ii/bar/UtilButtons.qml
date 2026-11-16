@@ -14,7 +14,8 @@ Item {
     property bool borderless: Config.options.bar.borderless
     // all buttons can be switched off; an empty group must not keep its padding
     readonly property bool hasContent: rowLayout.implicitWidth > 0
-    implicitWidth: hasContent ? rowLayout.implicitWidth + rowLayout.spacing * 2 : 0
+    // lok: no extra side padding; the 26 px buttons already pad their glyphs
+    implicitWidth: hasContent ? rowLayout.implicitWidth + (Appearance.lok ? 0 : rowLayout.spacing * 2) : 0
     implicitHeight: rowLayout.implicitHeight
 
     RowLayout {

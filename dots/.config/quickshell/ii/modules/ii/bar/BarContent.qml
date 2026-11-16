@@ -303,8 +303,9 @@ Item { // Bar content region
 
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 Layout.rightMargin: Appearance.lok ? 20 : Appearance.roundingSpace.screenRounding
-                // lok: cancel this button's 10 px side padding so tray -> Wi-Fi matches the other gaps
-                Layout.leftMargin: Appearance.lok ? -10 : 0
+                // lok: only trim 2 px for the even gap; the button's 10 px padding is what keeps
+                // the tray icons outside its open-state fill
+                Layout.leftMargin: Appearance.lok ? -2 : 0
                 Layout.fillWidth: false
 
                 implicitWidth: indicatorsRowLayout.implicitWidth + 10 * 2
@@ -333,7 +334,7 @@ Item { // Bar content region
                 RowLayout {
                     id: indicatorsRowLayout
                     anchors.centerIn: parent
-                    property real realSpacing: Appearance.lok ? 13 : 15 // lok: same visual gap as the status cluster
+                    property real realSpacing: Appearance.lok ? 14 : 15 // lok: same visual gap as the status cluster
                     spacing: 0
 
                     Revealer { // Keep awake (coffee): shown only while on
@@ -426,7 +427,7 @@ Item { // Bar content region
             }
             BatteryIndicator {
                 visible: root.centerClock && root.useShortenedForm < 2 && Battery.available
-                Layout.leftMargin: Appearance.lok ? 5 : 8 // resource monitor keeps 4 px of its own padding
+                Layout.leftMargin: Appearance.lok ? 3.5 : 8 // resource monitor keeps 4 px of its own padding
                 Layout.alignment: Qt.AlignVCenter
             }
             UtilButtons {

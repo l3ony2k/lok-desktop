@@ -70,7 +70,8 @@ Item {
         columns: root.vertical ? 1 : -1
         anchors.fill: parent
         rowSpacing: 8
-        columnSpacing: 15
+        // lok: icon-to-icon ink gap of ~22 device px, the gap used across the rest of the status area
+        columnSpacing: Appearance.lok ? 11 : 15
 
         RippleButton {
             id: trayOverflowButton
@@ -82,6 +83,8 @@ Item {
 
             Layout.fillHeight: !root.vertical
             Layout.fillWidth: root.vertical
+            // lok: the 24 px button already pads the chevron; take that padding out of the gap
+            Layout.rightMargin: Appearance.lok && !root.vertical ? -8 : 0
             background.implicitWidth: 24
             background.implicitHeight: 24
             background.anchors.centerIn: this
