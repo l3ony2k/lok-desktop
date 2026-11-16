@@ -62,7 +62,7 @@ PopupWindow {
 
         Rectangle {
             id: popupBackground
-            readonly property real padding: 4
+            readonly property real padding: Appearance.lok ? 3 : 4
             anchors {
                 left: parent.left
                 right: parent.right
@@ -72,7 +72,8 @@ PopupWindow {
                 margins: root.padding
             }
 
-            color: Appearance.colors.colLayer0
+            // lok: same floating surface as every other popup/dialog
+            color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colLayer0
             radius: Appearance.rounding.windowRounding
             border.width: Appearance.lok ? 0 : 1 // lok: LokFrame below (border drops sides at 1.333 scale)
             LokFrame { visible: Appearance.lok; z: 99; color: parent?.border?.color ?? Appearance.colors.colLokFrame }
@@ -151,9 +152,11 @@ PopupWindow {
             sourceComponent: RippleButton {
                 id: backButton
                 buttonRadius: popupBackground.radius - popupBackground.padding
-                horizontalPadding: 12
+                horizontalPadding: Appearance.lok ? 10 : 12
                 implicitWidth: contentItem.implicitWidth + horizontalPadding * 2
-                implicitHeight: 36
+                implicitHeight: Appearance.lok ? 28 : 36
+                colBackgroundHover: Appearance.lok ? Appearance.colors.colLokDialogHover : Appearance.colors.colLayer1Hover
+                colRipple: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colLayer1Active
 
                 downAction: () => stackView.pop()
 
@@ -167,11 +170,13 @@ PopupWindow {
                     }
                     spacing: 8
                     MaterialSymbol {
-                        iconSize: 20
+                        iconSize: Appearance.lok ? 16 : 20
                         text: "chevron_left"
+                        color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.m3colors.m3onBackground
                     }
                     StyledText {
                         Layout.fillWidth: true
+                        font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smallie : Appearance.font.pixelSize.small
                         text: Translation.tr("Back")
                     }
                 }
@@ -180,9 +185,11 @@ PopupWindow {
         RippleButton {
             id: pinEntry
             buttonRadius: popupBackground.radius - popupBackground.padding
-            horizontalPadding: 12
+            horizontalPadding: Appearance.lok ? 10 : 12
             implicitWidth: contentItem.implicitWidth + horizontalPadding * 2
-            implicitHeight: 36
+            implicitHeight: Appearance.lok ? 28 : 36
+            colBackgroundHover: Appearance.lok ? Appearance.colors.colLokDialogHover : Appearance.colors.colLayer1Hover
+            colRipple: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colLayer1Active
             Layout.topMargin: 0
             Layout.bottomMargin: 0
             Layout.fillWidth: true
@@ -198,15 +205,20 @@ PopupWindow {
                     leftMargin: pinEntry.horizontalPadding
                     rightMargin: pinEntry.horizontalPadding
                 }
-                spacing: 8
+                spacing: Appearance.lok ? 6 : 8
 
                 MaterialSymbol {
-                    iconSize: 18
+                    // lok: sits in the 16 px check column so its label lines up with the entries
+                    Layout.preferredWidth: Appearance.lok ? 16 : implicitWidth
+                    horizontalAlignment: Text.AlignHCenter
+                    iconSize: Appearance.lok ? 15 : 18
                     text: "push_pin"
+                    color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.m3colors.m3onBackground
                 }
 
                 StyledText {
                     Layout.fillWidth: true
+                    font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smallie : Appearance.font.pixelSize.small
                     text: TrayService.isPinned(root.trayItemId) ? Translation.tr("Unpin") : Translation.tr("Pin")
                 }
             }
@@ -215,9 +227,18 @@ PopupWindow {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 1
-            color: Appearance.colors.colSubtext
-            Layout.topMargin: 4
-            Layout.bottomMargin: 4
+            color: Appearance.lok ? "transparent" : Appearance.colors.colSubtext
+            Layout.topMargin: Appearance.lok ? 3 : 4
+            Layout.bottomMargin: Appearance.lok ? 3 : 4
+            // lok: a hairline divider running edge to edge, like the dialog separators
+            Layout.leftMargin: Appearance.lok ? -popupBackground.padding : 0
+            Layout.rightMargin: Appearance.lok ? -popupBackground.padding : 0
+            Rectangle {
+                visible: Appearance.lok
+                width: parent.width
+                height: Appearance.sizes.hairline
+                color: Appearance.colors.colLokDivider
+            }
         }
 
         Repeater {
@@ -244,6 +265,7 @@ PopupWindow {
                 menuEntry: modelData
 
                 buttonRadius: popupBackground.radius - popupBackground.padding
+                edgeBleed: popupBackground.padding
 
                 onDismiss: root.close()
                 onOpenSubmenu: handle => {

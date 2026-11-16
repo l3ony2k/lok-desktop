@@ -20,16 +20,32 @@ RippleButton {
     signal dismiss()
     signal openSubmenu(handle: QsMenuHandle)
 
-    colBackground: menuEntry.isSeparator ? Appearance.m3colors.m3outlineVariant : ColorUtils.transparentize(Appearance.colors.colLayer0)
+    // lok: separators run edge to edge through the menu padding
+    property real edgeBleed: 0
+
+    colBackground: menuEntry.isSeparator ? (Appearance.lok ? "transparent" : Appearance.m3colors.m3outlineVariant) : ColorUtils.transparentize(Appearance.colors.colLayer0)
+    colBackgroundHover: Appearance.lok ? Appearance.colors.colLokDialogHover : Appearance.colors.colLayer1Hover
+    colRipple: Appearance.lok ? Appearance.colors.colLokDivider : Appearance.colors.colLayer1Active
     enabled: !menuEntry.isSeparator
     opacity: 1
 
-    horizontalPadding: 12
+    // lok: compact rows (28 px) and a 10 px inset
+    horizontalPadding: Appearance.lok ? 10 : 12
     implicitWidth: contentItem.implicitWidth + horizontalPadding * 2
-    implicitHeight: menuEntry.isSeparator ? 1 : 36
-    Layout.topMargin: menuEntry.isSeparator ? 4 : 0
-    Layout.bottomMargin: menuEntry.isSeparator ? 4 : 0
+    implicitHeight: menuEntry.isSeparator ? 1 : (Appearance.lok ? 28 : 36)
+    Layout.topMargin: menuEntry.isSeparator ? (Appearance.lok ? 3 : 4) : 0
+    Layout.bottomMargin: menuEntry.isSeparator ? (Appearance.lok ? 3 : 4) : 0
+    Layout.leftMargin: menuEntry.isSeparator && Appearance.lok ? -edgeBleed : 0
+    Layout.rightMargin: menuEntry.isSeparator && Appearance.lok ? -edgeBleed : 0
     Layout.fillWidth: true
+
+    // lok: the line itself is a device-px hairline inside the 1 px layout slot
+    Rectangle {
+        visible: Appearance.lok && root.menuEntry.isSeparator
+        width: parent.width
+        height: Appearance.sizes.hairline
+        color: Appearance.colors.colLokDivider
+    }
 
     Component.onCompleted: {
         if (menuEntry.isSeparator) {
@@ -58,14 +74,14 @@ RippleButton {
             leftMargin: root.horizontalPadding
             rightMargin: root.horizontalPadding
         }
-        spacing: 8
+        spacing: Appearance.lok ? 6 : 8
         visible: !root.menuEntry.isSeparator
 
         // Interaction: checkbox or radio button
         Item {
             visible: root.hasSpecialInteraction || root.forceSpecialInteractionColumn
-            implicitWidth: 20
-            implicitHeight: 20
+            implicitWidth: Appearance.lok ? 16 : 20
+            implicitHeight: Appearance.lok ? 16 : 20
 
             Loader {
                 anchors.fill: parent
@@ -84,7 +100,7 @@ RippleButton {
 
                 sourceComponent: MaterialSymbol {
                     text: root.menuEntry.checkState === Qt.PartiallyChecked ? "check_indeterminate_small" : "check"
-                    iconSize: 20
+                    iconSize: Appearance.lok ? 16 : 20
                 }
             }
         }
@@ -92,8 +108,8 @@ RippleButton {
         // Button icon
         Item {
             visible: root.hasIcon || root.forceIconColumn
-            implicitWidth: 20
-            implicitHeight: 20
+            implicitWidth: Appearance.lok ? 16 : 20
+            implicitHeight: Appearance.lok ? 16 : 20
 
             Loader {
                 anchors.centerIn: parent
@@ -101,7 +117,7 @@ RippleButton {
                 sourceComponent: IconImage {
                     asynchronous: true
                     source: root.menuEntry.icon
-                    implicitSize: 20
+                    implicitSize: Appearance.lok ? 16 : 20
                     mipmap: true
                 }
             }
@@ -119,7 +135,8 @@ RippleButton {
 
             sourceComponent: MaterialSymbol {
                 text: "chevron_right"
-                iconSize: 20
+                iconSize: Appearance.lok ? 16 : 20
+                color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.m3colors.m3onBackground
             }
         }
     }
