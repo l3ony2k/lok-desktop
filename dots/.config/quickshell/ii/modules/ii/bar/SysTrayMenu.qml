@@ -42,9 +42,28 @@ PopupWindow {
 
     function close() {
         root.visible = false;
+    }
+
+    property bool wasShown: false
+    onVisibleChanged: {
+        if (visible) {
+            wasShown = true;
+            return;
+        }
+        if (!wasShown)
+            return;
+        wasShown = false;
         while (stackView.depth > 1)
             stackView.pop();
         root.menuClosed();
+    }
+
+    // Esc (via TrayService): leave a submenu first, then close
+    function handleEscape() {
+        if (stackView.depth > 1)
+            stackView.pop();
+        else
+            root.close();
     }
 
     MouseArea {

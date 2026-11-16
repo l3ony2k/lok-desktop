@@ -3,6 +3,7 @@ pragma Singleton
 import qs.modules.common
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Services.SystemTray
 
 Singleton {
@@ -39,6 +40,30 @@ Singleton {
                 return true;
         }
         return false;
+    }
+
+    // Esc for tray menus. A tray menu is an xdg popup without keyboard focus (giving it a grab
+    // fights the tray's HyprlandFocusGrab and closes it at once), so Esc is caught by Hyprland:
+    // a bare Escape bind exists only while a tray menu or the overflow is open (refcounted
+    // across bars) and is removed again on close and at startup.
+    signal escapePressed()
+    property int escHolders: 0
+    function holdEscape(hold) {
+        const before = root.escHolders > 0;
+        root.escHolders = Math.max(0, root.escHolders + (hold ? 1 : -1));
+        const after = root.escHolders > 0;
+        if (before !== after)
+            root.setEscapeBind(after);
+    }
+    function setEscapeBind(on) {
+        const lua = on ? 'hl.bind("Escape", hl.dsp.global("quickshell:trayMenuEscape"))' : 'hl.unbind("Escape")';
+        Quickshell.execDetached(["hyprctl", "eval", lua]);
+    }
+    Component.onCompleted: root.setEscapeBind(false) // drop a bind left behind by a crashed instance
+    GlobalShortcut {
+        name: "trayMenuEscape"
+        description: "Close the open tray menu (bound only while one is open)"
+        onPressed: root.escapePressed()
     }
 
     function togglePin(itemId) {

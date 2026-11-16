@@ -40,6 +40,28 @@ Item {
 
     function releaseFocus() {
         focusGrab.active = false;
+        root.activeMenu = null;
+    }
+
+    // Esc: submenu -> back, menu -> close, overflow alone -> close (see TrayService)
+    readonly property bool escArmed: root.activeMenu !== null || root.trayOverflowOpen
+    property bool escHeld: false
+    onEscArmedChanged: {
+        if (root.escArmed !== root.escHeld) {
+            root.escHeld = root.escArmed;
+            TrayService.holdEscape(root.escArmed);
+        }
+    }
+    Component.onDestruction: if (root.escHeld) TrayService.holdEscape(false)
+    Connections {
+        target: TrayService
+        enabled: root.escHeld
+        function onEscapePressed() {
+            if (root.activeMenu && typeof root.activeMenu.handleEscape === "function")
+                root.activeMenu.handleEscape();
+            else if (root.trayOverflowOpen)
+                focusGrab.active = false, root.trayOverflowOpen = false;
+        }
     }
 
     function closeOverflowMenu() {
