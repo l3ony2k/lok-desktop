@@ -6,6 +6,7 @@ import qs.modules.common.functions
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Services.Mpris
 import Quickshell.Hyprland
 
@@ -19,6 +20,13 @@ Item {
     implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
     implicitHeight: Appearance.sizes.barHeight
 
+    // The centre-clock layout hides this item when playback stops; do not leave a
+    // stale hover state holding the preview open.
+    onVisibleChanged: {
+        if (!visible)
+            GlobalStates.mediaControlsHovered = false;
+    }
+
     Timer {
         running: activePlayer?.playbackState == MprisPlaybackState.Playing
         interval: Config.options.resources.updateInterval
@@ -28,7 +36,24 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: !Config.options.bar.tooltips.clickToShow
         acceptedButtons: Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton | Qt.RightButton | Qt.LeftButton
+
+        // Publish where the indicator is so MediaControls can align its left edge to it.
+        function publishAnchorX() {
+            const point = root.QsWindow?.mapFromItem(root, 0, 0);
+            if (point)
+                GlobalStates.mediaControlsAnchorX = point.x;
+        }
+
+        onEntered: {
+            publishAnchorX();
+            GlobalStates.mediaControlsHovered = true;
+        }
+        onExited: {
+            GlobalStates.mediaControlsHovered = false;
+        }
+
         onPressed: (event) => {
             if (event.button === Qt.MiddleButton) {
                 activePlayer.togglePlaying();
@@ -37,7 +62,9 @@ Item {
             } else if (event.button === Qt.ForwardButton || event.button === Qt.RightButton) {
                 activePlayer.next();
             } else if (event.button === Qt.LeftButton) {
-                GlobalStates.mediaControlsOpen = !GlobalStates.mediaControlsOpen
+                // Click pins the popup open; only a click outside dismisses it.
+                publishAnchorX();
+                GlobalStates.mediaControlsOpen = true;
             }
         }
     }

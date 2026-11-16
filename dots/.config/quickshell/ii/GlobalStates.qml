@@ -14,6 +14,11 @@ Singleton {
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false
     property bool mediaControlsOpen: false
+    // Hover preview of the media controls, driven by the bar's media indicator.
+    property bool mediaControlsHovered: false
+    property bool mediaControlsPopupHovered: false
+    // Screen x of the indicator that opened it, so the popup can align to its left edge.
+    property real mediaControlsAnchorX: -1
     property bool osdBrightnessOpen: false
     property bool osdVolumeOpen: false
     property bool oskOpen: false

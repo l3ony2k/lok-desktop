@@ -24,6 +24,25 @@ Scope {
     property real popupRounding: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
     property list<real> visualizerPoints: []
 
+    // Hover preview: the bar's media indicator opens this while the pointer is on it,
+    // and it stays open while the pointer is over the popup itself. Clicking the
+    // indicator pins it (mediaControlsOpen) until a click outside dismisses it.
+    readonly property bool hoverShown: GlobalStates.mediaControlsHovered || GlobalStates.mediaControlsPopupHovered
+
+    Timer {
+        id: hoverHideTimer
+        interval: 220
+        repeat: false
+    }
+
+    onHoverShownChanged: {
+        if (hoverShown) {
+            hoverHideTimer.stop();
+        } else if (mediaControlsLoader.active && !GlobalStates.mediaControlsOpen) {
+            hoverHideTimer.restart();
+        }
+    }
+
     function filterDuplicatePlayers(players) {
         let filtered = [];
         let used = new Set();
@@ -73,10 +92,14 @@ Scope {
 
     Loader {
         id: mediaControlsLoader
-        active: GlobalStates.mediaControlsOpen
+        active: GlobalStates.mediaControlsOpen || root.hoverShown || hoverHideTimer.running
         onActiveChanged: {
-            if (!mediaControlsLoader.active && root.realPlayers.length === 0) {
-                GlobalStates.mediaControlsOpen = false;
+            if (!mediaControlsLoader.active) {
+                GlobalStates.mediaControlsPopupHovered = false;
+                hoverHideTimer.stop();
+                if (root.realPlayers.length === 0) {
+                    GlobalStates.mediaControlsOpen = false;
+                }
             }
         }
 
@@ -100,7 +123,20 @@ Scope {
             margins {
                 top: Config.options.bar.vertical ? ((panelWindow.screen.height / 2) - widgetHeight * 1.5) : Appearance.sizes.barHeight
                 bottom: Appearance.sizes.barHeight
-                left: Config.options.bar.vertical ? Appearance.sizes.barHeight : ((panelWindow.screen.width / 2) - (osdWidth / 2) - widgetWidth)
+                left: {
+                    if (Config.options.bar.vertical)
+                        return Appearance.sizes.barHeight;
+                    const anchorX = GlobalStates.mediaControlsAnchorX;
+                    if (anchorX >= 0) {
+                        // PlayerControl insets its visible card by elevationMargin inside the
+                        // window; align the card's left edge with the media indicator, and
+                        // keep the window on screen.
+                        const x = anchorX - Appearance.sizes.elevationMargin;
+                        const screenW = panelWindow.screen?.width ?? (x + panelWindow.implicitWidth);
+                        return Math.max(0, Math.min(x, screenW - panelWindow.implicitWidth));
+                    }
+                    return (panelWindow.screen.width / 2) - (osdWidth / 2) - widgetWidth;
+                }
                 right: Appearance.sizes.barHeight
             }
 
@@ -108,11 +144,19 @@ Scope {
                 item: playerColumnLayout
             }
 
-            Component.onCompleted: {
-                GlobalFocusGrab.addDismissable(panelWindow);
+            // Only a pinned popup grabs focus/handles outside clicks; a hover preview
+            // must not intercept clicks elsewhere.
+            function syncFocusGrab() {
+                if (GlobalStates.mediaControlsOpen)
+                    GlobalFocusGrab.addDismissable(panelWindow);
+                else
+                    GlobalFocusGrab.removeDismissable(panelWindow);
             }
-            Component.onDestruction: {
-                GlobalFocusGrab.removeDismissable(panelWindow);
+            Component.onCompleted: syncFocusGrab()
+            Component.onDestruction: GlobalFocusGrab.removeDismissable(panelWindow)
+            Connections {
+                target: GlobalStates
+                function onMediaControlsOpenChanged() { syncFocusGrab(); }
             }
             Connections {
                 target: GlobalFocusGrab
@@ -125,6 +169,12 @@ Scope {
                 id: playerColumnLayout
                 anchors.fill: parent
                 spacing: -Appearance.sizes.elevationMargin // Shadow overlap okay
+
+                // Keep the hover preview open while the pointer is over the popup
+                // (including the trip from the bar item down to it).
+                HoverHandler {
+                    onHoveredChanged: GlobalStates.mediaControlsPopupHovered = hovered
+                }
 
                 Repeater {
                     model: ScriptModel {
