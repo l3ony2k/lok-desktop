@@ -400,7 +400,8 @@ Item { // Bar content region
                         color: rightSidebarButton.colText
                     }
                     MaterialSymbol {
-                        Layout.leftMargin: indicatorsRowLayout.realSpacing
+                        // lok: the Bluetooth glyph is narrow and carries extra side bearing
+                        Layout.leftMargin: indicatorsRowLayout.realSpacing - (Appearance.lok ? 3 : 0)
                         visible: BluetoothStatus.available && (Config.options.bar.indicators.bluetooth === "always" || (Config.options.bar.indicators.bluetooth === "connected" && BluetoothStatus.connected))
                         text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
                         iconSize: Appearance.font.pixelSize.larger

@@ -34,7 +34,8 @@ Item {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1
                     text: "screenshot_region"
-                    iconSize: Appearance.lok ? Appearance.font.pixelSize.larger : Appearance.font.pixelSize.large
+                    // lok: this glyph draws ~2 px smaller than its neighbours at the same size
+                    iconSize: Appearance.lok ? Appearance.font.pixelSize.larger + 2 : Appearance.font.pixelSize.large
                     color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer2 // lok: same status-glyph look as battery/weather
                 }
             }
