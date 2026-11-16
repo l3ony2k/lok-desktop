@@ -10,6 +10,8 @@
 #    was not found" while LokFrame.qml exists in ii and the file neither sits next to it nor
 #    imports its qs.* module; decided from the source, see imported()). Quickshell's native types
 #    are unresolvable to qmllint and are ignored; old hits are in a baseline (--baseline).
+#    Also blocked: a method named after a JS global function (escape, eval, ...), which
+#    fails with "Illegal method name" but passes qmllint.
 #    On a hit: notify, print, exit 1, and leave the running shell alone.
 # 2. killall -w (wait until the old instance is gone, so two never overlap), start a new one.
 # 3. Report whether it came up.
@@ -23,6 +25,7 @@ DIR="$HOME/.config/quickshell/$CFG"
 STAMP="$HOME/.cache/ii-restart.stamp"
 LINT=/usr/lib/qt6/bin/qmllint
 BASE="$HOME/.cache/ii-restart.import-baseline"
+JSGLOBALS='escape|unescape|eval|parseInt|parseFloat|isNaN|isFinite|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent'
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 export HYPRLAND_INSTANCE_SIGNATURE=${HYPRLAND_INSTANCE_SIGNATURE:-$(ls -t "$XDG_RUNTIME_DIR/hypr" 2>/dev/null | head -1)}
 
@@ -55,6 +58,10 @@ check() { # $1 = all|changed
     out=$(echo "$files" | tr '\n' '\0' | xargs -0 -P8 -n40 "$LINT" -I "$DIR" 2>&1 | sed "s|$DIR/||")
     own=$(find "$DIR" -name '*.qml' -printf '%f\n' | sed 's/\.qml$//' | sort -u)
     bad=$( { echo "$out" | grep -E '\[syntax\]|shadows final member'
+             # a method named after a JS global function: "Illegal method name" at load time,
+             # which qmllint does not report (hit on 2026-11-16 with function escape())
+             echo "$files" | tr '\n' '\0' | xargs -0 grep -nHE "^[[:space:]]*function[[:space:]]+($JSGLOBALS)[[:space:]]*\(" 2>/dev/null \
+                 | sed "s|$DIR/||; s|\$| [illegal method name: JS global]|"
              echo "$out" | grep -E 'was not found\. Did you add all imports' | while IFS= read -r l; do
                  t=$(echo "$l" | sed -E 's/.*: ([A-Za-z0-9_]+) was not found.*/\1/')
                  f=$(echo "$l" | sed -E 's/^Warning: ([^:]+):.*/\1/')
