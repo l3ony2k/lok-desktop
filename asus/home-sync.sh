@@ -46,7 +46,7 @@ MANIFEST=(
   .config/brave-origin-flags.conf .config/spotify-launcher.conf .config/gtk-3.0/settings.ini .config/gtk-4.0/settings.ini
   .local/share/applications/onekey-wallet.desktop .local/share/applications/orca-ide.desktop
   .local/share/applications/workflowy.desktop .local/share/workflowy-nomenu/launch.sh
-  .config/xdg-desktop-portal/shojiwm-portals.conf .config/nnn/edit .config/nnn/tmux.conf
+  .config/nnn/edit .config/nnn/tmux.conf
   # herdr flat theme (settings, keys, layouts, mods, themes only -- not its data)
   .config/herdr-app/settings.json .config/herdr-app/keys.json .config/herdr-app/layouts .config/herdr-app/mods/*-flat
   .config/herdr-app/themes .local/share/herdr-end4 .config/systemd/user/herdr-end4-theme.path
