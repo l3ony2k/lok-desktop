@@ -100,3 +100,15 @@ Copy it into dots/ and commit, otherwise the next exp-update reports a conflict:
 - Long-running `Process` commands added upstream (monitors, `sleep infinity`, `gdbus monitor`):
   wrap them in `setpriv --pdeathsig TERM` or they orphan on every restart. Check with
   `ps -eo ppid,cmd | awk '$1==1' | grep -E "nmcli|gdbus|inhibit|cava"` after two restarts.
+
+## C. Login screen sessions (greetd / tuigreet, set up 2026-11-16)
+
+tuigreet shows only the links in `/etc/greetd/sessions/` (`--sessions /etc/greetd/sessions`
+in `/etc/greetd/config.toml`), so package-shipped entries such as `hyprland-uwsm.desktop`
+(uwsm is not installed, the entry cannot start) stay hidden. Copies: `system/etc/greetd/`.
+
+- New desktop installed and it should appear at login:
+  `sudo ln -s /usr/share/wayland-sessions/<name>.desktop /etc/greetd/sessions/`
+- Remove one: delete its link. Links follow package updates; a removed package's link just drops out.
+- Takes effect the next time the login screen shows. Never restart greetd from inside a session.
+- Details: `/etc/greetd/README-sessions.md`.

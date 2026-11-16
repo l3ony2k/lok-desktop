@@ -2,5 +2,6 @@
 vt = 1
 
 [default_session]
-command = "tuigreet --time --remember --remember-session --cmd /usr/bin/start-hyprland"
+# Sessions offered = the links in /etc/greetd/sessions (see README-sessions.md there).
+command = "tuigreet --time --remember --remember-session --sessions /etc/greetd/sessions --cmd /usr/bin/start-hyprland"
 user = "greeter"
