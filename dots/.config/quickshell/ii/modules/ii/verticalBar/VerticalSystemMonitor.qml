@@ -7,7 +7,7 @@ import qs.modules.ii.bar as Bar
 
 /**
  * lok, vertical bar: the horizontal two-line monitor (Bar/SystemMonitor.qml) stacked into one
- * column, label over value:   CPU / 3%   MEM / 28%   ↑ / 2 KB   ↓ / 2 KB
+ * column, label over value:   CPU / 3%   MEM / 28%   ⇅ / ↑ rate / ↓ rate (one glyph over both rates)
  * Same colours and size as the horizontal one; rates drop one size step only if "999 KB" would
  * not fit the bar's width. Swap and details live in the same hover popup.
  */
@@ -63,15 +63,27 @@ MouseArea {
             value: Math.round(ResourceUsage.memoryUsedPercentage * 100) + "%"
             valueColor: ResourceUsage.memoryUsedPercentage * 100 >= Config.options.bar.resources.memoryWarningThreshold ? root.colWarn : root.colValue
         }
-        Pair {
-            label: "↑"
-            value: ResourceUsage.formatRate(ResourceUsage.netTxRate)
-            valueSize: root.rateFontSize
-        }
-        Pair {
-            label: "↓"
-            value: ResourceUsage.formatRate(ResourceUsage.netRxRate)
-            valueSize: root.rateFontSize
+        Column { // network: one up/down glyph over the two rates (upload, then download)
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: -2
+            MaterialSymbol {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "swap_vert"
+                iconSize: Appearance.font.pixelSize.small
+                color: root.colLabel
+            }
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: root.rateFontSize
+                color: root.colValue
+                text: ResourceUsage.formatRate(ResourceUsage.netTxRate)
+            }
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: root.rateFontSize
+                color: root.colValue
+                text: ResourceUsage.formatRate(ResourceUsage.netRxRate)
+            }
         }
     }
 

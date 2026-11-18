@@ -55,7 +55,7 @@ MouseArea {
             spacing: -1
             StyledText {
                 anchors.verticalCenter: parent.verticalCenter
-                font.pixelSize: Appearance.font.pixelSize.small
+                font.pixelSize: Appearance.font.pixelSize.smaller // 12 px, as the monitor values
                 color: lokBattery.tint
                 text: Math.round(root.percentage * 100) + "%"
             }

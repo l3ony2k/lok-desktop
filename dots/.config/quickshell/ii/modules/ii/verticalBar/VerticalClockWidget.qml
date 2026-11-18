@@ -17,7 +17,7 @@ Item {
     Column {
         id: column
         anchors.centerIn: parent
-        spacing: root.hasAmPm ? 6 : (Appearance.lok ? 2 : 0)
+        spacing: root.hasAmPm ? 6 : 0
 
         Column {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -42,6 +42,7 @@ Item {
             }
         }
         StyledText {
+            visible: !Appearance.lok // lok: the date lives in the hover popup, as in the horizontal bar
             anchors.horizontalCenter: parent.horizontalCenter
             // lok: the date as the horizontal two-line clock draws it (12 px, secondary grey)
             font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smaller : Appearance.font.pixelSize.smallest
