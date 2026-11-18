@@ -17,11 +17,11 @@ Item {
     Column {
         id: column
         anchors.centerIn: parent
-        spacing: root.hasAmPm ? 6 : 0
+        spacing: root.hasAmPm ? 6 : (Appearance.lok ? 2 : 0)
 
         Column {
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: -4
+            spacing: Appearance.lok ? -3 : -4
 
             Repeater {
                 model: root.dateTimeString.split(/[: ]/)
@@ -33,7 +33,8 @@ Item {
                             return Appearance.font.pixelSize.smaller;
                         else
                             // Smaller "am"/"pm" text
-                            return Appearance.font.pixelSize.large;
+                            // lok: the horizontal clock's 15 px
+                            return Appearance.lok ? Appearance.font.pixelSize.small : Appearance.font.pixelSize.large;
                     }
                     color: Appearance.colors.colOnLayer1
                     text: modelData.padStart(2, "0")
@@ -42,8 +43,9 @@ Item {
         }
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
-            font.pixelSize: Appearance.font.pixelSize.smallest
-            color: Appearance.colors.colOnLayer1
+            // lok: the date as the horizontal two-line clock draws it (12 px, secondary grey)
+            font.pixelSize: Appearance.lok ? Appearance.font.pixelSize.smaller : Appearance.font.pixelSize.smallest
+            color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
             text: DateTime.shortDate
         }
     }

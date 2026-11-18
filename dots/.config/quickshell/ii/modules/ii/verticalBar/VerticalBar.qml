@@ -58,6 +58,9 @@ Scope {
                 exclusionMode: ExclusionMode.Ignore
                 exclusiveZone: (Config?.options.bar.autoHide.enable && (!mustShow || !Config?.options.bar.autoHide.pushWindows)) ? 0 :
                     Appearance.sizes.baseVerticalBarWidth + (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0)
+                    // lok, gaps "none": reserve 1 px less, so the windows' side border lands on the bar's
+                    // edge line (drawn by the background, under the windows: Background.qml)
+                    - (WindowGaps.flush && Appearance.sizes.lokVBarLineBelow ? 1 : 0)
                 WlrLayershell.namespace: "quickshell:verticalBar"
                 // WlrLayershell.layer: WlrLayer.Overlay // TODO enable this when bar can hide when fullscreen
                 implicitWidth: Appearance.sizes.verticalBarWidth + Appearance.rounding.screenRounding

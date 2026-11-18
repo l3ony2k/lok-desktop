@@ -10,8 +10,9 @@ import QtQuick.Layouts
 MouseArea {
     id: root
     property bool hovered: false
-    implicitWidth: rowLayout.implicitWidth + (Appearance.lok ? 0 : 10 * 2)
-    implicitHeight: Appearance.sizes.barHeight
+    property bool vertical: false // vertical bar: glyph over temperature
+    implicitWidth: vertical ? Appearance.sizes.verticalBarWidth : rowLayout.implicitWidth + (Appearance.lok ? 0 : 10 * 2)
+    implicitHeight: vertical ? rowLayout.implicitHeight : Appearance.sizes.barHeight
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
@@ -28,17 +29,19 @@ MouseArea {
         }
     }
 
-    RowLayout {
+    GridLayout {
         id: rowLayout
         anchors.centerIn: parent
-        spacing: Appearance.lok ? 4 : 5
+        columns: root.vertical ? 1 : -1
+        rowSpacing: 0
+        columnSpacing: Appearance.lok ? 4 : 5
 
         MaterialSymbol {
             fill: 0
             text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
             iconSize: Appearance.lok ? Appearance.font.pixelSize.larger : Appearance.font.pixelSize.large
             color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
         }
 
         StyledText {
@@ -46,7 +49,7 @@ MouseArea {
             font.pixelSize: Appearance.font.pixelSize.small
             color: Appearance.colors.colOnLayer1
             text: Weather.data?.temp ?? "--°"
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
         }
     }
 

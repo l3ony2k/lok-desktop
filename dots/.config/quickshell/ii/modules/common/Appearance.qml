@@ -453,6 +453,11 @@ Singleton {
         readonly property bool lokBarLineBelow: root.lok && Config.options.bar.showBackground
             && Config.options.bar.cornerStyle !== 1 && !Config.options.bar.vertical
             && !Config.options.bar.bottom && !Config.options.bar.autoHide.enable
+        // same for the vertical bar (left, or right when bar.bottom): its inner edge line is
+        // drawn by the background, under windows, so a window's own side border is drawn over it
+        readonly property bool lokVBarLineBelow: root.lok && Config.options.bar.showBackground
+            && Config.options.bar.cornerStyle !== 1 && Config.options.bar.vertical
+            && !Config.options.bar.autoHide.enable
         property real fabShadowRadius: 5
         property real fabHoveredShadowRadius: 7
         property real hyprlandGapsOut: 3

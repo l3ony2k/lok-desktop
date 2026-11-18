@@ -121,11 +121,22 @@ Scope {
                 right: Config.options.bar.vertical && Config.options.bar.bottom
             }
             margins {
-                top: Config.options.bar.vertical ? ((panelWindow.screen.height / 2) - widgetHeight * 1.5) : Appearance.sizes.barHeight
+                top: {
+                    if (!Config.options.bar.vertical)
+                        return Appearance.sizes.barHeight;
+                    // vertical bar: line the card's top edge up with the media indicator, on screen
+                    const anchorY = GlobalStates.mediaControlsAnchorY;
+                    if (Appearance.lok && anchorY >= 0) {
+                        const y = anchorY - Appearance.sizes.elevationMargin;
+                        const screenH = panelWindow.screen?.height ?? (y + panelWindow.implicitHeight);
+                        return Math.max(0, Math.min(y, screenH - panelWindow.implicitHeight));
+                    }
+                    return (panelWindow.screen.height / 2) - widgetHeight * 1.5;
+                }
                 bottom: Appearance.sizes.barHeight
                 left: {
-                    if (Config.options.bar.vertical)
-                        return Appearance.sizes.barHeight;
+                    if (Config.options.bar.vertical) // lok: the card starts right at the bar's edge, as it does under the top bar
+                        return Appearance.lok ? Appearance.sizes.baseVerticalBarWidth : Appearance.sizes.barHeight;
                     const anchorX = GlobalStates.mediaControlsAnchorX;
                     if (anchorX >= 0) {
                         // PlayerControl insets its visible card by elevationMargin inside the
@@ -137,7 +148,7 @@ Scope {
                     }
                     return (panelWindow.screen.width / 2) - (osdWidth / 2) - widgetWidth;
                 }
-                right: Appearance.sizes.barHeight
+                right: (Config.options.bar.vertical && Appearance.lok) ? Appearance.sizes.baseVerticalBarWidth : Appearance.sizes.barHeight
             }
 
             mask: Region {

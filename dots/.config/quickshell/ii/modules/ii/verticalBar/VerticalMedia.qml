@@ -5,6 +5,7 @@ import qs
 import qs.modules.common.functions
 
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 import Quickshell.Services.Mpris
 
@@ -17,8 +18,29 @@ MouseArea {
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
     Layout.fillHeight: true
-    implicitHeight: mediaCircProg.implicitHeight
+    implicitHeight: Appearance.lok ? lokGlyph.implicitHeight : mediaCircProg.implicitHeight
     implicitWidth: Appearance.sizes.verticalBarWidth
+
+    // lok: same interaction as the horizontal bar's media item (Bar/Media.qml): hover previews the
+    // media popup next to this glyph, a click pins it
+    function publishAnchorY() {
+        const point = root.QsWindow?.mapFromItem(root, 0, 0);
+        if (point)
+            GlobalStates.mediaControlsAnchorY = point.y;
+    }
+    onEntered: {
+        if (!Appearance.lok) return;
+        publishAnchorY();
+        GlobalStates.mediaControlsHovered = true;
+    }
+    onExited: {
+        if (Appearance.lok)
+            GlobalStates.mediaControlsHovered = false;
+    }
+    onVisibleChanged: {
+        if (!visible && Appearance.lok)
+            GlobalStates.mediaControlsHovered = false;
+    }
 
     Timer {
         running: activePlayer?.playbackState == MprisPlaybackState.Playing
@@ -37,12 +59,27 @@ MouseArea {
         } else if (event.button === Qt.ForwardButton || event.button === Qt.RightButton) {
             activePlayer.next();
         } else if (event.button === Qt.LeftButton) {
-            GlobalStates.mediaControlsOpen = !GlobalStates.mediaControlsOpen
+            if (Appearance.lok) {
+                publishAnchorY();
+                GlobalStates.mediaControlsOpen = true; // only a click outside dismisses it
+            } else {
+                GlobalStates.mediaControlsOpen = !GlobalStates.mediaControlsOpen
+            }
         }
+    }
+
+    MaterialSymbol { // lok: the glyph alone, bright while playing
+        id: lokGlyph
+        visible: Appearance.lok
+        anchors.centerIn: parent
+        text: "music_note"
+        iconSize: Appearance.font.pixelSize.larger
+        color: root.activePlayer?.isPlaying ? Appearance.colors.colOnLayer1 : Appearance.colors.colSubtext
     }
 
     ClippedFilledCircularProgress {
         id: mediaCircProg
+        visible: !Appearance.lok
         anchors.centerIn: parent
         implicitSize: 20
 
@@ -68,7 +105,7 @@ MouseArea {
 
     Bar.StyledPopup {
         hoverTarget: root
-        active: GlobalStates.mediaControlsOpen ? false : root.containsMouse
+        active: (GlobalStates.mediaControlsOpen || Appearance.lok) ? false : root.containsMouse
 
         Column {
             anchors.centerIn: parent

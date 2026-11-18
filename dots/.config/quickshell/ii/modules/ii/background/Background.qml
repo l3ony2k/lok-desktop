@@ -295,5 +295,20 @@ Variants {
             height: 1 / (bgRoot.modelData?.devicePixelRatio || Appearance.dpr)
             color: Appearance.colors.colLokDivider
         }
+        Rectangle { // same for the vertical bar's inner edge (left bar: right edge; right bar: left edge)
+            visible: Appearance.sizes.lokVBarLineBelow && GlobalStates.barOpen && !GlobalStates.screenLocked
+                && ((Config.options.bar.screenList?.length ?? 0) === 0 || Config.options.bar.screenList.includes(bgRoot.modelData.name))
+            z: 100
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                left: Config.options.bar.bottom ? undefined : parent.left
+                right: Config.options.bar.bottom ? parent.right : undefined
+                leftMargin: Appearance.sizes.baseVerticalBarWidth - 1
+                rightMargin: Appearance.sizes.baseVerticalBarWidth - 1
+            }
+            width: 1 / (bgRoot.modelData?.devicePixelRatio || Appearance.dpr)
+            color: Appearance.colors.colLokDivider
+        }
     }
 }

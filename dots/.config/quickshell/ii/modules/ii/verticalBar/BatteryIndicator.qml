@@ -3,6 +3,7 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Services.UPower
 import qs.modules.ii.bar as Bar
 
 MouseArea {
@@ -14,11 +15,63 @@ MouseArea {
     readonly property real percentage: Battery.percentage
     readonly property bool isLow: percentage <= Config.options.battery.low / 100
 
-    implicitHeight: batteryProgress.implicitHeight
+    implicitHeight: Appearance.lok ? lokBattery.implicitHeight : batteryProgress.implicitHeight
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
+
+    // lok: same item as the horizontal bar (Bar/BatteryIndicator.qml), stacked: the power-profile
+    // glyph (click cycles it) over the charge
+    cursorShape: Appearance.lok ? Qt.PointingHandCursor : Qt.ArrowCursor
+    onClicked: {
+        if (!Appearance.lok) return;
+        if (PowerProfiles.hasPerformanceProfile) {
+            switch (PowerProfiles.profile) {
+                case PowerProfile.PowerSaver: PowerProfiles.profile = PowerProfile.Balanced; break;
+                case PowerProfile.Balanced: PowerProfiles.profile = PowerProfile.Performance; break;
+                case PowerProfile.Performance: PowerProfiles.profile = PowerProfile.PowerSaver; break;
+            }
+        } else {
+            PowerProfiles.profile = PowerProfiles.profile == PowerProfile.Balanced ? PowerProfile.PowerSaver : PowerProfile.Balanced;
+        }
+    }
+
+    Column {
+        id: lokBattery
+        visible: Appearance.lok
+        anchors.centerIn: parent
+        spacing: 0
+        readonly property color tint: (root.isLow && !root.isCharging) ? Appearance.m3colors.m3error : Appearance.colors.colOnLayer1
+        MaterialSymbol {
+            anchors.horizontalCenter: parent.horizontalCenter
+            iconSize: Appearance.font.pixelSize.larger
+            color: (root.isLow && !root.isCharging) ? lokBattery.tint : Appearance.colors.colSubtext
+            text: switch (PowerProfiles.profile) {
+                case PowerProfile.PowerSaver: return "energy_savings_leaf";
+                case PowerProfile.Performance: return "local_fire_department";
+                default: return "airwave";
+            }
+        }
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: -1
+            StyledText {
+                anchors.verticalCenter: parent.verticalCenter
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: lokBattery.tint
+                text: Math.round(root.percentage * 100) + "%"
+            }
+            MaterialSymbol { // charging marker, as in the horizontal bar
+                visible: root.isCharging
+                anchors.verticalCenter: parent.verticalCenter
+                iconSize: Appearance.font.pixelSize.smaller
+                color: Appearance.colors.colSubtext
+                text: "bolt"
+            }
+        }
+    }
 
     ClippedProgressBar {
         id: batteryProgress
+        visible: !Appearance.lok
         anchors.centerIn: parent
         vertical: true
         valueBarWidth: 20

@@ -19,6 +19,7 @@ Singleton {
     property bool mediaControlsPopupHovered: false
     // Screen x of the indicator that opened it, so the popup can align to its left edge.
     property real mediaControlsAnchorX: -1
+    property real mediaControlsAnchorY: -1 // vertical bar: the media indicator's top edge
     property bool osdBrightnessOpen: false
     property bool osdVolumeOpen: false
     property bool oskOpen: false
