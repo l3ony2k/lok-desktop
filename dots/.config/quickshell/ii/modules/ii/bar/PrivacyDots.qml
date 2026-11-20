@@ -58,19 +58,51 @@ MouseArea {
         Dot { kind: "screen" }
     }
 
+    // lok (2026-11-20): one card per sensor, laid out like the dots; the card marker repeats its dot
+    function stateWord(kind) {
+        const st = Privacy[kind];
+        return st === "active" ? Translation.tr("In use") : st === "idle" ? Translation.tr("Idle") : Translation.tr("Off");
+    }
+    function detailText(kind) {
+        const st = Privacy[kind];
+        if (st === "active") {
+            const apps = kind === "mic" ? Privacy.micApps : kind === "camera" ? Privacy.cameraApps
+                : kind === "screen" ? Privacy.screenApps : Privacy.remotePeers;
+            return apps.length > 0 ? apps.join(", ") : Translation.tr("in use");
+        }
+        if (st === "off")
+            return kind === "mic" ? Translation.tr("muted") : kind === "camera" ? Translation.tr("blocked") : Translation.tr("sshd stopped");
+        return kind === "remote" ? Translation.tr("listening") : Translation.tr("not in use");
+    }
+    component SensorCard: LokPopupCard {
+        required property string kind
+        readonly property string st: Privacy[kind]
+        value: root.stateWord(kind)
+        detail: root.detailText(kind)
+        dim: st !== "active"
+        marker: st === "active" ? root.colours[kind] : st === "idle" ? Appearance.colors.colLokFrame : "transparent"
+        markerHollow: st === "off"
+    }
     StyledPopup {
         hoverTarget: root
-        Column {
+        ColumnLayout {
             anchors.centerIn: parent
-            spacing: 4
+            spacing: 8
             StyledPopupHeaderRow {
                 icon: "shield"
                 label: Translation.tr("Privacy")
             }
-            StyledPopupValueRow { icon: "mic"; label: Translation.tr("Microphone:"); value: Privacy.describe("mic") }
-            StyledPopupValueRow { icon: "videocam"; label: Translation.tr("Camera:"); value: Privacy.describe("camera") }
-            StyledPopupValueRow { icon: "terminal"; label: Translation.tr("Remote:"); value: Privacy.describe("remote") }
-            StyledPopupValueRow { icon: "screen_record"; label: Translation.tr("Screen:"); value: Privacy.describe("screen") }
+            GridLayout {
+                columns: 2
+                rowSpacing: 5
+                columnSpacing: 5
+                uniformCellWidths: true
+                Layout.fillWidth: true
+                SensorCard { kind: "mic"; symbol: "mic"; title: Translation.tr("Microphone") }
+                SensorCard { kind: "camera"; symbol: "videocam"; title: Translation.tr("Camera") }
+                SensorCard { kind: "remote"; symbol: "terminal"; title: Translation.tr("Remote") }
+                SensorCard { kind: "screen"; symbol: "screen_record"; title: Translation.tr("Screen") }
+            }
         }
     }
 }

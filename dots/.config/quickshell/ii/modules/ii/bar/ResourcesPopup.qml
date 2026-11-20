@@ -20,68 +20,6 @@ StyledPopup {
         sourceComponent: Appearance.lok ? root.lokContent : root.classicContent
     }
 
-    component ResourceCard: Rectangle {
-        id: card
-        property string symbol
-        property string title
-        property string value
-        property string detail
-        property real fraction: -1 // 0..1; < 0 = no bar
-        property bool warn: false
-        color: Appearance.colors.colLokDialogHover
-        radius: Appearance.rounding.small
-        Layout.fillWidth: true
-        implicitWidth: Math.max(118, cardColumn.implicitWidth + 12 * 2)
-        implicitHeight: cardColumn.implicitHeight + 10 * 2
-
-        ColumnLayout {
-            id: cardColumn
-            anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: 10; leftMargin: 12; rightMargin: 12 }
-            spacing: 2
-            RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 4
-                MaterialSymbol {
-                    fill: 0
-                    text: card.symbol
-                    iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colSubtext
-                }
-                StyledText {
-                    text: card.title
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
-                }
-            }
-            StyledText {
-                Layout.alignment: Qt.AlignHCenter
-                text: card.value
-                font.pixelSize: Appearance.font.pixelSize.larger
-                color: card.warn ? Appearance.colors.colError : Appearance.colors.colOnLayer1
-            }
-            StyledText {
-                Layout.alignment: Qt.AlignHCenter
-                visible: card.detail !== ""
-                text: card.detail
-                font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colSubtext
-            }
-            Item { // usage bar
-                visible: card.fraction >= 0
-                Layout.fillWidth: true
-                Layout.topMargin: 6
-                implicitHeight: 3
-                Rectangle { anchors.fill: parent; color: Appearance.colors.colLokFrame }
-                Rectangle {
-                    width: parent.width * Math.max(0, Math.min(1, card.fraction))
-                    height: parent.height
-                    color: card.warn ? Appearance.colors.colError : Appearance.colors.colOnLayer1
-                    Behavior on width { NumberAnimation { duration: 200 } }
-                }
-            }
-        }
-    }
-
     // (Components as properties: anything declared bare inside StyledPopup goes to its Item slot)
     property Component lokContent: Component {
         ColumnLayout {
@@ -97,7 +35,7 @@ StyledPopup {
                 uniformCellWidths: true
                 Layout.fillWidth: true
 
-                ResourceCard {
+                LokPopupCard {
                     symbol: "memory"
                     title: "CPU"
                     value: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
@@ -105,7 +43,7 @@ StyledPopup {
                     fraction: ResourceUsage.cpuUsage
                     warn: ResourceUsage.cpuUsage * 100 >= Config.options.bar.resources.cpuWarningThreshold
                 }
-                ResourceCard {
+                LokPopupCard {
                     visible: MachineStats.gtDir.length > 0
                     symbol: "monitor"
                     title: "GPU"
@@ -113,7 +51,7 @@ StyledPopup {
                     detail: MachineStats.gpuFreq > 0 ? `${Math.round(MachineStats.gpuFreq)} MHz` : Translation.tr("idle")
                     fraction: MachineStats.gpuUsage
                 }
-                ResourceCard {
+                LokPopupCard {
                     symbol: "empty_dashboard"
                     title: Translation.tr("Memory")
                     value: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed)
@@ -121,7 +59,7 @@ StyledPopup {
                     fraction: ResourceUsage.memoryUsedPercentage
                     warn: ResourceUsage.memoryUsedPercentage * 100 >= Config.options.bar.resources.memoryWarningThreshold
                 }
-                ResourceCard {
+                LokPopupCard {
                     visible: ResourceUsage.swapTotal > 0
                     symbol: "swap_horiz"
                     title: Translation.tr("Swap")
