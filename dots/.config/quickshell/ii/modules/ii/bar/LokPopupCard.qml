@@ -45,7 +45,7 @@ Rectangle {
             implicitHeight: 6
             Layout.rightMargin: 2
             color: card.markerHollow ? "transparent" : card.marker
-            LokFrame { visible: card.markerHollow; color: Appearance.colors.colSubtext }
+            LokFrame { visible: card.markerHollow; color: Appearance.colors.colLokFrame }
         }
         MaterialSymbol {
             visible: card.symbol !== ""

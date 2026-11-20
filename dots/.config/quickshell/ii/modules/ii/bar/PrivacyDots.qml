@@ -39,9 +39,9 @@ MouseArea {
         color: state_ === "active" ? root.colours[kind]
             : state_ === "idle" ? Appearance.colors.colLokFrame // a solid block reads brighter than line icons in colSubtext
             : "transparent"
-        LokFrame { // hollow square for "off": a 1 device-px outline in the idle grey
+        LokFrame { // hollow square for "off": a 1 device-px outline, same grey as the idle block
             visible: d.state_ === "off"
-            color: Appearance.colors.colSubtext
+            color: Appearance.colors.colLokFrame
         }
         Behavior on color { ColorAnimation { duration: 150 } }
     }
