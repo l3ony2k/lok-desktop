@@ -440,6 +440,11 @@ Item { // Bar content region
                 Layout.leftMargin: 8
                 Layout.alignment: Qt.AlignVCenter
             }
+            PrivacyDots { // lok: mic / camera / location / screen-capture dots, left of the monitor
+                visible: root.centerClock && Appearance.lok
+                Layout.rightMargin: -5 // RTL row: pulls in toward the monitor -> 21 device px gap, like the other groups
+                Layout.alignment: Qt.AlignVCenter
+            }
 
             Item {
                 Layout.fillWidth: true

@@ -226,6 +226,11 @@ Item { // Bar content region
             }
 
             // lok: same items, colours and order as the horizontal right-hand status cluster
+            Bar.PrivacyDots { // privacy dots above the monitor (left of it on the top bar)
+                visible: Appearance.lok
+                vertical: true
+                Layout.alignment: Qt.AlignHCenter
+            }
             VerticalSystemMonitor {
                 visible: Appearance.lok
                 Layout.alignment: Qt.AlignHCenter
