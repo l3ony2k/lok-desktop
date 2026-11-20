@@ -46,8 +46,8 @@ MouseArea {
             color: (root.isLow && !root.isCharging) ? lokBattery.tint : Appearance.colors.colSubtext
             text: switch (PowerProfiles.profile) {
                 case PowerProfile.PowerSaver: return "energy_savings_leaf";
-                case PowerProfile.Performance: return "local_fire_department";
-                default: return "airwave";
+                case PowerProfile.Performance: return "speed";
+                default: return "balance";
             }
         }
         Row {

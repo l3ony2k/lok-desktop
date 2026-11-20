@@ -70,9 +70,13 @@ Rectangle {
         Caption { Layout.alignment: Qt.AlignHCenter }
         StyledText {
             Layout.alignment: Qt.AlignHCenter
+            Layout.maximumWidth: card.width - 12 * 2
             visible: card.value !== ""
             text: card.value
             font.pixelSize: Appearance.font.pixelSize.larger
+            fontSizeMode: Text.HorizontalFit // long values ("Performance") shrink to fit the tile
+            minimumPixelSize: Appearance.font.pixelSize.small
+            horizontalAlignment: Text.AlignHCenter
             color: card.valueColor
         }
         StyledText {

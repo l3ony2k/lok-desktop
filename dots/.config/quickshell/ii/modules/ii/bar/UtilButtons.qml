@@ -157,8 +157,8 @@ Item {
                     fill: 0
                     text: switch(PowerProfiles.profile) {
                         case PowerProfile.PowerSaver: return "energy_savings_leaf"
-                        case PowerProfile.Balanced: return "airwave"
-                        case PowerProfile.Performance: return "local_fire_department"
+                        case PowerProfile.Balanced: return "balance"
+                        case PowerProfile.Performance: return "speed"
                     }
                     iconSize: Appearance.lok ? Appearance.font.pixelSize.larger : Appearance.font.pixelSize.large
                     color: Appearance.lok ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer2 // lok: same status-glyph look as battery/weather
