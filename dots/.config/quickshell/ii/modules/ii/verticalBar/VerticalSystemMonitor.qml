@@ -8,8 +8,8 @@ import qs.modules.ii.bar as Bar
 /**
  * lok, vertical bar: the horizontal two-line monitor (Bar/SystemMonitor.qml) stacked into one
  * column, label over value:   CPU / 3%   MEM / 28%   ⇅ / ↑ rate / ↓ rate (one glyph over both rates)
- * Same colours and size as the horizontal one; rates drop one size step only if "999 KB" would
- * not fit the bar's width. Swap and details live in the same hover popup.
+ * Same colours and size as the horizontal one; rates use the compact "12K" / "3M" form (vertical
+ * only) so everything stays at one 12 px size. Swap and details live in the same hover popup.
  */
 MouseArea {
     id: root
@@ -18,13 +18,14 @@ MouseArea {
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
 
     readonly property real fontSize: Appearance.font.pixelSize.smaller
-    readonly property real rateFontSize: rateMetrics.advanceWidth <= Appearance.sizes.verticalBarWidth - 6
-        ? fontSize : Appearance.font.pixelSize.smallest
     readonly property color colLabel: Appearance.colors.colSubtext
     readonly property color colValue: Appearance.colors.colOnLayer1
     readonly property color colWarn: Appearance.m3colors.m3error
 
-    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "999 KB" }
+    // "12 KB" -> "12K", "3 MB" -> "3M"
+    function compactRate(bytesPerSec) {
+        return ResourceUsage.formatRate(bytesPerSec).replace(" KB", "K").replace(" MB", "M");
+    }
 
     component Pair: Column {
         id: pair
@@ -74,15 +75,15 @@ MouseArea {
             }
             StyledText {
                 anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: root.rateFontSize
+                font.pixelSize: root.fontSize
                 color: root.colValue
-                text: ResourceUsage.formatRate(ResourceUsage.netTxRate)
+                text: root.compactRate(ResourceUsage.netTxRate)
             }
             StyledText {
                 anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: root.rateFontSize
+                font.pixelSize: root.fontSize
                 color: root.colValue
-                text: ResourceUsage.formatRate(ResourceUsage.netRxRate)
+                text: root.compactRate(ResourceUsage.netRxRate)
             }
         }
     }
