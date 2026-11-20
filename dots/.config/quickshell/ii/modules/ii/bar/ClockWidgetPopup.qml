@@ -44,7 +44,7 @@ StyledPopup {
 
         StyledPopupValueRow {
             icon: "timelapse"
-            label: Translation.tr("System uptime:")
+            label: Translation.tr("Uptime:")
             value: root.formattedUptime
         }
 
