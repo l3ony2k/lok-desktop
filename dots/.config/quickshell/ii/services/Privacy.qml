@@ -7,7 +7,8 @@ import Quickshell.Hyprland
 import Quickshell.Services.Pipewire
 
 /**
- * Privacy indicators (2026-11-20): mic, camera, location, screen capture.
+ * Privacy indicators (2026-11-20): mic, camera, remote access (SSH), screen capture.
+ * (Location was dropped: no GPS on this machine, GeoIP via the proxy said "Los Angeles".)
  * Each has a state: "off" (the feature is switched off), "idle" (on, nobody using it) or "active".
  *   mic       off = default source muted;     active = an app records from a mic (PipeWire link
  *                                              AudioSource -> AudioInStream; sink monitors such as
@@ -15,8 +16,7 @@ import Quickshell.Services.Pipewire
  *   camera    off = CameraCtl privacy block;  active = an app reads a camera: a PipeWire link from a
  *                                              VideoSource that is not the screencast portal, or a
  *                                              process holding /dev/video* directly (libcamera apps)
- *   location  off = no GeoClue agent running  active = GeoClue Manager.InUse
- *                   (no agent: no app can be authorised)
+ *   remote    off = sshd not running;        active = an established inbound SSH connection
  *   screen    never off;                       active = Hyprland "screencast" event / portal stream
  * IPC for testing the look: qs -c ii ipc call privacy simulate camera active|idle|off|real
  */
@@ -108,17 +108,24 @@ Singleton {
         }
     }
 
-    // ---------- location: GeoClue (polled; never wakes GeoClue up itself) ----------
-    property bool geoAgent: false
-    property bool geoInUse: false
+    // ---------- remote: inbound SSH (polled) ----------
+    // off = sshd not running; active = an established connection to port 22. Peers on the tailnet
+    // are named from `tailscale status` ("macbook (Tailscale)"), others shown by address.
+    property bool sshdUp: false
+    property var remotePeers: []
     Process {
-        id: geoProc
-        command: ["sh", "-c", "pgrep -f '[g]eoclue-2.0/demos/agent|[g]eoclue-agent' >/dev/null && echo agent=1 || echo agent=0; "
-            + "if systemctl is-active -q geoclue; then busctl --system get-property org.freedesktop.GeoClue2 /org/freedesktop/GeoClue2/Manager org.freedesktop.GeoClue2.Manager InUse 2>/dev/null; else echo 'b false'; fi"]
+        id: remoteProc
+        command: ["sh", "-c", "systemctl is-active -q sshd && echo sshd=1 || echo sshd=0; "
+            + "ts=$(tailscale status 2>/dev/null); "
+            + "ss -Htn state established '( sport = :22 )' | awk '{print $NF}' | sed 's/:[0-9]*$//; s/^\\[//; s/\\]$//; s/^::ffff://' | sort -u | "
+            + "while read ip; do n=$(printf '%s\\n' \"$ts\" | awk -v ip=\"$ip\" '$1==ip{print $2}'); "
+            + "if [ -n \"$n\" ]; then echo \"peer=$n (Tailscale)\"; else echo \"peer=$ip\"; fi; done"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.geoAgent = text.includes("agent=1");
-                root.geoInUse = text.includes("b true");
+                const lines = text.split("\n");
+                root.sshdUp = lines.includes("sshd=1");
+                const peers = lines.filter(l => l.startsWith("peer=")).map(l => l.slice(5));
+                if (JSON.stringify(peers) !== JSON.stringify(root.remotePeers)) root.remotePeers = peers;
             }
         }
     }
@@ -127,7 +134,7 @@ Singleton {
         running: true
         repeat: true
         triggeredOnStart: true
-        onTriggered: if (!geoProc.running) geoProc.running = true
+        onTriggered: if (!remoteProc.running) remoteProc.running = true
     }
 
     // ---------- states ----------
@@ -137,15 +144,15 @@ Singleton {
     // "active" wins over "off": a muted mic that an app still holds open is still being listened to
     readonly property string mic: pick("mic", micLinks.length > 0 ? "active" : (Audio.source?.audio?.muted ?? false) ? "off" : "idle")
     readonly property string camera: pick("camera", (cameraLinks.length > 0 || cameraDirectApps.length > 0) ? "active" : CameraCtl.privacy ? "off" : "idle")
-    readonly property string location: pick("location", !geoAgent ? "off" : geoInUse ? "active" : "idle")
+    readonly property string remote: pick("remote", remotePeers.length > 0 ? "active" : !sshdUp ? "off" : "idle")
     readonly property string screen: pick("screen", (hyprScreencast || portalLinks.length > 0) ? "active" : "idle")
-    readonly property bool anyActive: mic === "active" || camera === "active" || location === "active" || screen === "active"
+    readonly property bool anyActive: mic === "active" || camera === "active" || remote === "active" || screen === "active"
 
     function describe(kind) {
         const st = root[kind];
         if (st === "off") return Translation.tr("off");
         if (st === "idle") return Translation.tr("not in use");
-        const apps = kind === "mic" ? micApps : kind === "camera" ? cameraApps : kind === "screen" ? screenApps : [];
+        const apps = kind === "mic" ? micApps : kind === "camera" ? cameraApps : kind === "screen" ? screenApps : kind === "remote" ? remotePeers : [];
         return apps.length > 0 ? apps.join(", ") : Translation.tr("in use");
     }
 
@@ -157,7 +164,7 @@ Singleton {
             root.simulated = s;
         }
         function status(): string {
-            return `mic=${root.mic} camera=${root.camera} location=${root.location} screen=${root.screen}`;
+            return `mic=${root.mic} camera=${root.camera} remote=${root.remote} screen=${root.screen}`;
         }
     }
 }
