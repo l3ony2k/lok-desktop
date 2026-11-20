@@ -14,32 +14,6 @@ hl.bind("XF86FullScreen", hl.dsp.window.fullscreen({ mode = "fullscreen", action
 hl.bind("XF86LaunchA", hl.dsp.global("quickshell:overviewWorkspacesToggle"),
     { description = "Overview: Toggle full overview (F4 key)" })
 
---##! Super-tap search/overview: interrupt on key press
--- Upstream binds SUPER+SUPER_L to `quickshell:searchToggleRelease`, which
--- opens overview on Super release unless an earlier key press "interrupts" it.
--- The interrupt is supposed to come from a `catchall` bind in an automatically
--- triggered submap, which this config never defines -- so holding Super and
--- pressing Return still toggles overview on release.
---
--- Hyprland 0.57 has no catchall binds, but it does emit `input.keyboard.key`.
--- Re-arm the interrupt there instead: any non-modifier key pressed while Super
--- is held cancels the release-triggered overview. A plain Super tap still opens
--- search, because no such key was pressed.
--- The event is positional: (keycode, time, state), where state 1 = press and
--- 0 = release, and keycode is the raw evdev/Linux input code, not an xkb name.
-local modifier_keycodes = {
-    [29] = true, [97] = true,   -- Control_L / Control_R
-    [42] = true, [54] = true,   -- Shift_L / Shift_R
-    [56] = true, [100] = true,  -- Alt_L / Alt_R
-    [125] = true, [126] = true, -- Super_L / Super_R
-}
-
-hl.on("input.keyboard.key", function(keycode, _time, state)
-    if state == 1 and not modifier_keycodes[keycode] then
-        hl.dispatch(hl.dsp.global("quickshell:searchToggleReleaseInterrupt"))
-    end
-end)
-
 --##! Send window to workspace: SUPER+SHIFT+number
 -- The dots bind this to SUPER+ALT+number (follow = false). Move it to the
 -- KDE/GNOME-style SUPER+SHIFT+number and drop the ALT variants, including
@@ -77,20 +51,33 @@ hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee close")
 hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("~/.local/bin/lid-coffee open"),
     { locked = true, description = "Lid opened: panel on" })
 
---##! Super-tap search without spawning a process (2026-11-13)
--- The dots bind Super-tap to `qs -c ii ipc call search toggle`, which starts a
--- full Quickshell client on every tap (~130 ms warm, up to ~1 s cold) before
--- the search box can open. Send it straight to the running shell instead.
--- (Loses the dots' fuzzel fallback for when Quickshell is not running.)
+--##! Search on Super+Space, not on a Super tap (2026-11-20)
+-- Upstream opens search when Super is released. That release bind fired after any
+-- Super combo Hyprland itself does not bind (e.g. keyd's Super+Refresh -> F2 for
+-- renaming), stealing focus. Search moves to Super+Space (macOS Spotlight-style) and
+-- a bare Super tap does nothing. Sent straight to the running shell (no qs client).
 hl.unbind("SUPER + SUPER_L")
 hl.unbind("SUPER + SUPER_R")
--- Release-only bind: Hyprland sends the shortcut a "released" event.
-hl.bind("SUPER + SUPER_L", hl.dsp.global("quickshell:searchOnlyToggle"),
-    { release = true, description = "Shell: Toggle search" })
-hl.bind("SUPER + SUPER_R", hl.dsp.global("quickshell:searchOnlyToggle"), { release = true })
-
+hl.bind("SUPER + Space", hl.dsp.global("quickshell:searchOnlyToggle"),
+    { description = "Shell: Toggle search" })
 --##! Ctrl+Super+R through ii-restart (2026-11-15)
 -- The dots bind `killall qs; qs -c ii &`: one bad QML file and the bar is gone. ii-restart
 -- qmllints the changed files first and leaves the running shell alone if they would not load.
 hl.unbind("CTRL + SUPER + R")
 hl.bind("CTRL + SUPER + R", hl.dsp.exec_cmd("~/.local/bin/ii-restart"), { description = "Shell: Restart widgets (checked)" })
+
+--##! Send to scratchpad: SUPER+SHIFT+S, screen snip moves to SUPER+ALT+S (2026-11-16)
+-- Unify with SUPER+SHIFT+<number> (send window to workspace N). The dots bind
+-- "send to scratchpad" to SUPER+ALT+S and "Screen snip" to SUPER+SHIFT+S, so the
+-- two are swapped here. The dots bind Screen snip twice (Quickshell global plus a
+-- hyprshot fallback), hence the two unbinds on that combo.
+hl.unbind("SUPER + ALT + S")
+hl.unbind("SUPER + SHIFT + S")
+hl.unbind("SUPER + SHIFT + S")
+hl.bind("SUPER + SHIFT + S",
+    hl.dsp.window.move({ workspace = "special:special", follow = false }),
+    { description = "Window: Send to scratchpad" })
+hl.bind("SUPER + ALT + S", hl.dsp.global("quickshell:regionScreenshot"),
+    { description = "Utilities: Screen snip" })
+hl.bind("SUPER + ALT + S",
+    hl.dsp.exec_cmd("qs -c $qsConfig ipc call TEST_ALIVE || pidof slurp || hyprshot --freeze --clipboard-only --mode region --silent"))
