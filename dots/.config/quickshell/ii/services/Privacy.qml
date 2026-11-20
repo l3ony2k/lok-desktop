@@ -12,8 +12,9 @@ import Quickshell.Services.Pipewire
  *   mic       off = default source muted;     active = an app records from a mic (PipeWire link
  *                                              AudioSource -> AudioInStream; sink monitors such as
  *                                              cava are AudioSink, so they don't count)
- *   camera    off = CameraCtl privacy block;  active = an app reads a camera (PipeWire link from a
- *                                              VideoSource that is not the screencast portal)
+ *   camera    off = CameraCtl privacy block;  active = an app reads a camera: a PipeWire link from a
+ *                                              VideoSource that is not the screencast portal, or a
+ *                                              process holding /dev/video* directly (libcamera apps)
  *   location  off = no GeoClue agent running  active = GeoClue Manager.InUse
  *                   (no agent: no app can be authorised)
  *   screen    never off;                       active = Hyprland "screencast" event / portal stream
@@ -52,7 +53,32 @@ Singleton {
     }
 
     readonly property var micApps: uniq(micLinks.map(g => appName(g.target)))
-    readonly property var cameraApps: uniq(cameraLinks.map(g => appName(g.target)))
+    readonly property var cameraApps: uniq(cameraLinks.map(g => appName(g.target)).concat(cameraDirectApps))
+
+    // ---------- camera opened directly (libcamera/V4L2 apps such as qcam, some browsers) ----------
+    // Not visible in PipeWire: list processes holding a /dev/video* node, minus PipeWire/WirePlumber
+    // (WirePlumber keeps the devices open for enumeration). ~40 ms per scan; skipped while blocked.
+    property var cameraDirectApps: []
+    Process {
+        id: camProc
+        command: ["sh", "-c", "for fd in $(find /proc/[0-9]*/fd -maxdepth 1 -lname '/dev/video*' 2>/dev/null); do "
+            + "pid=${fd#/proc/}; pid=${pid%%/*}; c=$(cat /proc/$pid/comm 2>/dev/null); "
+            + "case \"$c\" in pipewire*|wireplumber|'') ;; *) echo \"$c\";; esac; done | sort -u"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const apps = text.split("\n").filter(l => l.length > 0);
+                if (JSON.stringify(apps) !== JSON.stringify(root.cameraDirectApps)) root.cameraDirectApps = apps;
+            }
+        }
+    }
+    Timer {
+        interval: 2500
+        running: !CameraCtl.privacy
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: if (!camProc.running) camProc.running = true
+        onRunningChanged: if (!running) root.cameraDirectApps = []
+    }
     readonly property var screenApps: uniq(portalLinks.map(g => appName(g.target)).concat(hyprScreencastOwner ? [hyprScreencastOwner] : []))
 
     // ---------- screen: Hyprland screencast event (screencopy and portal) ----------
@@ -110,7 +136,7 @@ Singleton {
 
     // "active" wins over "off": a muted mic that an app still holds open is still being listened to
     readonly property string mic: pick("mic", micLinks.length > 0 ? "active" : (Audio.source?.audio?.muted ?? false) ? "off" : "idle")
-    readonly property string camera: pick("camera", CameraCtl.privacy ? "off" : cameraLinks.length > 0 ? "active" : "idle")
+    readonly property string camera: pick("camera", (cameraLinks.length > 0 || cameraDirectApps.length > 0) ? "active" : CameraCtl.privacy ? "off" : "idle")
     readonly property string location: pick("location", !geoAgent ? "off" : geoInUse ? "active" : "idle")
     readonly property string screen: pick("screen", (hyprScreencast || portalLinks.length > 0) ? "active" : "idle")
     readonly property bool anyActive: mic === "active" || camera === "active" || location === "active" || screen === "active"
