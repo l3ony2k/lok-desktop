@@ -74,6 +74,7 @@ LazyLoader {
 
         Rectangle {
             id: popupBackground
+            objectName: "styledPopupBackground" // StyledPopupHeaderRow finds it to bleed its divider
             readonly property real margin: 10
             anchors {
                 fill: Appearance.lok ? undefined : parent

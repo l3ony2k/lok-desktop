@@ -31,7 +31,7 @@ StyledPopup {
                     font.weight: Font.Medium
                     text: "location_on"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: Appearance.lok ? Appearance.colors.colOnLayer1 : Appearance.colors.colOnSurfaceVariant
                 }
 
                 StyledText {
@@ -40,7 +40,7 @@ StyledPopup {
                         weight: Font.Medium
                         pixelSize: Appearance.font.pixelSize.normal
                     }
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: Appearance.lok ? Appearance.colors.colOnLayer1 : Appearance.colors.colOnSurfaceVariant // lok: title brighter than the cards
                 }
             }
             StyledText {
