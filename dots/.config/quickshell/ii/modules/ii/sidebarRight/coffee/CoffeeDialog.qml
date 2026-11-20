@@ -11,7 +11,7 @@ WindowDialog {
     id: root
 
     WindowDialogTitle {
-        text: Translation.tr("Keep awake")
+        text: Translation.tr("Caffeine")
     }
 
     WindowDialogSeparator {}
@@ -19,7 +19,7 @@ WindowDialog {
     WindowDialogSectionHeader {
         text: Idle.inhibit
             ? (Idle.until > 0 ? Translation.tr("On · %1 left").arg(Idle.remainingText) : Translation.tr("On · no time limit"))
-            : Translation.tr("Off · pick a duration to start")
+            : Translation.tr("Decaf · pick a duration")
     }
 
     GridLayout {

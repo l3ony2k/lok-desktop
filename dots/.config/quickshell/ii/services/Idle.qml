@@ -60,7 +60,7 @@ Singleton {
         root.until = 0;
         save();
         if (reason)
-            Quickshell.execDetached(["notify-send", "-a", "Shell", Translation.tr("Keep awake off"), reason]);
+            Quickshell.execDetached(["notify-send", "-a", "Shell", Translation.tr("Caffeine wore off"), reason]);
     }
 
     // Kept for existing callers: toggleInhibit() flips, toggleInhibit(true/false) sets.

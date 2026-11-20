@@ -460,15 +460,15 @@ Item {
                 alert: parent.parent.micInUse && !parent.parent.micMuted
                 onClicked: Audio.toggleMicMute()
             }
-            StatusCell { // coffee: click = on for 1 h / off; duration lives in the right sidebar tile's dialog
+            StatusCell { // Caffeine: click = on for 1 h / off; duration lives in the right sidebar tile's dialog
                 glyph: "coffee"
-                label: Idle.inhibit ? Idle.remainingText : Translation.tr("Sleep ok")
+                label: Idle.inhibit ? Idle.remainingText : Translation.tr("Decaf")
                 selected: Idle.inhibit
                 onClicked: Idle.toggleInhibit()
             }
-            StatusCell { // coffee option: keep the screen on as well (remembered while coffee is off)
+            StatusCell { // Caffeine option: keep the screen on as well (remembered while Caffeine is off); the fill shows "on"
                 glyph: "monitor"
-                label: Idle.keepScreen ? Translation.tr("Screen on") : Translation.tr("Screen")
+                label: Translation.tr("Screen")
                 selected: Idle.keepScreen
                 onClicked: Idle.setKeepScreen(!Idle.keepScreen)
             }
@@ -483,6 +483,8 @@ Item {
         property bool interactive: true
         Layout.fillWidth: true
         Layout.preferredWidth: 1
+        Layout.minimumWidth: 0
+        implicitWidth: 0 // equal quarters whatever the label; long labels elide instead of widening the cell
         implicitHeight: 32
         enabled: interactive
         toggled: selected
@@ -494,7 +496,7 @@ Item {
             spacing: 6
             Item { Layout.fillWidth: true }
             MaterialSymbol { text: cell.glyph; iconSize: Appearance.font.pixelSize.normal; color: cell.alert ? Appearance.colors.colError : cell.selected ? Appearance.colors.colOnPrimary : Appearance.colors.colSubtext }
-            StyledText { text: cell.label; font.pixelSize: Appearance.font.pixelSize.smaller; color: cell.alert ? Appearance.colors.colError : cell.selected ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2 }
+            StyledText { text: cell.label; elide: Text.ElideRight; Layout.maximumWidth: Math.max(0, cell.width - 40); font.pixelSize: Appearance.font.pixelSize.smaller; color: cell.alert ? Appearance.colors.colError : cell.selected ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2 }
             Item { Layout.fillWidth: true }
         }
     }
