@@ -64,21 +64,22 @@ StyledPopup {
                     detail: Battery.energyRate <= 0.01 ? Translation.tr("idle") : Battery.isCharging ? Translation.tr("charging in") : Translation.tr("draw")
                 }
                 LokPopupCard {
-                    symbol: "heart_check"
-                    title: Translation.tr("Health")
-                    value: `${Math.round(Battery.health)}%`
-                    detail: Translation.tr("of design")
-                    fraction: Battery.health / 100
-                }
-                LokPopupCard {
-                    Layout.columnSpan: 2
-                    wide: true
-                    symbol: "speed"
+                    readonly property int prof: PowerProfiles.profile
+                    symbol: prof === PowerProfile.PowerSaver ? "energy_savings_leaf" : prof === PowerProfile.Performance ? "speed" : "balance"
                     title: Translation.tr("Power mode")
-                    value: PowerProfiles.profile === PowerProfile.PowerSaver ? Translation.tr("Saver")
-                        : PowerProfiles.profile === PowerProfile.Performance ? Translation.tr("Performance")
+                    value: prof === PowerProfile.PowerSaver ? Translation.tr("Saver")
+                        : prof === PowerProfile.Performance ? Translation.tr("Performance")
                         : Translation.tr("Balanced")
+                    detail: prof === PowerProfile.PowerSaver ? Translation.tr("saves power")
+                        : prof === PowerProfile.Performance ? Translation.tr("full speed")
+                        : Translation.tr("default")
                 }
+            }
+            StyledText { // health: a quiet footer, not a tile
+                Layout.alignment: Qt.AlignHCenter
+                text: Translation.tr("Health %1% of design").arg(Math.round(Battery.health))
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                color: Appearance.colors.colSubtext
             }
         }
     }
