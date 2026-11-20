@@ -23,6 +23,7 @@ DelegateChooser {
     signal openMihomoDialog()
     signal openSshLanDialog()
     signal openWindowGapsDialog()
+    signal openCoffeeDialog()
 
     role: "type"
 
@@ -164,6 +165,7 @@ DelegateChooser {
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        onOpenMenu: root.openCoffeeDialog()
     } }
 
     DelegateChoice { roleValue: "tailscale"; AndroidTailscaleToggle {

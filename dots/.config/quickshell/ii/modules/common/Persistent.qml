@@ -81,6 +81,9 @@ Singleton {
 
             property JsonObject idle: JsonObject {
                 property bool inhibit: false
+                property real until: 0 // coffee end time, epoch ms; 0 = no end
+                property real hours: 1 // coffee timer length; 0 = no end
+                property bool keepScreen: false // coffee also keeps the screen on
             }
 
             property JsonObject overlay: JsonObject {

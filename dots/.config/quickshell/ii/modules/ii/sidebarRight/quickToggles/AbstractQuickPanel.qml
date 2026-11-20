@@ -19,4 +19,5 @@ Rectangle {
     signal openMihomoDialog()
     signal openSshLanDialog()
     signal openWindowGapsDialog()
+    signal openCoffeeDialog()
 }

@@ -1,22 +1,25 @@
 #!/bin/sh
-# lid-coffee — lid handler that respects the Quickshell coffee (idle inhibit) toggle.
-# 2026-11-08, see asus-arch-ops entry "coffee keeps the machine awake, lid included".
+# lid-coffee — lid handler for Hyprland (bound in ~/.config/hypr/custom/keybinds.lua,
+# switch:on/off:Lid Switch, locked). 2026-11-08, reworked 2026-11-20 (coffee v2).
 #
-# Coffee on : Quickshell holds a logind handle-lid-switch inhibitor, so logind does
-#             not suspend. On close: lock the session (input goes to the lock screen)
-#             and turn the panel off. Programs keep running.
-# Coffee off: logind suspends (then hibernates after 3 h) as usual; nothing to do on close.
-# Open      : turn the panel back on (harmless when it is already on).
-#
-# Bound in ~/.config/hypr/custom/keybinds.lua (switch:on/off:Lid Switch, locked).
+# Lid closed and the system should keep running -> lock the session and turn the panel off:
+#   - coffee on (either mode): Quickshell holds a logind sleep + handle-lid-switch lock,
+#     so logind does not suspend;
+#   - on AC power: logind HandleLidSwitchExternalPower=lock (logind.conf.d/lid-on-ac.conf),
+#     so the machine stays reachable (SSH/Tailscale).
+# Otherwise (battery, coffee off) logind suspends-then-hibernates; nothing to do here.
+# Lid opened -> panel on (harmless when it is already on).
 
 coffee_on() {
     systemd-inhibit --list --no-legend 2>/dev/null | grep -q "Quickshell coffee.*handle-lid-switch"
 }
+on_ac() {
+    [ "$(cat /sys/class/power_supply/AC/online 2>/dev/null)" = 1 ]
+}
 
 case "$1" in
     close)
-        coffee_on || exit 0
+        coffee_on || on_ac || exit 0
         loginctl lock-session
         sleep 1
         hyprctl dispatch 'hl.dsp.dpms({ action = "disable" })' >/dev/null

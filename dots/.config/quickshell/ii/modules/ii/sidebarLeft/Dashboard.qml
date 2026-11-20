@@ -437,7 +437,7 @@ Item {
         borderColor: alert && enabled ? Appearance.colors.colError : Appearance.colors.colLokDivider
     }
 
-    // ---------- status row: camera, mic, coffee, screen ----------
+    // ---------- status row: camera, mic, coffee, coffee keep-screen ----------
     component StatusRow: Rectangle {
         Layout.fillWidth: true
         implicitHeight: statusRowLayout.implicitHeight + root.pad
@@ -445,7 +445,6 @@ Item {
         LokFrame { color: Appearance.colors.colLokDivider }
         readonly property bool micInUse: Pipewire.linkGroups.values.filter(g => g.source?.type === PwNodeType.AudioSource && g.target?.type === PwNodeType.AudioInStream).length > 0
         readonly property bool micMuted: Audio.source?.audio?.muted ?? false
-        readonly property bool sharing: Pipewire.linkGroups.values.filter(g => g.source?.type === PwNodeType.VideoSource).length > 0
         RowLayout {
             id: statusRowLayout
             anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: root.pad / 2 }
@@ -461,17 +460,17 @@ Item {
                 alert: parent.parent.micInUse && !parent.parent.micMuted
                 onClicked: Audio.toggleMicMute()
             }
-            StatusCell {
+            StatusCell { // coffee: click = on for 1 h / off; duration lives in the right sidebar tile's dialog
                 glyph: "coffee"
-                label: Idle.inhibit ? Translation.tr("Awake") : Translation.tr("Sleep ok")
+                label: Idle.inhibit ? Idle.remainingText : Translation.tr("Sleep ok")
                 selected: Idle.inhibit
                 onClicked: Idle.toggleInhibit()
             }
-            StatusCell {
-                glyph: "screen_record"
-                label: parent.parent.sharing ? Translation.tr("Sharing") : Translation.tr("Screen")
-                alert: parent.parent.sharing
-                interactive: false
+            StatusCell { // coffee option: keep the screen on as well (remembered while coffee is off)
+                glyph: "monitor"
+                label: Idle.keepScreen ? Translation.tr("Screen on") : Translation.tr("Screen")
+                selected: Idle.keepScreen
+                onClicked: Idle.setKeepScreen(!Idle.keepScreen)
             }
         }
     }

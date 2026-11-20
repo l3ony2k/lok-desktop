@@ -118,6 +118,7 @@ AbstractQuickPanel {
                             onOpenMihomoDialog: root.openMihomoDialog()
                             onOpenSshLanDialog: root.openSshLanDialog()
                             onOpenWindowGapsDialog: root.openWindowGapsDialog()
+                            onOpenCoffeeDialog: root.openCoffeeDialog()
                         }
                     }
                 }

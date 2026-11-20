@@ -18,6 +18,7 @@ import qs.modules.ii.sidebarRight.tailscale
 import qs.modules.ii.sidebarRight.mihomo
 import qs.modules.ii.sidebarRight.sshLan
 import qs.modules.ii.sidebarRight.windowGaps
+import qs.modules.ii.sidebarRight.coffee
 import qs.modules.ii.sidebarRight.volumeMixer
 import qs.modules.ii.sidebarRight.wifiNetworks
 
@@ -36,6 +37,7 @@ Item {
     property bool showMihomoDialog: false
     property bool showSshLanDialog: false
     property bool showWindowGapsDialog: false
+    property bool showCoffeeDialog: false
     property bool editMode: false
 
     Connections {
@@ -50,6 +52,7 @@ Item {
                 root.showMihomoDialog = false;
                 root.showSshLanDialog = false;
                 root.showWindowGapsDialog = false;
+                root.showCoffeeDialog = false;
             }
         }
     }
@@ -181,6 +184,11 @@ Item {
     }
 
     ToggleDialog {
+        shownPropertyString: "showCoffeeDialog"
+        dialog: CoffeeDialog {}
+    }
+
+    ToggleDialog {
         shownPropertyString: "showWifiDialog"
         dialog: WifiDialog {}
         onShownChanged: {
@@ -252,6 +260,9 @@ Item {
             }
             function onOpenWindowGapsDialog() {
                 root.showWindowGapsDialog = true;
+            }
+            function onOpenCoffeeDialog() {
+                root.showCoffeeDialog = true;
             }
         }
     }
