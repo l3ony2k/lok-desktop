@@ -8,8 +8,8 @@ import qs.modules.ii.bar as Bar
 /**
  * lok, vertical bar: the horizontal two-line monitor (Bar/SystemMonitor.qml) stacked into one
  * column, label over value:   CPU / 3%   MEM / 28%   ⇅ / ↑ rate / ↓ rate (one glyph over both rates)
- * Same colours and size as the horizontal one; rates use the compact "12K" / "3M" form (vertical
- * only) so everything stays at one 12 px size. Swap and details live in the same hover popup.
+ * Same colours and size as the horizontal one; rates use the compact "12K" / "3M" form
+ * so everything stays at one 12 px size. Swap and details live in the same hover popup.
  */
 MouseArea {
     id: root
@@ -21,11 +21,6 @@ MouseArea {
     readonly property color colLabel: Appearance.colors.colSubtext
     readonly property color colValue: Appearance.colors.colOnLayer1
     readonly property color colWarn: Appearance.m3colors.m3error
-
-    // "12 KB" -> "12K", "3 MB" -> "3M"
-    function compactRate(bytesPerSec) {
-        return ResourceUsage.formatRate(bytesPerSec).replace(" KB", "K").replace(" MB", "M");
-    }
 
     component Pair: Column {
         id: pair
@@ -77,13 +72,13 @@ MouseArea {
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: root.fontSize
                 color: root.colValue
-                text: root.compactRate(ResourceUsage.netTxRate)
+                text: ResourceUsage.formatRate(ResourceUsage.netTxRate)
             }
             StyledText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: root.fontSize
                 color: root.colValue
-                text: root.compactRate(ResourceUsage.netRxRate)
+                text: ResourceUsage.formatRate(ResourceUsage.netRxRate)
             }
         }
     }

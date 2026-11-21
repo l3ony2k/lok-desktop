@@ -7,9 +7,9 @@ import QtQuick.Layouts
 StyledPopup {
     id: root
 
-    // Helper function to format KB to GB
+    // Helper function to format KB to GiB
     function formatKB(kb) {
-        return (kb / (1024 * 1024)).toFixed(1) + " GB";
+        return (kb / (1024 * 1024)).toFixed(1) + " GiB";
     }
 
     // lok (2026-11-20): a title over a grid of cards like the weather popup, one card per
@@ -82,9 +82,9 @@ StyledPopup {
                         StyledText { text: Translation.tr("Network"); font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
                         Item { Layout.fillWidth: true }
                         StyledText { text: "↑"; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
-                        StyledText { text: `${ResourceUsage.formatRate(ResourceUsage.netTxRate)}/s`; color: Appearance.colors.colOnLayer1; Layout.rightMargin: 8 }
+                        StyledText { text: ResourceUsage.formatRate(ResourceUsage.netTxRate); color: Appearance.colors.colOnLayer1; Layout.rightMargin: 8 }
                         StyledText { text: "↓"; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colSubtext }
-                        StyledText { text: `${ResourceUsage.formatRate(ResourceUsage.netRxRate)}/s`; color: Appearance.colors.colOnLayer1 }
+                        StyledText { text: ResourceUsage.formatRate(ResourceUsage.netRxRate); color: Appearance.colors.colOnLayer1 }
                     }
                 }
             }

@@ -5,8 +5,8 @@ import QtQuick
 import QtQuick.Layouts
 
 /**
- * Compact two-line monitor:  CPU 84%   ↑ 4 KB/s
- *                            MEM 84%   ↓ 34 KB/s
+ * Compact two-line monitor:  CPU 84%   ↑ 4K
+ *                            MEM 84%   ↓ 34K
  * Values have fixed widths so the bar doesn't shift as numbers change.
  * Swap and details live in the hover popup.
  */
@@ -22,7 +22,7 @@ MouseArea {
     readonly property color colWarn: Appearance.m3colors.m3error
 
     TextMetrics { id: pctMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "100%" }
-    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "99 KB" }
+    TextMetrics { id: rateMetrics; font.family: Appearance.font.family.main; font.pixelSize: root.fontSize; text: "99M" }
 
     component Label: StyledText {
         font.pixelSize: root.fontSize

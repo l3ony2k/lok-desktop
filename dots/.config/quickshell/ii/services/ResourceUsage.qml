@@ -25,13 +25,13 @@ Singleton {
     property real netRxRate: 0
     property real netTxRate: 0
     property var previousNet
-    // Two digits at most, KB or MB, no decimals: 0-99 KB, then 1-99 MB
-    // (100-1023 KB rounds up to 1 MB so the field never needs a third digit)
+    // Two digits at most, K or M, no decimals or space: 0-99K, then 1-99M
+    // (100-1023K rounds up to 1M so the field never needs a third digit)
     function formatRate(bytesPerSec) {
         const kb = Math.max(0, bytesPerSec) / 1024;
-        if (kb < 99.5) return Math.round(kb) + " KB";
+        if (kb < 99.5) return Math.round(kb) + "K";
         const mb = Math.max(1, Math.round(kb / 1024));
-        return Math.min(mb, 99) + " MB";
+        return Math.min(mb, 99) + "M";
     }
     property var previousCpuStats
 
@@ -45,7 +45,7 @@ Singleton {
     property list<real> swapUsageHistory: []
 
     function kbToGbString(kb) {
-        return (kb / (1024 * 1024)).toFixed(1) + " GB";
+        return (kb / (1024 * 1024)).toFixed(1) + " GiB";
     }
 
     function updateMemoryUsageHistory() {
