@@ -10,6 +10,9 @@ StyledListView { // Scrollable window
     property bool popup: false
 
     spacing: 3
+    // Qt 6 ListView locks addDisplaced's target y at transition start; if a top group grows
+    // (or animations pause while the sidebar is hidden), lower groups get stuck overlapping it.
+    animateAppearance: false
 
     model: ScriptModel {
         values: root.popup ? Notifications.popupAppNameList : Notifications.appNameList

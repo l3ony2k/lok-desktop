@@ -144,12 +144,13 @@ MouseArea { // Notification group area
         }
         
         clip: true
-        implicitHeight: root.expanded ? 
+        implicitHeight: root.expanded ?
             row.implicitHeight + padding * 2 :
-            Math.min(80, row.implicitHeight + padding * 2)
+            Math.min(Appearance.lok ? 96 : 80, row.implicitHeight + padding * 2)
 
         Behavior on implicitHeight {
             id: implicitHeightAnim
+            enabled: false
             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
         }
 
@@ -242,6 +243,7 @@ MouseArea { // Notification group area
                     spacing: expanded ? 5 : 3
                     // clip: true
                     interactive: false
+                    animateAppearance: false
                     Behavior on spacing {
                         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                     }
