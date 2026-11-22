@@ -41,7 +41,7 @@ MANIFEST=(
   # input method: fcitx5 + rime (double pinyin flypy), candidate window theme
   .config/fcitx5/conf .config/fcitx5/profile
   .local/share/fcitx5/rime/default.custom.yaml .local/share/fcitx5/rime/double_pinyin_flypy.custom.yaml
-  .local/share/fcitx5/themes/rime-material
+  .local/share/fcitx5/themes/rime-material .local/share/fcitx5/themes/lok-dark .local/share/fcitx5/themes/lok-light
   # apps: Brave flags, launchers with Secret Service flags, toolkit settings
   .config/brave-origin-flags.conf .config/spotify-launcher.conf .config/gtk-3.0/settings.ini .config/gtk-4.0/settings.ini
   .local/share/applications/onekey-wallet.desktop .local/share/applications/orca-ide.desktop
