@@ -1,0 +1,368 @@
+diff --git a/src/hyprpicker.cpp b/src/hyprpicker.cpp
+index 750d23f..8056ead 100644
+--- a/src/hyprpicker.cpp
++++ b/src/hyprpicker.cpp
+@@ -162,7 +162,7 @@ void CHyprpicker::outputColor() {
+     const auto FLUMI = [](const float& c) -> float { return c <= 0.03928 ? c / 12.92 : powf((c + 0.055) / 1.055, 2.4); };
+ 
+     // get the px and print it
+-    const auto MOUSECOORDSABS = m_vLastCoords.floor() / m_pLastSurface->m_pMonitor->size;
++    const auto MOUSECOORDSABS = m_vLastCoords / m_pLastSurface->m_pMonitor->size;
+     const auto CLICKPOS       = MOUSECOORDSABS * m_pLastSurface->screenBuffer->pixelSize;
+ 
+     const auto COL = getColorFromPixel(m_pLastSurface, CLICKPOS);
+@@ -175,41 +175,45 @@ void CHyprpicker::outputColor() {
+ 
+     std::string   formattedColor;
+ 
+-    switch (m_bSelectedOutputMode) {
+-        case OUTPUT_CMYK: {
+-            float c, m, y, k;
+-            COL.getCMYK(c, m, y, k);
+-            formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(c, m, y, k));
+-            break;
+-        }
+-        case OUTPUT_HEX: {
+-            std::string rHex, gHex, bHex;
+-            if (m_bUseLowerCase) {
+-                rHex = std::format("{:02x}", COL.r);
+-                gHex = std::format("{:02x}", COL.g);
+-                bHex = std::format("{:02x}", COL.b);
+-            } else {
+-                rHex = std::format("{:02X}", COL.r);
+-                gHex = std::format("{:02X}", COL.g);
+-                bHex = std::format("{:02X}", COL.b);
++    if (m_bShiftHeld) {
++        formattedColor = std::format("rgb({}, {}, {})", COL.r, COL.g, COL.b);
++    } else {
++        switch (m_bSelectedOutputMode) {
++            case OUTPUT_CMYK: {
++                float c, m, y, k;
++                COL.getCMYK(c, m, y, k);
++                formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(c, m, y, k));
++                break;
++            }
++            case OUTPUT_HEX: {
++                std::string rHex, gHex, bHex;
++                if (m_bUseLowerCase) {
++                    rHex = std::format("{:02x}", COL.r);
++                    gHex = std::format("{:02x}", COL.g);
++                    bHex = std::format("{:02x}", COL.b);
++                } else {
++                    rHex = std::format("{:02X}", COL.r);
++                    gHex = std::format("{:02X}", COL.g);
++                    bHex = std::format("{:02X}", COL.b);
++                }
++                formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(rHex, gHex, bHex));
++                break;
++            }
++            case OUTPUT_RGB: {
++                formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(COL.r, COL.g, COL.b));
++                break;
++            }
++            case OUTPUT_HSL:
++            case OUTPUT_HSV: {
++                float h, s, l_or_v;
++                if (m_bSelectedOutputMode == OUTPUT_HSV)
++                    COL.getHSV(h, s, l_or_v);
++                else
++                    COL.getHSL(h, s, l_or_v);
++
++                formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(h, s, l_or_v));
++                break;
+             }
+-            formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(rHex, gHex, bHex));
+-            break;
+-        }
+-        case OUTPUT_RGB: {
+-            formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(COL.r, COL.g, COL.b));
+-            break;
+-        }
+-        case OUTPUT_HSL:
+-        case OUTPUT_HSV: {
+-            float h, s, l_or_v;
+-            if (m_bSelectedOutputMode == OUTPUT_HSV)
+-                COL.getHSV(h, s, l_or_v);
+-            else
+-                COL.getHSL(h, s, l_or_v);
+-
+-            formattedColor = std::vformat(m_sOutputFormat, std::make_format_args(h, s, l_or_v));
+-            break;
+         }
+     }
+ 
+@@ -467,7 +471,7 @@ void CHyprpicker::renderSurface(CLayerSurface* pSurface, bool forceInactive) {
+ 
+     if (pSurface == m_pLastSurface && !forceInactive && m_bCoordsInitialized) {
+         const auto SCALEBUFS      = pSurface->screenBuffer->pixelSize / PBUFFER->pixelSize;
+-        const auto MOUSECOORDSABS = m_vLastCoords.floor() / pSurface->m_pMonitor->size;
++        const auto MOUSECOORDSABS = m_vLastCoords / pSurface->m_pMonitor->size;
+         const auto CLICKPOS       = MOUSECOORDSABS * PBUFFER->pixelSize;
+ 
+         Debug::log(TRACE, "renderSurface: scalebufs %.2fx%.2f", SCALEBUFS.x, SCALEBUFS.y);
+@@ -485,33 +489,28 @@ void CHyprpicker::renderSurface(CLayerSurface* pSurface, bool forceInactive) {
+ 
+         cairo_pattern_destroy(PATTERNPRE);
+ 
+-        // we draw the preview like this
+-        //
+-        //     200px        ZOOM: 10x
+-        // | --------- |
+-        // |           |
+-        // |     x     | 200px
+-        // |           |
+-        // | --------- |
+-        //
+-        // (hex code here)
+-
+         cairo_restore(PCAIRO);
+         if (!m_bNoZoom) {
+             cairo_save(PCAIRO);
+ 
+-            const auto CLICKPOSBUF = CLICKPOS / PBUFFER->pixelSize * pSurface->screenBuffer->pixelSize;
++            const auto   CLICKPOSBUF  = CLICKPOS / PBUFFER->pixelSize * pSurface->screenBuffer->pixelSize;
++            const auto   PIXPOS       = CLICKPOSBUF.floor();
++            const auto   LOUPE_CENTER = (PIXPOS / SCALEBUFS).floor();
++            const double halfSize     = std::round(m_iCircleRadius / SCALEBUFS.x);
++            const double borderWidth  = std::max(1.0, std::round(5.0 / SCALEBUFS.x));
+ 
+-            const auto PIXCOLOR = getColorFromPixel(pSurface, CLICKPOSBUF);
+-            cairo_set_source_rgba(PCAIRO, PIXCOLOR.r / 255.f, PIXCOLOR.g / 255.f, PIXCOLOR.b / 255.f, PIXCOLOR.a / 255.f);
++            const auto   PIXCOLOR = getColorFromPixel(pSurface, PIXPOS);
+ 
+-            cairo_scale(PCAIRO, 1, 1);
+-
+-            cairo_arc(PCAIRO, CLICKPOS.x, CLICKPOS.y, m_iCircleRadius + 5 / SCALEBUFS.x, 0, 2 * M_PI);
+-            cairo_clip(PCAIRO);
++            // Outer hairline + sampled-color square border (lok sharp style)
++            cairo_set_source_rgba(PCAIRO, 0.0, 0.0, 0.0, 0.45);
++            cairo_rectangle(PCAIRO, LOUPE_CENTER.x - halfSize - borderWidth - 1.0, LOUPE_CENTER.y - halfSize - borderWidth - 1.0,
++                            (halfSize + borderWidth + 1.0) * 2.0, (halfSize + borderWidth + 1.0) * 2.0);
++            cairo_fill(PCAIRO);
+ 
++            cairo_set_source_rgba(PCAIRO, PIXCOLOR.r / 255.f, PIXCOLOR.g / 255.f, PIXCOLOR.b / 255.f, PIXCOLOR.a / 255.f);
++            cairo_rectangle(PCAIRO, LOUPE_CENTER.x - halfSize - borderWidth, LOUPE_CENTER.y - halfSize - borderWidth, (halfSize + borderWidth) * 2.0,
++                            (halfSize + borderWidth) * 2.0);
+             cairo_fill(PCAIRO);
+-            cairo_paint(PCAIRO);
+ 
+             cairo_surface_flush(PBUFFER->surface);
+ 
+@@ -522,57 +521,73 @@ void CHyprpicker::renderSurface(CLayerSurface* pSurface, bool forceInactive) {
+             cairo_pattern_set_filter(PATTERN, CAIRO_FILTER_NEAREST);
+             cairo_matrix_t matrix;
+             cairo_matrix_init_identity(&matrix);
+-            cairo_matrix_translate(&matrix, CLICKPOSBUF.x + 0.5f, CLICKPOSBUF.y + 0.5f);
++            cairo_matrix_translate(&matrix, PIXPOS.x + 0.5, PIXPOS.y + 0.5);
+             cairo_matrix_scale(&matrix, 1.0 / m_fZoomScale, 1.0 / m_fZoomScale);
+-            cairo_matrix_translate(&matrix, (-CLICKPOSBUF.x / SCALEBUFS.x) - 0.5f, (-CLICKPOSBUF.y / SCALEBUFS.y) - 0.5f);
++            cairo_matrix_translate(&matrix, -(LOUPE_CENTER.x + 0.5), -(LOUPE_CENTER.y + 0.5));
+             cairo_pattern_set_matrix(PATTERN, &matrix);
+             cairo_set_source(PCAIRO, PATTERN);
+-            cairo_arc(PCAIRO, CLICKPOS.x, CLICKPOS.y, m_iCircleRadius / SCALEBUFS.x, 0, 2 * M_PI);
++            cairo_rectangle(PCAIRO, LOUPE_CENTER.x - halfSize, LOUPE_CENTER.y - halfSize, halfSize * 2.0, halfSize * 2.0);
+             cairo_clip(PCAIRO);
+             cairo_paint(PCAIRO);
+ 
++            // Draw a crisp 1-pixel sampling box at the exact center of the loupe
++            const double pixBoxSize = std::max(1.0, (double)m_fZoomScale / SCALEBUFS.x);
++            const double halfBox    = 0.5 * pixBoxSize;
++
++            cairo_set_line_width(PCAIRO, 1.0);
++            cairo_set_source_rgba(PCAIRO, 0.0, 0.0, 0.0, 0.9);
++            cairo_rectangle(PCAIRO, LOUPE_CENTER.x - halfBox - 1.5, LOUPE_CENTER.y - halfBox - 1.5, pixBoxSize + 3.0, pixBoxSize + 3.0);
++            cairo_stroke(PCAIRO);
++
++            cairo_set_source_rgba(PCAIRO, 1.0, 1.0, 1.0, 0.95);
++            cairo_rectangle(PCAIRO, LOUPE_CENTER.x - halfBox - 0.5, LOUPE_CENTER.y - halfBox - 0.5, pixBoxSize + 1.0, pixBoxSize + 1.0);
++            cairo_stroke(PCAIRO);
++
+             if (!m_bDisablePreview) {
+-                const auto  currentColor = getColorFromPixel(pSurface, CLICKPOS);
++                const auto  currentColor = PIXCOLOR;
+                 std::string previewBuffer;
+-                switch (m_bSelectedOutputMode) {
+-                    case OUTPUT_HEX: {
+-                        std::string rHex, gHex, bHex;
+-                        if (m_bUseLowerCase) {
+-                            rHex = std::format("{:02x}", currentColor.r);
+-                            gHex = std::format("{:02x}", currentColor.g);
+-                            bHex = std::format("{:02x}", currentColor.b);
+-                        } else {
+-                            rHex = std::format("{:02X}", currentColor.r);
+-                            gHex = std::format("{:02X}", currentColor.g);
+-                            bHex = std::format("{:02X}", currentColor.b);
+-                        }
+-                        previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(rHex, gHex, bHex));
+-                        break;
+-                    };
+-                    case OUTPUT_RGB: {
+-                        previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(currentColor.r, currentColor.g, currentColor.b));
+-                        break;
+-                    };
+-                    case OUTPUT_HSL: {
+-                        float h, s, l;
+-                        currentColor.getHSL(h, s, l);
+-                        previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(h, s, l));
+-                        break;
+-                    };
+-                    case OUTPUT_HSV: {
+-                        float h, s, v;
+-                        currentColor.getHSV(h, s, v);
+-                        previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(h, s, v));
+-                        break;
+-                    };
+-                    case OUTPUT_CMYK: {
+-                        float c, m, y, k;
+-                        currentColor.getCMYK(c, m, y, k);
+-                        previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(c, m, y, k));
+-                        break;
++                if (m_bShiftHeld) {
++                    previewBuffer = std::format("rgb({}, {}, {})", currentColor.r, currentColor.g, currentColor.b);
++                } else {
++                    switch (m_bSelectedOutputMode) {
++                        case OUTPUT_HEX: {
++                            std::string rHex, gHex, bHex;
++                            if (m_bUseLowerCase) {
++                                rHex = std::format("{:02x}", currentColor.r);
++                                gHex = std::format("{:02x}", currentColor.g);
++                                bHex = std::format("{:02x}", currentColor.b);
++                            } else {
++                                rHex = std::format("{:02X}", currentColor.r);
++                                gHex = std::format("{:02X}", currentColor.g);
++                                bHex = std::format("{:02X}", currentColor.b);
++                            }
++                            previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(rHex, gHex, bHex));
++                            break;
++                        };
++                        case OUTPUT_RGB: {
++                            previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(currentColor.r, currentColor.g, currentColor.b));
++                            break;
++                        };
++                        case OUTPUT_HSL: {
++                            float h, s, l;
++                            currentColor.getHSL(h, s, l);
++                            previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(h, s, l));
++                            break;
++                        };
++                        case OUTPUT_HSV: {
++                            float h, s, v;
++                            currentColor.getHSV(h, s, v);
++                            previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(h, s, v));
++                            break;
++                        };
++                        case OUTPUT_CMYK: {
++                            float c, m, y, k;
++                            currentColor.getCMYK(c, m, y, k);
++                            previewBuffer = std::vformat(m_sOutputFormat, std::make_format_args(c, m, y, k));
++                            break;
++                        };
+                     };
+-                };
+-                cairo_set_source_rgba(PCAIRO, 0.0, 0.0, 0.0, 0.75);
++                }
+                 cairo_select_font_face(PCAIRO, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+                 cairo_set_font_size(PCAIRO, 18);
+                 cairo_text_extents_t extents;
+@@ -581,43 +596,29 @@ void CHyprpicker::renderSurface(CLayerSurface* pSurface, bool forceInactive) {
+                 std::string_view standardColorName = currentColor.getStandardColorName();
+                 bool             hasStandardName   = !standardColorName.empty();
+ 
+-                double           horizontalTextPadding = 5.0;
++                double           horizontalTextPadding = 6.0;
+                 double           characterWidth        = extents.x_advance;
+                 double           previewBufferWidth    = (2 * horizontalTextPadding) + (characterWidth * previewBuffer.length());
+                 double           standardNameWidth     = hasStandardName ? (2 * horizontalTextPadding) + (characterWidth * standardColorName.length()) : 0.0;
+ 
+-                double           boxWidth     = std::max(previewBufferWidth, standardNameWidth);
+-                double           boxHeight    = hasStandardName ? 50.0 : 28.0;
+-                double           cornerRadius = 6.0;
+-
+-                double           boxPositionX = 0.0;
+-                double           boxPositionY = 0.0;
+-                double           upwardShift  = hasStandardName ? 62.0 : 40.0;
+-
+-                if (CLICKPOS.y > (PBUFFER->pixelSize.y - 50) && CLICKPOS.x > (PBUFFER->pixelSize.x - 100)) {
+-                    boxPositionX = CLICKPOS.x - 80;
+-                    boxPositionY = CLICKPOS.y - upwardShift;
+-                } else if (CLICKPOS.y > (PBUFFER->pixelSize.y - 50)) {
+-                    boxPositionX = CLICKPOS.x;
+-                    boxPositionY = CLICKPOS.y - upwardShift;
+-                } else if (CLICKPOS.x > (PBUFFER->pixelSize.x - 100)) {
+-                    boxPositionX = CLICKPOS.x - 80;
+-                    boxPositionY = CLICKPOS.y + 20;
+-                } else {
+-                    boxPositionX = CLICKPOS.x;
+-                    boxPositionY = CLICKPOS.y + 20;
+-                }
++                double           boxWidth    = std::round(std::max(previewBufferWidth, standardNameWidth));
++                double           boxHeight   = hasStandardName ? 50.0 : 28.0;
++                double           upwardShift = hasStandardName ? 62.0 : 40.0;
+ 
+-                size_t longestTextLength = hasStandardName ? std::max(previewBuffer.length(), standardColorName.length()) : previewBuffer.length();
+-                boxPositionX -= 0.5 * characterWidth * longestTextLength;
++                double           boxPositionX = LOUPE_CENTER.x - 0.5 * boxWidth;
++                double           boxPositionY = (LOUPE_CENTER.y > (PBUFFER->pixelSize.y - 60)) ? (LOUPE_CENTER.y - upwardShift) : (LOUPE_CENTER.y + 20.0);
+ 
+-                cairo_arc(PCAIRO, boxPositionX + boxWidth - cornerRadius, boxPositionY + cornerRadius, cornerRadius, -M_PI_2, 0);
+-                cairo_arc(PCAIRO, boxPositionX + boxWidth - cornerRadius, boxPositionY + boxHeight - cornerRadius, cornerRadius, 0, M_PI_2);
+-                cairo_arc(PCAIRO, boxPositionX + cornerRadius, boxPositionY + boxHeight - cornerRadius, cornerRadius, M_PI_2, M_PI);
+-                cairo_arc(PCAIRO, boxPositionX + cornerRadius, boxPositionY + cornerRadius, cornerRadius, M_PI, -M_PI_2);
++                boxPositionX = std::clamp(boxPositionX, LOUPE_CENTER.x - halfSize + 4.0, LOUPE_CENTER.x + halfSize - boxWidth - 4.0);
++                boxPositionX = std::round(boxPositionX);
++                boxPositionY = std::round(boxPositionY);
+ 
+-                cairo_close_path(PCAIRO);
+-                cairo_fill(PCAIRO);
++                cairo_set_source_rgba(PCAIRO, 0.0, 0.0, 0.0, 0.85);
++                cairo_rectangle(PCAIRO, boxPositionX, boxPositionY, boxWidth, boxHeight);
++                cairo_fill_preserve(PCAIRO);
++
++                cairo_set_line_width(PCAIRO, 1.0);
++                cairo_set_source_rgba(PCAIRO, 1.0, 1.0, 1.0, 0.22);
++                cairo_stroke(PCAIRO);
+ 
+                 cairo_set_source_rgba(PCAIRO, 1.0, 1.0, 1.0, 1.0);
+ 
+@@ -740,6 +741,18 @@ void CHyprpicker::initKeyboard() {
+         } else if (key == 1) // Assume keycode 1 is escape
+             finish(2);
+     });
++
++    m_pKeyboard->setModifiers([this](CCWlKeyboard* r, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
++        if (!m_pXKBState)
++            return;
++
++        xkb_state_update_mask(m_pXKBState, mods_depressed, mods_latched, mods_locked, 0, 0, group);
++        const bool shift = xkb_state_mod_name_is_active(m_pXKBState, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0;
++        if (shift != m_bShiftHeld) {
++            m_bShiftHeld = shift;
++            markDirty();
++        }
++    });
+ }
+ 
+ void CHyprpicker::initMouse() {
+@@ -757,8 +770,8 @@ void CHyprpicker::initMouse() {
+             }
+         }
+ 
+-        if (m_pCursorShapeDevice)
+-            m_pCursorShapeDevice->sendSetShape(serial, WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR);
++        if (m_pPointer)
++            m_pPointer->sendSetCursor(serial, nullptr, 0, 0);
+ 
+         markDirty();
+     });
+diff --git a/src/hyprpicker.hpp b/src/hyprpicker.hpp
+index f954dcb..0b02a92 100644
+--- a/src/hyprpicker.hpp
++++ b/src/hyprpicker.hpp
+@@ -55,6 +55,7 @@ class CHyprpicker {
+     bool                                        m_bUseLowerCase          = false;
+     bool                                        m_bIncludeCursor         = false;
+     bool                                        m_bCopyStandardColorName = false;
++    bool                                        m_bShiftHeld             = false;
+ 
+     volatile std::atomic<bool>                  m_bRunning      = true;
+     float                                       m_fZoomScale    = 10.0;

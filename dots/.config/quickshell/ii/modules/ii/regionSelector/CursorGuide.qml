@@ -8,108 +8,154 @@ Item {
     property var action
     property var selectionMode
 
-    property string description: switch (root.action) {
-    case RegionSelection.SnipAction.Copy:
-    case RegionSelection.SnipAction.Edit:
-        return Translation.tr("Copy region (LMB) or annotate (RMB)");
-    case RegionSelection.SnipAction.Search:
-        return Translation.tr("Search with Google Lens");
-    case RegionSelection.SnipAction.CharRecognition:
-        return Translation.tr("Recognize text");
-    case RegionSelection.SnipAction.Record:
-    case RegionSelection.SnipAction.RecordWithSound:
-        return Translation.tr("Record region");
-    }
-    property string materialSymbol: switch (root.action) {
-    case RegionSelection.SnipAction.Copy:
-    case RegionSelection.SnipAction.Edit:
-        return "content_cut";
-    case RegionSelection.SnipAction.Search:
-        return "image_search";
-    case RegionSelection.SnipAction.CharRecognition:
-        return "document_scanner";
-    case RegionSelection.SnipAction.Record:
-    case RegionSelection.SnipAction.RecordWithSound:
-        return "videocam";
-    default:
-        return "";
+    property string screenshotPath: ""
+    property bool screenshotReady: false
+    property real mouseX: 0
+    property real mouseY: 0
+    property real monitorScale: 1.0
+    property bool shiftHeld: false
+    property real zoomScale: 10.0
+
+    signal colorPicked(string colorText)
+
+    property int sampledR: 0
+    property int sampledG: 0
+    property int sampledB: 0
+
+    readonly property int physWidth: Math.max(1, imgPreview.implicitWidth)
+    readonly property int physHeight: Math.max(1, imgPreview.implicitHeight)
+    readonly property int physX: Math.max(0, Math.min(physWidth - 1, Math.floor(root.mouseX * root.monitorScale)))
+    readonly property int physY: Math.max(0, Math.min(physHeight - 1, Math.floor(root.mouseY * root.monitorScale)))
+
+    function toHex(n) {
+        const s = Math.max(0, Math.min(255, n)).toString(16).toUpperCase();
+        return s.length < 2 ? "0" + s : s;
     }
 
-    property bool showDescription: true
-    function hideDescription() {
-        root.showDescription = false
+    readonly property string hexText: `#${toHex(sampledR)}${toHex(sampledG)}${toHex(sampledB)}`
+    readonly property string rgbText: `rgb(${sampledR}, ${sampledG}, ${sampledB})`
+    readonly property string displayColorText: root.shiftHeld ? root.rgbText : root.hexText
+    readonly property color sampledColor: Qt.rgba(sampledR / 255, sampledG / 255, sampledB / 255, 1)
+
+    function pickColor() {
+        root.colorPicked(root.displayColorText);
     }
-    Timer {
-        id: descTimeout
-        interval: 1000
-        running: true
-        onTriggered: {
-            root.hideDescription()
+
+    readonly property string screenshotUrl: root.screenshotReady && root.screenshotPath !== "" ? `file://${root.screenshotPath}` : ""
+
+    onScreenshotUrlChanged: {
+        if (screenshotUrl !== "") {
+            pixelSampler.loadImage(screenshotUrl);
         }
     }
-    onActionChanged: {
-        root.showDescription = true
-        descTimeout.restart()
+    onPhysXChanged: pixelSampler.requestPaint()
+    onPhysYChanged: pixelSampler.requestPaint()
+
+    Canvas {
+        id: pixelSampler
+        width: 1
+        height: 1
+        renderTarget: Canvas.Image
+        onImageLoaded: requestPaint()
+        onPaint: {
+            if (root.screenshotUrl === "" || !isImageLoaded(root.screenshotUrl)) return;
+            const ctx = getContext("2d");
+            ctx.clearRect(0, 0, 1, 1);
+            ctx.drawImage(root.screenshotUrl, root.physX, root.physY, 1, 1, 0, 0, 1, 1);
+            const data = ctx.getImageData(0, 0, 1, 1).data;
+            root.sampledR = data[0];
+            root.sampledG = data[1];
+            root.sampledB = data[2];
+        }
     }
 
-    property int margins: 8
-    implicitWidth: content.implicitWidth + margins * 2
-    implicitHeight: content.implicitHeight + margins * 2
+    readonly property real loupeInnerSize: 132
+    readonly property real colorBorderWidth: 4
+    readonly property real pixelBoxSize: Math.max(2, root.zoomScale / root.monitorScale)
 
+    implicitWidth: Math.max(loupeFrame.width, labelBox.width)
+    implicitHeight: loupeFrame.height + 4 + labelBox.height
+
+    // Outer hairline + sampled color square border (lok sharp style)
     Rectangle {
-        id: content
-        anchors.centerIn: parent
+        id: loupeFrame
+        anchors.top: parent.top
+        anchors.left: parent.left
+        width: root.loupeInnerSize + root.colorBorderWidth * 2 + 2
+        height: root.loupeInnerSize + root.colorBorderWidth * 2 + 2
+        radius: 0
+        color: Qt.rgba(0, 0, 0, 0.45)
 
-        property real padding: 8
-        implicitHeight: 38
-        implicitWidth: root.showDescription ? contentRow.implicitWidth + padding * 2 : implicitHeight
-        clip: true
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: 0
+            color: root.sampledColor
 
-        // lok: a framed floating surface (colAccent is the text colour in lok, which made
-        // this a blank white pill with white text on it)
-        topLeftRadius: Appearance.lok ? 0 : 6
-        bottomLeftRadius: Appearance.lok ? 0 : implicitHeight - topLeftRadius
-        bottomRightRadius: bottomLeftRadius
-        topRightRadius: bottomLeftRadius
+            Rectangle {
+                id: loupeInner
+                anchors.fill: parent
+                anchors.margins: root.colorBorderWidth
+                radius: 0
+                color: "#141414"
+                clip: true
 
-        color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colAccent
-        LokFrame { visible: Appearance.lok; z: 1 }
+                Image {
+                    id: imgPreview
+                    source: root.screenshotUrl
+                    smooth: false
+                    mipmap: false
+                    cache: false
+                    asynchronous: false
+                    width: implicitWidth * (root.zoomScale / root.monitorScale)
+                    height: implicitHeight * (root.zoomScale / root.monitorScale)
+                    x: loupeInner.width / 2 - (root.physX + 0.5) * (root.zoomScale / root.monitorScale)
+                    y: loupeInner.height / 2 - (root.physY + 0.5) * (root.zoomScale / root.monitorScale)
+                }
 
-        Behavior on topLeftRadius {
-            animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
-        }
-        Behavior on implicitWidth {
-            animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
-        }
+                // Center 1-pixel sampling box (black outer + white inner 1px strokes)
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: root.pixelBoxSize + 4
+                    height: root.pixelBoxSize + 4
+                    radius: 0
+                    color: "transparent"
+                    border.width: 1
+                    border.color: Qt.rgba(0, 0, 0, 0.9)
 
-        Row {
-            id: contentRow
-            anchors {
-                verticalCenter: parent.verticalCenter
-                left: parent.left
-                leftMargin: content.padding
-            }
-            spacing: 12
-
-            MaterialSymbol {
-                anchors.verticalCenter: parent.verticalCenter
-                iconSize: 22
-                color: Appearance.colors.colOnPrimary
-                animateChange: true
-                text: root.materialSymbol
-            }
-
-            FadeLoader {
-                id: descriptionLoader
-                anchors.verticalCenter: parent.verticalCenter
-                shown: root.showDescription
-                sourceComponent: StyledText {
-                    color: Appearance.colors.colOnPrimary
-                    text: root.description
-                    anchors.right: parent.right
-                    anchors.rightMargin: 6
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: 1
+                        radius: 0
+                        color: "transparent"
+                        border.width: 1
+                        border.color: Qt.rgba(1, 1, 1, 0.95)
+                    }
                 }
             }
+        }
+    }
+
+    // Bottom color value box (lok sharp style)
+    Rectangle {
+        id: labelBox
+        anchors.top: loupeFrame.bottom
+        anchors.topMargin: 4
+        anchors.left: loupeFrame.left
+        width: Math.max(loupeFrame.width, labelText.implicitWidth + 14)
+        height: 26
+        radius: 0
+        color: Qt.rgba(0, 0, 0, 0.85)
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.22)
+
+        StyledText {
+            id: labelText
+            anchors.centerIn: parent
+            font.family: Appearance.font.family.monospace
+            font.pixelSize: 13
+            color: "#ffffff"
+            text: root.displayColorText
         }
     }
 }

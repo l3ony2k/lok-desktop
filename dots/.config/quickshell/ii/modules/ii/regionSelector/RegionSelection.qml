@@ -79,6 +79,8 @@ PanelWindow {
     property bool dragging: false
     property list<point> points: []
     property var mouseButton: null
+    property bool screenshotReady: false
+    property bool shiftHeld: false
     property var imageRegions: []
     readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(
         root.windows.filter(w => w.workspace.id === root.activeWorkspaceId),
@@ -192,6 +194,7 @@ PanelWindow {
         screenshotDir: root.screenshotDir
         screenshotPath: root.screenshotPath
         onExited: (exitCode, exitStatus) => {
+            root.screenshotReady = true;
             if (root.enableContentRegions) imageDetectionProcess.running = true;
             root.preparationDone = !checkRecordingProc.running;
         }
@@ -312,9 +315,19 @@ PanelWindow {
         visible: root.phase === RegionSelection.Phase.Select
 
         focus: root.visible
-        Keys.onPressed: (event) => { // Esc to close
+        Keys.onPressed: (event) => {
+            root.shiftHeld = (event.modifiers & Qt.ShiftModifier) !== 0 || event.key === Qt.Key_Shift;
             if (event.key === Qt.Key_Escape) {
                 root.dismiss();
+            } else if (event.key === Qt.Key_C && root.phase === RegionSelection.Phase.Select) {
+                cursorGuide.pickColor();
+            }
+        }
+        Keys.onReleased: (event) => {
+            if (event.key === Qt.Key_Shift) {
+                root.shiftHeld = false;
+            } else {
+                root.shiftHeld = (event.modifiers & Qt.ShiftModifier) !== 0;
             }
         }
     }
@@ -322,12 +335,17 @@ PanelWindow {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        cursorShape: Qt.CrossCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        cursorShape: Qt.BlankCursor
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         hoverEnabled: true
 
         // Controls
         onPressed: (mouse) => {
+            root.shiftHeld = (mouse.modifiers & Qt.ShiftModifier) !== 0;
+            if (mouse.button === Qt.MiddleButton) {
+                cursorGuide.pickColor();
+                return;
+            }
             root.dragStartX = mouse.x;
             root.dragStartY = mouse.y;
             root.draggingX = mouse.x;
@@ -336,6 +354,7 @@ PanelWindow {
             root.mouseButton = mouse.button;
         }
         onReleased: (mouse) => {
+            if (mouse.button === Qt.MiddleButton) return;
             // Detect if it was a click -> Try to select targeted region
             if (root.draggingX === root.dragStartX && root.draggingY === root.dragStartY) {
                 if (root.targetedRegionValid()) {
@@ -358,6 +377,7 @@ PanelWindow {
             root.snip();
         }
         onPositionChanged: (mouse) => {
+            root.shiftHeld = (mouse.modifiers & Qt.ShiftModifier) !== 0;
             root.updateTargetedRegion(mouse.x, mouse.y);
             if (!root.dragging) return;
             root.draggingX = mouse.x;
@@ -365,6 +385,13 @@ PanelWindow {
             root.dragDiffX = mouse.x - root.dragStartX;
             root.dragDiffY = mouse.y - root.dragStartY;
             root.points.push({ x: mouse.x, y: mouse.y });
+        }
+        onWheel: (wheel) => {
+            if (wheel.angleDelta.y > 0) {
+                cursorGuide.zoomScale = Math.min(24.0, cursorGuide.zoomScale + 2.0);
+            } else if (wheel.angleDelta.y < 0) {
+                cursorGuide.zoomScale = Math.max(4.0, cursorGuide.zoomScale - 2.0);
+            }
         }
         
         Loader {
@@ -395,14 +422,71 @@ PanelWindow {
             }
         }
 
-        // The thing to the bottom-right with an icon
+        // Crisp 1-physical-pixel aligned crosshair (replaces system cursor)
+        Item {
+            id: customCrosshair
+            z: 9998
+            visible: root.phase === RegionSelection.Phase.Select && mouseArea.containsMouse
+            readonly property real snapX: Math.floor(mouseArea.mouseX * root.monitorScale) / root.monitorScale
+            readonly property real snapY: Math.floor(mouseArea.mouseY * root.monitorScale) / root.monitorScale
+            readonly property real px: 1.0 / root.monitorScale
+            x: snapX
+            y: snapY
+
+            Rectangle {
+                x: -8
+                y: -customCrosshair.px
+                width: 16 + customCrosshair.px
+                height: customCrosshair.px * 3
+                color: Qt.rgba(0, 0, 0, 0.7)
+            }
+            Rectangle {
+                x: -customCrosshair.px
+                y: -8
+                width: customCrosshair.px * 3
+                height: 16 + customCrosshair.px
+                color: Qt.rgba(0, 0, 0, 0.7)
+            }
+            Rectangle {
+                x: -7
+                y: 0
+                width: 14 + customCrosshair.px
+                height: customCrosshair.px
+                color: "#ffffff"
+            }
+            Rectangle {
+                x: 0
+                y: -7
+                width: customCrosshair.px
+                height: 14 + customCrosshair.px
+                color: "#ffffff"
+            }
+        }
+
+        // Square lok color picker magnifier at bottom-right of crosshair
         CursorGuide {
+            id: cursorGuide
             z: 9999
-            visible: root.phase === RegionSelection.Phase.Select
-            x: root.dragging ? root.regionX + root.regionWidth : mouseArea.mouseX
-            y: root.dragging ? root.regionY + root.regionHeight : mouseArea.mouseY
+            visible: root.phase === RegionSelection.Phase.Select && !root.dragging
+            readonly property real offset: 14
+            x: (mouseArea.mouseX + offset + implicitWidth > root.width)
+                ? Math.max(0, mouseArea.mouseX - offset - implicitWidth)
+                : mouseArea.mouseX + offset
+            y: (mouseArea.mouseY + offset + implicitHeight > root.height)
+                ? Math.max(0, mouseArea.mouseY - offset - implicitHeight)
+                : mouseArea.mouseY + offset
             action: root.action
             selectionMode: root.selectionMode
+            screenshotPath: root.screenshotPath
+            screenshotReady: root.screenshotReady
+            mouseX: mouseArea.mouseX
+            mouseY: mouseArea.mouseY
+            monitorScale: root.monitorScale
+            shiftHeld: root.shiftHeld
+            onColorPicked: (colorText) => {
+                Quickshell.clipboardText = colorText;
+                root.dismiss();
+            }
         }
 
         // Window regions
