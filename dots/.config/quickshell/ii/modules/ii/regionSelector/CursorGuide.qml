@@ -47,15 +47,46 @@ Item {
         if (screenshotUrl !== "") {
             loupeCanvas.unloadImage(screenshotUrl);
             loupeCanvas.loadImage(screenshotUrl);
+            pixelSampler.unloadImage(screenshotUrl);
+            pixelSampler.loadImage(screenshotUrl);
         }
     }
-    onPhysXChanged: loupeCanvas.requestPaint()
-    onPhysYChanged: loupeCanvas.requestPaint()
+    onPhysXChanged: {
+        loupeCanvas.requestPaint();
+        pixelSampler.requestPaint();
+    }
+    onPhysYChanged: {
+        loupeCanvas.requestPaint();
+        pixelSampler.requestPaint();
+    }
     onZoomScaleChanged: loupeCanvas.requestPaint()
 
     Component.onDestruction: {
         if (screenshotUrl !== "") {
             loupeCanvas.unloadImage(screenshotUrl);
+            pixelSampler.unloadImage(screenshotUrl);
+        }
+    }
+
+    // Dedicated 1x1 sampler: reads the exact physical pixel under the crosshair,
+    // fully decoupled from the magnifier transform, so the sampled value can
+    // never drift relative to the preview centre.
+    Canvas {
+        id: pixelSampler
+        width: 1
+        height: 1
+        renderTarget: Canvas.Image
+        onImageLoaded: requestPaint()
+        onPaint: {
+            const ctx = getContext("2d");
+            ctx.clearRect(0, 0, 1, 1);
+            if (root.screenshotUrl === "" || !isImageLoaded(root.screenshotUrl)) return;
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(root.screenshotUrl, root.physX, root.physY, 1, 1, 0, 0, 1, 1);
+            const d = ctx.getImageData(0, 0, 1, 1).data;
+            root.sampledR = d[0];
+            root.sampledG = d[1];
+            root.sampledB = d[2];
         }
     }
 
@@ -93,7 +124,6 @@ Item {
                 Canvas {
                     id: loupeCanvas
                     anchors.fill: parent
-                    renderTarget: Canvas.Image
                     onImageLoaded: requestPaint()
                     onPaint: {
                         const ctx = getContext("2d");
@@ -141,11 +171,6 @@ Item {
                         if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
                             ctx.drawImage(root.screenshotUrl, sx, sy, sw, sh, dx, dy, dw, dh);
                         }
-
-                        const data = ctx.getImageData(Math.floor(width / 2), Math.floor(height / 2), 1, 1).data;
-                        root.sampledR = data[0];
-                        root.sampledG = data[1];
-                        root.sampledB = data[2];
                     }
                 }
 
