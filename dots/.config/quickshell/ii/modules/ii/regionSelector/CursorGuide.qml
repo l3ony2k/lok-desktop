@@ -22,8 +22,8 @@ Item {
     property int sampledG: 0
     property int sampledB: 0
 
-    readonly property int physWidth: Math.max(1, imgPreview.implicitWidth)
-    readonly property int physHeight: Math.max(1, imgPreview.implicitHeight)
+    readonly property int physWidth: Math.max(1, Math.round(root.parent ? root.parent.width * root.monitorScale : 2560))
+    readonly property int physHeight: Math.max(1, Math.round(root.parent ? root.parent.height * root.monitorScale : 1600))
     readonly property int physX: Math.max(0, Math.min(physWidth - 1, Math.floor(root.mouseX * root.monitorScale)))
     readonly property int physY: Math.max(0, Math.min(physHeight - 1, Math.floor(root.mouseY * root.monitorScale)))
 
@@ -45,27 +45,17 @@ Item {
 
     onScreenshotUrlChanged: {
         if (screenshotUrl !== "") {
-            pixelSampler.loadImage(screenshotUrl);
+            loupeCanvas.unloadImage(screenshotUrl);
+            loupeCanvas.loadImage(screenshotUrl);
         }
     }
-    onPhysXChanged: pixelSampler.requestPaint()
-    onPhysYChanged: pixelSampler.requestPaint()
+    onPhysXChanged: loupeCanvas.requestPaint()
+    onPhysYChanged: loupeCanvas.requestPaint()
+    onZoomScaleChanged: loupeCanvas.requestPaint()
 
-    Canvas {
-        id: pixelSampler
-        width: 1
-        height: 1
-        renderTarget: Canvas.Image
-        onImageLoaded: requestPaint()
-        onPaint: {
-            if (root.screenshotUrl === "" || !isImageLoaded(root.screenshotUrl)) return;
-            const ctx = getContext("2d");
-            ctx.clearRect(0, 0, 1, 1);
-            ctx.drawImage(root.screenshotUrl, root.physX, root.physY, 1, 1, 0, 0, 1, 1);
-            const data = ctx.getImageData(0, 0, 1, 1).data;
-            root.sampledR = data[0];
-            root.sampledG = data[1];
-            root.sampledB = data[2];
+    Component.onDestruction: {
+        if (screenshotUrl !== "") {
+            loupeCanvas.unloadImage(screenshotUrl);
         }
     }
 
@@ -100,17 +90,63 @@ Item {
                 color: "#141414"
                 clip: true
 
-                Image {
-                    id: imgPreview
-                    source: root.screenshotUrl
-                    smooth: false
-                    mipmap: false
-                    cache: false
-                    asynchronous: false
-                    width: implicitWidth * (root.zoomScale / root.monitorScale)
-                    height: implicitHeight * (root.zoomScale / root.monitorScale)
-                    x: loupeInner.width / 2 - (root.physX + 0.5) * (root.zoomScale / root.monitorScale)
-                    y: loupeInner.height / 2 - (root.physY + 0.5) * (root.zoomScale / root.monitorScale)
+                Canvas {
+                    id: loupeCanvas
+                    anchors.fill: parent
+                    renderTarget: Canvas.Image
+                    onImageLoaded: requestPaint()
+                    onPaint: {
+                        const ctx = getContext("2d");
+                        ctx.clearRect(0, 0, width, height);
+                        if (root.screenshotUrl === "" || !isImageLoaded(root.screenshotUrl)) return;
+
+                        const pxRatio = root.zoomScale / root.monitorScale;
+                        const srcSpan = width / pxRatio;
+                        let sx = (root.physX + 0.5) - srcSpan * 0.5;
+                        let sy = (root.physY + 0.5) - srcSpan * 0.5;
+                        let sw = srcSpan;
+                        let sh = srcSpan;
+
+                        let dx = 0;
+                        let dy = 0;
+                        let dw = width;
+                        let dh = height;
+
+                        if (sx < 0) {
+                            const cut = -sx;
+                            dx += cut * pxRatio;
+                            dw -= cut * pxRatio;
+                            sw -= cut;
+                            sx = 0;
+                        }
+                        if (sy < 0) {
+                            const cut = -sy;
+                            dy += cut * pxRatio;
+                            dh -= cut * pxRatio;
+                            sh -= cut;
+                            sy = 0;
+                        }
+                        if (sx + sw > root.physWidth) {
+                            const cut = (sx + sw) - root.physWidth;
+                            dw -= cut * pxRatio;
+                            sw -= cut;
+                        }
+                        if (sy + sh > root.physHeight) {
+                            const cut = (sy + sh) - root.physHeight;
+                            dh -= cut * pxRatio;
+                            sh -= cut;
+                        }
+
+                        ctx.imageSmoothingEnabled = false;
+                        if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
+                            ctx.drawImage(root.screenshotUrl, sx, sy, sw, sh, dx, dy, dw, dh);
+                        }
+
+                        const data = ctx.getImageData(Math.floor(width / 2), Math.floor(height / 2), 1, 1).data;
+                        root.sampledR = data[0];
+                        root.sampledG = data[1];
+                        root.sampledB = data[2];
+                    }
                 }
 
                 // Center 1-pixel sampling box (black outer + white inner 1px strokes)
