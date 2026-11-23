@@ -81,7 +81,33 @@ PanelWindow {
     property var mouseButton: null
     property bool screenshotReady: false
     property bool shiftHeld: false
+    property real pointerX: 0
+    property real pointerY: 0
+    property bool pointerInitialized: false
     property var imageRegions: []
+
+    function movePointerByPixels(dx, dy) {
+        const scale = Math.max(0.1, root.monitorScale);
+        if (!root.pointerInitialized) {
+            root.pointerX = mouseArea.mouseX;
+            root.pointerY = mouseArea.mouseY;
+            root.pointerInitialized = true;
+        }
+        const maxPxX = Math.max(0, Math.round(root.width * scale) - 1);
+        const maxPxY = Math.max(0, Math.round(root.height * scale) - 1);
+        const nextPxX = Math.max(0, Math.min(maxPxX, Math.floor(root.pointerX * scale) + dx));
+        const nextPxY = Math.max(0, Math.min(maxPxY, Math.floor(root.pointerY * scale) + dy));
+        root.pointerX = (nextPxX + 0.5) / scale;
+        root.pointerY = (nextPxY + 0.5) / scale;
+        root.updateTargetedRegion(root.pointerX, root.pointerY);
+        if (root.dragging) {
+            root.draggingX = root.pointerX;
+            root.draggingY = root.pointerY;
+            root.dragDiffX = root.pointerX - root.dragStartX;
+            root.dragDiffY = root.pointerY - root.dragStartY;
+            root.points.push({ x: root.pointerX, y: root.pointerY });
+        }
+    }
     readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(
         root.windows.filter(w => w.workspace.id === root.activeWorkspaceId),
         root.layerRegions
@@ -321,6 +347,14 @@ PanelWindow {
                 root.dismiss();
             } else if (event.key === Qt.Key_C && root.phase === RegionSelection.Phase.Select) {
                 cursorGuide.pickColor();
+            } else if (event.key === Qt.Key_Left && root.phase === RegionSelection.Phase.Select) {
+                root.movePointerByPixels(-1, 0);
+            } else if (event.key === Qt.Key_Right && root.phase === RegionSelection.Phase.Select) {
+                root.movePointerByPixels(1, 0);
+            } else if (event.key === Qt.Key_Up && root.phase === RegionSelection.Phase.Select) {
+                root.movePointerByPixels(0, -1);
+            } else if (event.key === Qt.Key_Down && root.phase === RegionSelection.Phase.Select) {
+                root.movePointerByPixels(0, 1);
             }
         }
         Keys.onReleased: (event) => {
@@ -339,17 +373,28 @@ PanelWindow {
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         hoverEnabled: true
 
+        onEntered: {
+            root.pointerX = mouseX;
+            root.pointerY = mouseY;
+            root.pointerInitialized = true;
+        }
+
         // Controls
         onPressed: (mouse) => {
             root.shiftHeld = (mouse.modifiers & Qt.ShiftModifier) !== 0;
+            if (!root.pointerInitialized) {
+                root.pointerX = mouse.x;
+                root.pointerY = mouse.y;
+                root.pointerInitialized = true;
+            }
             if (mouse.button === Qt.MiddleButton) {
                 cursorGuide.pickColor();
                 return;
             }
-            root.dragStartX = mouse.x;
-            root.dragStartY = mouse.y;
-            root.draggingX = mouse.x;
-            root.draggingY = mouse.y;
+            root.dragStartX = root.pointerX;
+            root.dragStartY = root.pointerY;
+            root.draggingX = root.pointerX;
+            root.draggingY = root.pointerY;
             root.dragging = true;
             root.mouseButton = mouse.button;
         }
@@ -364,7 +409,7 @@ PanelWindow {
             // Circle dragging?
             else if (root.selectionMode === RegionSelection.SelectionMode.Circle) {
                 const padding = Config.options.regionSelector.circle.padding + Config.options.regionSelector.circle.strokeWidth / 2;
-                const dragPoints = (root.points.length > 0) ? root.points : [{ x: mouseArea.mouseX, y: mouseArea.mouseY }];
+                const dragPoints = (root.points.length > 0) ? root.points : [{ x: root.pointerX, y: root.pointerY }];
                 const maxX = Math.max(...dragPoints.map(p => p.x));
                 const minX = Math.min(...dragPoints.map(p => p.x));
                 const maxY = Math.max(...dragPoints.map(p => p.y));
@@ -378,6 +423,9 @@ PanelWindow {
         }
         onPositionChanged: (mouse) => {
             root.shiftHeld = (mouse.modifiers & Qt.ShiftModifier) !== 0;
+            root.pointerX = mouse.x;
+            root.pointerY = mouse.y;
+            root.pointerInitialized = true;
             root.updateTargetedRegion(mouse.x, mouse.y);
             if (!root.dragging) return;
             root.draggingX = mouse.x;
@@ -393,7 +441,7 @@ PanelWindow {
                 cursorGuide.zoomScale = Math.max(4.0, cursorGuide.zoomScale - 2.0);
             }
         }
-        
+
         Loader {
             z: 2
             anchors.fill: parent
@@ -403,8 +451,8 @@ PanelWindow {
                 regionY: root.regionY
                 regionWidth: root.regionWidth
                 regionHeight: root.regionHeight
-                mouseX: mouseArea.mouseX
-                mouseY: mouseArea.mouseY
+                mouseX: root.pointerX
+                mouseY: root.pointerY
                 color: root.selectionBorderColor
                 overlayColor: root.overlayColor
                 breathingBorderOnly: root.phase === RegionSelection.Phase.Post
@@ -426,9 +474,9 @@ PanelWindow {
         Item {
             id: customCrosshair
             z: 9998
-            visible: root.phase === RegionSelection.Phase.Select && mouseArea.containsMouse
-            readonly property real snapX: Math.floor(mouseArea.mouseX * root.monitorScale) / root.monitorScale
-            readonly property real snapY: Math.floor(mouseArea.mouseY * root.monitorScale) / root.monitorScale
+            visible: root.phase === RegionSelection.Phase.Select && (mouseArea.containsMouse || root.pointerInitialized)
+            readonly property real snapX: Math.floor(root.pointerX * root.monitorScale) / root.monitorScale
+            readonly property real snapY: Math.floor(root.pointerY * root.monitorScale) / root.monitorScale
             readonly property real px: 1.0 / root.monitorScale
             x: snapX
             y: snapY
@@ -469,18 +517,18 @@ PanelWindow {
             z: 9999
             visible: root.phase === RegionSelection.Phase.Select && !root.dragging
             readonly property real offset: 14
-            x: (mouseArea.mouseX + offset + implicitWidth > root.width)
-                ? Math.max(0, mouseArea.mouseX - offset - implicitWidth)
-                : mouseArea.mouseX + offset
-            y: (mouseArea.mouseY + offset + implicitHeight > root.height)
-                ? Math.max(0, mouseArea.mouseY - offset - implicitHeight)
-                : mouseArea.mouseY + offset
+            x: (root.pointerX + offset + implicitWidth > root.width)
+                ? Math.max(0, root.pointerX - offset - implicitWidth)
+                : root.pointerX + offset
+            y: (root.pointerY + offset + implicitHeight > root.height)
+                ? Math.max(0, root.pointerY - offset - implicitHeight)
+                : root.pointerY + offset
             action: root.action
             selectionMode: root.selectionMode
             screenshotPath: root.screenshotPath
             screenshotReady: root.screenshotReady
-            mouseX: mouseArea.mouseX
-            mouseY: mouseArea.mouseY
+            mouseX: root.pointerX
+            mouseY: root.pointerY
             monitorScale: root.monitorScale
             shiftHeld: root.shiftHeld
             onColorPicked: (colorText) => {
