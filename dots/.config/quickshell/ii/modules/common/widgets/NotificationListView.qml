@@ -8,6 +8,7 @@ import Quickshell
 StyledListView { // Scrollable window
     id: root
     property bool popup: false
+    visible: (root.popup ? Notifications.popupList.length : Notifications.list.length) > 0
 
     spacing: 3
     // Qt 6 ListView locks addDisplaced's target y at transition start; if a top group grows

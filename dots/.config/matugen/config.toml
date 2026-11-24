@@ -5,13 +5,16 @@ version_check = false
 input_path = '~/.config/matugen/templates/colors.json'
 output_path = '~/.local/state/quickshell/user/generated/colors.json'
 
+# hypr outputs go to custom/ so dots-hyprland's exp-update (which rebuilds the
+# rest of ~/.config/hypr) cannot delete them; loaded via custom/general.lua
+# and custom/hyprlock.conf. asus-arch-ops 2026-11-16.
 [templates.hyprland]
 input_path = '~/.config/matugen/templates/hyprland/colors.lua'
-output_path = '~/.config/hypr/hyprland/colors.lua'
+output_path = '~/.config/hypr/custom/colors.lua'
 
 [templates.hyprlock]
 input_path = '~/.config/matugen/templates/hyprland/hyprlock-colors.conf'
-output_path = '~/.config/hypr/hyprlock/colors.conf'
+output_path = '~/.config/hypr/custom/hyprlock-colors.conf'
 
 [templates.fuzzel]
 input_path = '~/.config/matugen/templates/fuzzel/fuzzel_theme.ini'

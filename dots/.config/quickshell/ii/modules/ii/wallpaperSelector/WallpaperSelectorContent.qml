@@ -199,7 +199,7 @@ MouseArea {
                             {
                                 icon: "wallpaper",
                                 name: "Wallpapers",
-                                path: `${Directories.pictures}/wallpapers` // this machine keeps them lowercase
+                                path: `${Directories.pictures}/Wallpapers`
                             },
                             ...(Config.options.policies.weeb === 1 ? [
                                     {

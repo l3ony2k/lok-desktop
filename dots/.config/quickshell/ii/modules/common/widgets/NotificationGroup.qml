@@ -19,7 +19,8 @@ MouseArea { // Notification group area
     property bool expanded: false
     property bool popup: false
     property real padding: 10
-    implicitHeight: background.implicitHeight
+    visible: root.notificationCount > 0
+    implicitHeight: root.notificationCount > 0 ? background.implicitHeight : 0
 
     property real dragConfirmThreshold: 70 // Drag further to discard notification
     property real dismissOvershoot: 20 // Account for gaps and bouncy animations
@@ -166,9 +167,10 @@ MouseArea { // Notification group area
                 Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: false
                 image: root?.multipleNotifications ? "" : notificationGroup?.notifications[0]?.image ?? ""
-                appIcon: root.notificationGroup?.appIcon
-                summary: root.notificationGroup?.notifications[root.notificationCount - 1]?.summary
-                urgency: root.notifications.some(n => n.urgency === NotificationUrgency.Critical.toString()) ? 
+                appName: root.notificationGroup?.appName ?? ""
+                appIcon: root.notificationGroup?.appIcon ?? ""
+                summary: root.notificationGroup?.notifications[root.notificationCount - 1]?.summary ?? ""
+                urgency: root.notifications.some(n => n.urgency === NotificationUrgency.Critical.toString()) ?
                     NotificationUrgency.Critical : NotificationUrgency.Normal
             }
 

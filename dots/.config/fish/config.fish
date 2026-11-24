@@ -38,15 +38,5 @@ end
 # Added by Antigravity CLI installer
 set -gx PATH "/home/leon/.local/bin" $PATH
 
-# >>> magpie agy >>>
-function agy
-    if test -x '/usr/bin/magpie'
-        '/usr/bin/magpie' agy run $argv
-    else
-        command agy $argv
-    end
-end
-# <<< magpie agy <<<
-
 # TypeSafe (fast-jev-compaction) key — sourced from a 600 file, not stored here
 test -r ~/.config/typesafe.env; and source ~/.config/typesafe.env

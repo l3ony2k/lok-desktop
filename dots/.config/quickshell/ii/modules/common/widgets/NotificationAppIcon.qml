@@ -9,10 +9,16 @@ import Quickshell.Services.Notifications
 MaterialShape { // App icon
     id: root
     property var appIcon: ""
+    property string appName: ""
     property var summary: ""
     property var urgency: NotificationUrgency.Normal
     property bool isUrgent: urgency === NotificationUrgency.Critical
     property var image: ""
+    readonly property string safeAppIcon: root.appIcon ?? ""
+    readonly property string safeImage: root.image ?? ""
+    readonly property bool isVinputGenericIcon: root.appName === "fcitx5-vinput" &&
+        (safeAppIcon === "" || safeAppIcon === "dialog-information" || safeAppIcon === "dialog-error")
+    readonly property bool useMaterialSymbol: safeImage === "" && (safeAppIcon === "" || root.isVinputGenericIcon)
     property real materialIconScale: 0.57
     property real appIconScale: 0.8
     property real smallAppIconScale: 0.49
@@ -31,10 +37,13 @@ MaterialShape { // App icon
     color: isUrgent ? Appearance.colors.colPrimaryContainer : Appearance.lok ? "transparent" : Appearance.colors.colSecondaryContainer
     Loader {
         id: materialSymbolLoader
-        active: root.appIcon == "" && root.image == ""
+        active: root.useMaterialSymbol
         anchors.fill: parent
         sourceComponent: MaterialSymbol {
             text: {
+                if (root.isVinputGenericIcon) {
+                    return root.appIcon === "dialog-error" ? "mic_off" : "mic"
+                }
                 const defaultIcon = NotificationUtils.findSuitableMaterialSymbol("")
                 const guessedIcon = NotificationUtils.findSuitableMaterialSymbol(root.summary)
                 return (root.urgency == NotificationUrgency.Critical && guessedIcon === defaultIcon) ?
@@ -49,18 +58,18 @@ MaterialShape { // App icon
     }
     Loader {
         id: appIconLoader
-        active: root.image == "" && root.appIcon != ""
+        active: root.safeImage === "" && root.safeAppIcon !== "" && !root.isVinputGenericIcon
         anchors.centerIn: parent
         sourceComponent: IconImage {
             id: appIconImage
             implicitSize: root.appIconSize
             asynchronous: true
-            source: Quickshell.iconPath(root.appIcon, "image-missing")
+            source: Quickshell.iconPath(root.safeAppIcon, "image-missing")
         }
     }
     Loader {
         id: notifImageLoader
-        active: root.image != ""
+        active: root.safeImage !== ""
         anchors.fill: parent
         sourceComponent: Item {
             anchors.fill: parent
@@ -87,13 +96,13 @@ MaterialShape { // App icon
             }
             Loader {
                 id: notifImageAppIconLoader
-                active: root.appIcon != ""
+                active: root.safeAppIcon !== ""
                 anchors.bottom: parent.bottom
                 anchors.right: parent.right
                 sourceComponent: IconImage {
                     implicitSize: root.smallAppIconSize
                     asynchronous: true
-                    source: Quickshell.iconPath(root.appIcon, "image-missing")
+                    source: Quickshell.iconPath(root.safeAppIcon, "image-missing")
                 }
             }
         }
