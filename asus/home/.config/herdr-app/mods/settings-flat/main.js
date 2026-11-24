@@ -1,11 +1,11 @@
-// Personal copy of Herdr's frame/settings: square corners, own panel.
+// Personal copy of Herdr's frame/settings: square lok style, own panel.
 // Opened with `mod.open:settings-flat`. Writes changes immediately; no Save step.
 
 import { View, div, svg, image } from "gpui-kit";
-import { v_flex, h_flex, Scrollbar, InputState, Input } from "gpui-base";
-import { hc, run, theme, themes, fonts, updates, telemetry, settings, layouts, shared, appHome, readTextFile, writeTextFile, playSound, props, closeOverlay, openOverlay, window } from "herdr";
+import { v_flex, h_flex, Scrollbar, InputState, Input, Popup } from "gpui-base";
+import { hc, run, theme, themes, fonts, updates, telemetry, settings, layouts, shared, appHome, readTextFile, writeTextFile, playSound, props, closeOverlay, openOverlay, notify, window } from "herdr";
 
-const I = (name) => `mods/settings-flat/${name}.svg`;
+const I = (name) => `frame/settings/${name}.svg`;
 
 const SECTIONS = [
   { id: "look", title: "Look", icon: "palette" },
@@ -16,22 +16,21 @@ const SECTIONS = [
   { id: "privacy", title: "Privacy", icon: "shield" },
 ];
 
-const LOOKS = { main: "Herdr", terminals: "Terminals", win98: "Herdr 98" };
+const LOOKS = { main: "Herdr", flat: "Flat (lok)", terminals: "Terminals", win98: "Herdr 98" };
 const APPEARANCES = [
   [null, "System"],
   ["light", "Light"],
   ["dark", "Dark"],
 ];
 
-// What the app uses when settings.json names no font (settings.rs).
 const DEFAULT_FONT = "JetBrains Mono";
 const DEFAULT_UI_FONT = "Geist";
 
-export default class Settings extends View {
+export default class SettingsFlat extends View {
   init(_props, cx) {
     const asked = props()?.section;
     this.section = SECTIONS.some((s) => s.id === asked) ? asked : "look";
-    this.picking = null; // "font" | "ui_font" while its list is open
+    this.picking = null;
     this.filter = "";
     this.fontInput = InputState.new({ placeholder: "Type to search fonts" });
     this.fontInput.on("change", (_e, cx) => { this.filter = this.fontInput.value(); cx.notify(); });
@@ -45,7 +44,7 @@ export default class Settings extends View {
     });
     this.person = {};
     this.raw = null;
-    this.previews = {}; // layout name -> its "preview" picture
+    this.previews = {};
     this.previewsOf = "";
     this.showData = false;
     this.machineList = null;
@@ -62,8 +61,6 @@ export default class Settings extends View {
       if (this.section === "machines") await this.loadMachines();
       cx.notify();
     });
-    // After "Check now": follow the look (the answer comes from the app), then
-    // "Up to date" for a moment.
     cx.timer.every(300, (cx) => {
       if (!this.asked) return;
       if (updates().checking) this.asked = Date.now();
@@ -83,7 +80,6 @@ export default class Settings extends View {
     return `${appHome()}/settings.json`;
   }
 
-  // Each layout file may name a picture of itself (`"preview"` on its root).
   loadPreviews(names, cx) {
     this.previewsOf = names.join("\n");
     cx.spawn(async (cx) => {
@@ -102,41 +98,54 @@ export default class Settings extends View {
   async load() {
     this.raw = await readTextFile(this.file());
     try {
-      this.person = this.raw ? JSON.parse(this.raw) : {};
+      const person = this.raw ? JSON.parse(this.raw) : {};
+      this.broken = !person || typeof person !== "object" || Array.isArray(person);
+      this.person = this.broken ? {} : person;
     } catch {
       this.person = {};
+      this.broken = true;
     }
   }
 
-  // Changes settings.json the way an agent would: read, change, write back
-  // only if nobody changed it meanwhile (else read again and redo).
   change(edit, cx) {
     cx.spawn(async (cx) => {
-      for (let attempt = 0; attempt < 3; attempt++) {
-        await this.load();
-        const next = JSON.parse(JSON.stringify(this.person));
-        edit(next);
-        try {
-          await writeTextFile(this.file(), JSON.stringify(next, null, 2) + "\n", this.raw);
-          this.person = next;
-          break;
-        } catch {}
-      }
+      const failed = await this.save(edit);
+      if (failed) notify({ ...failed, level: "error" });
       cx.notify();
     });
+  }
+
+  async save(edit) {
+    let error;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      let next;
+      try {
+        await this.load();
+        if (this.broken) return { title: "settings.json has errors: fix it first" };
+        next = JSON.parse(JSON.stringify(this.person));
+        edit(next);
+      } catch (e) {
+        return { title: "Cannot read settings.json", body: String(e?.message ?? e) };
+      }
+      try {
+        await writeTextFile(this.file(), JSON.stringify(next, null, 2) + "\n", this.raw);
+        this.person = next;
+        return null;
+      } catch (e) {
+        error = e;
+      }
+    }
+    return { title: "Not saved to settings.json", body: String(error?.message ?? error) };
   }
 
   close() {
     closeOverlay(props().overlay);
   }
 
-  // Pieces ---------------------------------------------------------------
-
   heading(t, text) {
-    return div().pt(6).pb(8).text_size(12).font_semibold().text_color(t.dim).child(text.toUpperCase());
+    return div().pt(6).pb(8).text_size(11).font_semibold().text_color(t.dim).child(text.toUpperCase());
   }
 
-  // One setting: what it is on the left, the control on the right.
   row(t, title, about, control) {
     return h_flex()
       .w_full()
@@ -150,8 +159,8 @@ export default class Settings extends View {
           .flex_1()
           .min_w(0)
           .gap(3)
-          .child(div().text_size(14).text_color(t.foreground).child(title))
-          .when(Boolean(about), (el) => el.child(div().text_size(12.5).line_height("18px").text_color(t.dim).child(about))),
+          .child(div().text_size(13).text_color(t.foreground).child(title))
+          .when(Boolean(about), (el) => el.child(div().text_size(12).line_height("18px").text_color(t.dim).child(about))),
       )
       .child(div().flex_none().child(control));
   }
@@ -166,14 +175,13 @@ export default class Settings extends View {
       .border_color(t.border)
       .bg(t.raised)
       .cursor_pointer()
-      .text_size(13)
+      .text_size(12)
       .text_color(t.foreground)
       .hover((s) => s.bg(t.hover))
       .on_click(onClick)
       .child(label);
   }
 
-  // − value +
   stepper(t, id, value, onMinus, onPlus) {
     const b = (k, label, f) =>
       div()
@@ -184,7 +192,7 @@ export default class Settings extends View {
         .items_center()
         .justify_center()
         .cursor_pointer()
-        .text_size(15)
+        .text_size(14)
         .text_color(t.muted)
         .hover((s) => s.bg(t.hover).text_color(t.foreground))
         .on_click(f)
@@ -196,8 +204,8 @@ export default class Settings extends View {
       .border_color(t.border)
       .bg(t.raised)
       .overflow_hidden()
-      .child(b("minus", "\u2212", onMinus))
-      .child(div().w(54).text_size(13).text_color(t.foreground).flex().justify_center().child(value))
+      .child(b("minus", "−", onMinus))
+      .child(div().w(54).text_size(12).text_color(t.foreground).flex().justify_center().child(value))
       .child(b("plus", "+", onPlus));
   }
 
@@ -209,48 +217,46 @@ export default class Settings extends View {
       .rounded(0)
       .p(2)
       .cursor_pointer()
-      .bg(on ? t.accent : t.hover)
+      .border_1()
+      .border_color(on ? t.accent : t.input)
+      .bg(on ? t.accent : t.background)
       .flex()
+      .items_center()
       .when(on, (el) => el.justify_end())
       .on_click(onClick)
-      .child(div().w(16).h(16).rounded(0).bg(on ? t.accent_foreground : t.muted));
+      .child(div().w(14).h(14).rounded(0).bg(on ? t.accent_foreground : t.muted));
   }
 
-  // Look -----------------------------------------------------------------
-
-  // A small drawing of each layout, in the theme's colors (as the welcome draws them).
   preview(t, name) {
     const row = () => div().flex().flex_row();
     const col = () => div().flex().flex_col();
-    const term = (bg = t.background, edge = t.border) => div().flex_1().rounded(2).bg(bg).border_1().border_color(edge);
-    const line = (w, c = t.dim) => div().h(3).w(w).flex_none().rounded(2).bg(c);
+    const term = (bg = t.background, edge = t.border) => div().flex_1().rounded(0).bg(bg).border_1().border_color(edge);
+    const line = (w, c = t.dim) => div().h(3).w(w).flex_none().rounded(0).bg(c);
     const lines = (n, c) => col().gap(4).p(5).children([...Array(n)].map((_, i) => line(i % 2 ? 22 : 32, c)));
-    const frame = (el) => el.size_full().rounded(6).overflow_hidden().border_1().border_color(t.border).bg(t.surface);
-    if (name === "main")
+    const frame = (el) => el.size_full().rounded(0).overflow_hidden().border_1().border_color(t.border).bg(t.surface);
+    if (name === "main" || name === "flat")
       return frame(row())
         .child(col().w(42).border_r(1).border_color(t.border).child(lines(4)))
         .child(
           col()
             .flex_1()
-            .child(row().h(11).gap(2).p(2).border_b(1).border_color(t.border).child(div().w(20).rounded(2).bg(t.accent)).child(div().w(16).rounded(2).bg(t.raised)).child(div().w(16).rounded(2).bg(t.raised)))
-            .child(row().flex_1().p(4).gap(3).child(term()).child(term())),
+            .child(row().h(11).gap(2).p(2).border_b(1).border_color(t.border).child(div().w(20).rounded(0).bg(t.accent)).child(div().w(16).rounded(0).bg(t.raised)).child(div().w(16).rounded(0).bg(t.raised)))
+            .child(row().flex_1().p(4).gap(3).child(term(t.background, t.accent)).child(term())),
         );
     if (name === "terminals") {
-      const card = () => col().flex_1().rounded(4).border_1().border_color("#2c2f34").bg("#17191c").child(row().h(7).px(3).items_center().border_b(1).border_color("#25282c").child(line(14, "#5d6168")));
+      const card = () => col().flex_1().rounded(0).border_1().border_color("#2c2f34").bg("#17191c").child(row().h(7).px(3).items_center().border_b(1).border_color("#25282c").child(line(14, "#5d6168")));
       return frame(col())
         .bg("#131619")
         .p(4)
         .gap(4)
-        .child(row().h(10).gap(3).p(1).rounded(4).bg("#1d1f22").child(div().w(30).rounded(3).bg("#34373c").border_1().border_color("#4a4d53")).child(div().w(30)))
+        .child(row().h(10).gap(3).p(1).rounded(0).bg("#1d1f22").child(div().w(30).rounded(0).bg("#34373c").border_1().border_color("#4a4d53")).child(div().w(30)))
         .child(row().flex_1().gap(4).child(card()).child(card()));
     }
-    // A layout of the person's own: a plain frame.
     return frame(col()).child(row().h(11).border_b(1).border_color(t.border)).child(row().flex_1().p(4).child(term()));
   }
 
   layoutPicker(t, cx) {
     const current = shared("layout") ?? "main";
-    // Shipped looks in the welcome's order, then the person's own; new files show up by themselves.
     const shipped = Object.keys(LOOKS);
     const rank = (n) => (shipped.includes(n) ? shipped.indexOf(n) : shipped.length);
     const names = [...layouts()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
@@ -268,11 +274,11 @@ export default class Settings extends View {
             .gap(6)
             .p(6)
             .rounded(0)
-            .border_2()
-            .border_color(on ? t.accent : "#00000000")
-            .bg(on ? t.raised : "#00000000")
+            .border_1()
+            .border_color(on ? t.accent : t.border)
+            .bg(on ? t.selected : "#00000000")
             .cursor_pointer()
-            .hover((s) => s.bg(t.raised))
+            .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
             .on_click((_e, cx) => {
               run("layout.switch", { name });
               cx.notify();
@@ -281,9 +287,10 @@ export default class Settings extends View {
               div()
                 .h(62)
                 .w_full()
+                .overflow_hidden()
                 .child(
                   this.previews[name]
-                    ? image(this.previews[name]).size_full().rounded(0).border_1().border_color(t.border)
+                    ? image(this.previews[name]).w_full().h(62).rounded(0).border_1().border_color(t.border)
                     : this.preview(t, name),
                 ),
             )
@@ -291,7 +298,7 @@ export default class Settings extends View {
               h_flex()
                 .gap(5)
                 .items_center()
-                .child(div().text_size(12.5).text_color(on ? t.foreground : t.muted).child(LOOKS[name] ?? name))
+                .child(div().text_size(12).text_color(on ? t.foreground : t.muted).child(LOOKS[name] ?? name))
                 .when(on, (el) => el.child(svg(I("check")).size(12).text_color(t.accent))),
             );
         }),
@@ -314,10 +321,10 @@ export default class Settings extends View {
             .px(12)
             .py(4)
             .rounded(0)
-            .text_size(13)
+            .text_size(12)
             .cursor_pointer()
-            .when(now === value, (el) => el.bg(t.raised).text_color(t.foreground).border_1().border_color(t.border))
-            .when(now !== value, (el) => el.text_color(t.muted).hover((s) => s.text_color(t.foreground)))
+            .when(now === value, (el) => el.bg(t.selected).text_color(t.foreground).border_1().border_color(t.input))
+            .when(now !== value, (el) => el.text_color(t.muted).hover((s) => s.bg(t.hover).text_color(t.foreground)))
             .on_click((_e, cx) =>
               this.change((p) => {
                 if (value === null) delete p.appearance;
@@ -337,11 +344,11 @@ export default class Settings extends View {
       .flex_wrap()
       .gap(8)
       .children(
-        // A theme named like a layout (themes/win98.json) is that layout's own.
         themes()
           .filter((x) => Boolean(x.light) === light && (x.name === shared("layout") || !layouts().includes(x.name)))
           .map(({ name, colors: c }) => {
           const on = name === current;
+          const label = name.replace(/-/g, " ");
           const dot = (color) => div().w(8).h(8).rounded(0).bg(color);
           return v_flex()
             .id(`st-t-${name}`)
@@ -349,10 +356,11 @@ export default class Settings extends View {
             .gap(6)
             .p(6)
             .rounded(0)
-            .border_2()
-            .border_color(on ? t.accent : "#00000000")
+            .border_1()
+            .border_color(on ? t.accent : t.border)
+            .bg(on ? t.selected : "#00000000")
             .cursor_pointer()
-            .hover((s) => s.bg(t.raised))
+            .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
             .on_click((_e, cx) => {
               run("app.theme", { name });
               cx.notify();
@@ -367,24 +375,25 @@ export default class Settings extends View {
                 .border_1()
                 .border_color(t.border)
                 .bg(c.background)
-                .child(div().h(4).w(44).rounded(2).bg(c.terminal_foreground))
+                .child(div().h(4).w(44).rounded(0).bg(c.terminal_foreground))
                 .child(h_flex().gap(4).child(dot(c.accent)).child(dot(c.ansi1)).child(dot(c.ansi2)).child(dot(c.ansi3)).child(dot(c.ansi5))),
             )
             .child(
               h_flex()
+                .w_full()
+                .min_w(0)
                 .gap(5)
                 .items_center()
-                .child(div().text_size(12.5).text_color(on ? t.foreground : t.muted).child(name.replace(/-/g, " ")))
-                .when(on, (el) => el.child(svg(I("check")).size(12).text_color(t.accent))),
+                .child(div().min_w(0).truncate().tooltip(label).text_size(12).text_color(on ? t.foreground : t.muted).child(label))
+                .when(on, (el) => el.child(svg(I("check")).size(12).flex_none().text_color(t.accent))),
             );
         }),
       );
   }
 
-  // The font in use, written in itself; a click opens the list.
-  fontButton(t, which, family) {
+  fontButton(t, which, family, def) {
     const open = this.picking === which;
-    return div()
+    const trigger = div()
       .id(`st-f-${which}`)
       .w(220)
       .px(12)
@@ -403,7 +412,9 @@ export default class Settings extends View {
         else this.handle.focus();
         cx.notify();
       })
-      .child(div().font_family(family).text_size(13.5).text_color(t.foreground).child(family));
+      .child(div().font_family(family).text_size(13).text_color(t.foreground).child(family));
+    return Popup.new(`st-fp-${which}`, trigger)
+      .when(open, (el) => el.content(this.fontList(t, which, def)));
   }
 
   fontList(t, which, def) {
@@ -427,15 +438,19 @@ export default class Settings extends View {
         .cursor_pointer()
         .hover((s) => s.bg(t.hover))
         .on_click(onClick)
-        .child(div().font_family(family).text_size(13.5).text_color(t.foreground).child(label));
+        .child(div().font_family(family).text_size(13).text_color(t.foreground).child(label));
     return v_flex()
-      .w_full()
-      .mb(8)
+      .id(`st-font-list-${which}`)
+      .w(360)
+      .on_mouse_down_out((_e, cx) => {
+        this.picking = null;
+        this.handle.focus();
+        cx.notify();
+      })
       .rounded(0)
       .border_1()
-      .border_color(t.border)
-      .bg(t.background)
-      // Let the child's native scroll run before stopping the page's wheel event.
+      .border_color(t.frame ?? t.input)
+      .bg(t.popover)
       .on_scroll_wheel((_e, cx) => cx.stop_propagation())
       .child(
         div()
@@ -460,8 +475,10 @@ export default class Settings extends View {
   look(t, cx) {
     const s = settings();
     const p = this.person;
-    const own = (key, composed, def) => (p[key] ?? def) !== composed;
+    const same = (a, b) => (typeof a === "number" && typeof b === "number" ? Math.abs(a - b) < 1e-4 : a === b);
+    const own = (key, composed, def) => !same(p[key] ?? def, composed);
     const size = (key, value, d, cx) => this.change((q) => (q[key] = Math.max(8, Math.min(32, (q[key] ?? value) + d))), cx);
+    const step = (key, value, d, lo, hi, cx) => this.change((q) => (q[key] = Math.round(Math.max(lo, Math.min(hi, (q[key] ?? value) + d)) * 100) / 100), cx);
     const fontRow = (which, sizeKey, title, family, def, sizeNow) =>
       v_flex()
         .w_full()
@@ -473,12 +490,10 @@ export default class Settings extends View {
             h_flex()
               .gap(8)
               .items_center()
-              .child(this.fontButton(t, which, family))
-              // The panels' text follows zoom: they size their rows to it.
+              .child(this.fontButton(t, which, family, def))
               .when(Boolean(sizeKey), (el) => el.child(this.stepper(t, `st-${sizeKey}`, `${Math.round(sizeNow)}`, (_e, cx) => size(sizeKey, sizeNow, -1, cx), (_e, cx) => size(sizeKey, sizeNow, 1, cx)))),
           ),
-        )
-        .when(this.picking === which, (el) => el.child(this.fontList(t, which, def)));
+        );
     return v_flex()
       .w_full()
       .child(this.heading(t, "Layout"))
@@ -486,10 +501,10 @@ export default class Settings extends View {
       .child(div().h(18))
       .child(this.heading(t, "Theme"))
       .child(this.row(t, "Appearance", "Light or dark, or as your system is now.", this.appearancePicker(t, cx)))
-      .child(div().pt(12).pb(8).text_size(12.5).text_color(t.dim).child("For the layout you're in: each layout keeps its own light and dark theme."))
-      .child(div().pb(6).text_size(12.5).font_medium().text_color(t.muted).child("Dark"))
+      .child(div().pt(12).pb(8).text_size(12).text_color(t.dim).child("For the layout you're in: each layout keeps its own light and dark theme."))
+      .child(div().pb(6).text_size(12).font_medium().text_color(t.muted).child("Dark"))
       .child(this.themePicker(t, false))
-      .child(div().pt(10).pb(6).text_size(12.5).font_medium().text_color(t.muted).child("Light"))
+      .child(div().pt(10).pb(6).text_size(12).font_medium().text_color(t.muted).child("Light"))
       .child(this.themePicker(t, true))
       .child(div().h(18))
       .child(this.heading(t, "Size and fonts"))
@@ -506,6 +521,26 @@ export default class Settings extends View {
         ),
       )
       .child(fontRow("font", "font_size", "Terminal font", s.font_family, DEFAULT_FONT, s.font_size))
+      .child(
+        this.row(
+          t,
+          "Terminal font weight",
+          own("font_weight", s.font_weight, 500) ? "This layout sets its own; yours shows in the others." : "Bold text stays at 700.",
+          this.stepper(t, "st-font_weight", `${s.font_weight}`, (_e, cx) => step("font_weight", s.font_weight, -100, 100, 900, cx), (_e, cx) => step("font_weight", s.font_weight, 100, 100, 900, cx)),
+        ),
+      )
+      .children([
+        ["terminal_line_height", "Terminal line height", 0.8, 2, 0.1],
+        ["terminal_cell_width", "Terminal cell width", 0.8, 2, 0.05],
+        ["terminal_scroll_speed", "Terminal scroll speed", 0.1, 5, 0.1],
+      ].map(([key, title, min, max, step]) => {
+        const by = (d) => (_e, cx) => this.change((q) => (q[key] = Math.max(min, Math.min(max, Math.round(Math.round(((q[key] ?? s[key]) + d) / step) * step * 100) / 100))), cx);
+        return this.row(
+          t, title,
+          own(key, s[key], 1) ? "This layout sets its own; yours shows in the others." : null,
+          this.stepper(t, `st-${key}`, `${Math.round(s[key] * 100)}%`, by(-step), by(step)),
+        );
+      }))
       .child(fontRow("ui_font", null, "Interface font", s.ui_font_family, DEFAULT_UI_FONT));
   }
 
@@ -520,7 +555,7 @@ export default class Settings extends View {
     return v_flex()
       .w_full()
       .child(this.heading(t, "Option key"))
-      .child(div().pb(12).text_size(13).text_color(t.dim).child("Use Option for terminal shortcuts or to type accents and special characters."))
+      .child(div().pb(12).text_size(12).text_color(t.dim).child("Use Option for terminal shortcuts or to type accents and special characters."))
       .children(choices.map(([value, label]) => {
         const on = (this.person.option_as_alt ?? "auto") === value;
         return h_flex()
@@ -531,14 +566,15 @@ export default class Settings extends View {
           .rounded(0)
           .items_center()
           .cursor_pointer()
-          .hover((s) => s.bg(t.hover))
+          .when(on, (el) => el.bg(t.selected))
+          .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
           .on_click((_e, cx) => this.change((p) => { p.option_as_alt = value; }, cx))
-          .child(div().text_color(on ? t.accent : t.muted).child(on ? "◉" : "○"))
-          .child(div().text_size(14).text_color(t.foreground).child(label));
+          .child(on
+            ? div().size(8).rounded(0).bg(t.accent)
+            : div().size(8).rounded(0).border_1().border_color(t.muted))
+          .child(div().text_size(13).text_color(t.foreground).child(label));
       }));
   }
-
-  // Machines -------------------------------------------------------------
 
   async loadMachines() {
     if (this.machineLoading) return;
@@ -610,7 +646,7 @@ export default class Settings extends View {
     const busy = this.machineBusy[m.name];
     const edit = this.machineEdit?.machine === m.name ? this.machineEdit : null;
     const state = String(m.state ?? "unknown").replace(/[_-]/g, " ");
-    const color = ["connected", "online"].includes(m.state) ? t.ansi2 : ["connecting", "reconnecting"].includes(m.state) ? t.working : t.blocked;
+    const color = ["connected", "online"].includes(m.state) ? (t.done ?? t.ansi2) : ["connecting", "reconnecting"].includes(m.state) ? t.working : t.blocked;
     const result = this.machineResults[m.name];
     const controls = h_flex().gap(6).items_center();
     if (busy) controls.child(svg("mods/workspace-chrome/spinner.svg").size(12).text_color(t.working).spin(900)).child(div().text_size(12).text_color(t.muted).child(busy === "update" ? "Updating…" : busy === "rename" ? "Renaming…" : "Removing…"));
@@ -633,22 +669,37 @@ export default class Settings extends View {
       .child(h_flex().gap(10).items_center()
         .child(div().w(7).h(7).flex_none().rounded(0).bg(color))
         .child(v_flex().flex_1().min_w(0).gap(3)
-          .child(div().text_size(14).text_color(t.foreground).child(m.name))
-          .child(div().text_size(12.5).text_color(t.dim).child(`${m.target ?? ""} · ${state} · ${m.version ? `hc ${m.version}` : "hc version unknown"}`)))
+          .child(div().text_size(13).text_color(t.foreground).child(m.name))
+          .child(div().text_size(12).text_color(t.dim).child(`${m.target ?? ""} · ${state} · ${m.version ? `hc ${m.version}` : "hc version unknown"}`)))
+        .when(m.keeps_running_after_logout === false, el => el.child(div().id(`st-m-logout-${m.name}`)
+          .text_color(t.blocked).cursor_pointer().tooltip("Agents stop when you disconnect. Click for the fix.")
+          .on_click(() => openOverlay({ mod: "machine-add-flat", kind: "dialog", width: 560, frame: "none" })).child("⚠")))
         .child(controls.flex_none()));
-    if (busy === "update") row.child(div().text_size(12.5).text_color(t.dim).child("Copying this computer's herdr-core. Its terminals keep running."));
+    if (m.state === "needs_login") {
+      const command = `hc machine login ${m.name}`;
+      row.child(v_flex().gap(5)
+        .child(div().text_size(12).text_color(t.blocked).child("needs a login: run"))
+        .child(h_flex().gap(8).items_center()
+          .child(div().flex_1().min_w(0).text_size(12).text_color(t.foreground).child(command))
+          .child(this.button(t, `st-m-login-copy-${m.name}`, this.copiedLogin === command ? "Copied" : "Copy", (_e, cx) => {
+            cx.write_to_clipboard(command);
+            this.copiedLogin = command;
+            cx.notify();
+          }))));
+    }
+    if (busy === "update") row.child(div().text_size(12).text_color(t.dim).child("Copying this computer's herdr-core. Its terminals keep running."));
     if (edit && !busy) {
       const cancel = this.button(t, `st-m-cancel-${m.name}`, "Cancel", (_e, cx) => { this.machineEdit = null; this.handle.focus(); cx.notify(); });
       if (edit.action === "rm") row.child(v_flex().gap(8)
-        .child(div().text_size(12.5).text_color(t.muted).child(`Remove ${m.name}? Its terminals keep running there.`))
+        .child(div().text_size(12).text_color(t.muted).child(`Remove ${m.name}? Its terminals keep running there.`))
         .child(h_flex().gap(6).child(cancel).child(this.button(t, `st-m-confirm-${m.name}`, "Remove machine", (_e, cx) => this.machineAction(m.name, "rm", cx)))));
       else row.child(v_flex().gap(6)
-        .child(div().text_size(12).text_color(t.dim).child("New name (addresses using the old name stop working)"))
+        .child(div().text_size(11).text_color(t.dim).child("New name (addresses using the old name stop working)"))
         .child(h_flex().gap(6).items_center()
           .child(Input.new(this.renameInput).flex_1().min_w(0).h(32).px(10).rounded(0).border_1().border_color(this.renameFocused ? t.accent : t.input).bg(t.background).text_size(13).text_color(t.foreground))
           .child(cancel).child(this.button(t, `st-m-save-${m.name}`, "Save", (_e, cx) => this.machineAction(m.name, "rename", cx, edit.name)))));
     }
-    if (result) row.child(div().text_size(12.5).text_color(result.ok ? t.ansi2 : t.blocked).child(result.message));
+    if (result) row.child(div().text_size(12).text_color(result.ok ? (t.done ?? t.ansi2) : t.blocked).child(result.message));
     return row;
   }
 
@@ -656,17 +707,15 @@ export default class Settings extends View {
     const version = updates().core.version;
     return v_flex().w_full()
       .child(this.heading(t, "Machines"))
-      .child(div().pb(8).text_size(12.5).line_height("18px").text_color(t.dim).child("Your computers, reached over ssh. Their terminals keep running when you disconnect."))
-      .child(this.row(t, "This computer", `Connected · ${version ? `hc ${version}` : "hc version unknown"}`, div().w(7).h(7).rounded(0).bg(t.ansi2)))
+      .child(div().pb(8).text_size(12).line_height("18px").text_color(t.dim).child("Your computers, reached over ssh. Their terminals keep running when you disconnect."))
+      .child(this.row(t, "This computer", `Connected · ${version ? `hc ${version}` : "hc version unknown"}`, div().w(7).h(7).rounded(0).bg(t.done ?? t.ansi2)))
       .children((this.machineList ?? []).map((m) => this.machineRow(t, m, version)))
-      .when(this.machineList === null && !this.machineError, (el) => el.child(h_flex().py(14).gap(8).items_center().child(svg("mods/workspace-chrome/spinner.svg").size(12).text_color(t.working).spin(900)).child(div().text_size(12.5).text_color(t.dim).child("Reading machines…"))))
-      .when(this.machineList?.length === 0, (el) => el.child(div().py(14).text_size(12.5).text_color(t.dim).child("No other machines yet.")))
-      .when(Boolean(this.machineError), (el) => el.child(div().py(10).text_size(12.5).text_color(t.blocked).child(this.machineError)))
-      .when(Boolean(this.machineNotice), (el) => el.child(div().py(10).text_size(12.5).text_color(t.ansi2).child(this.machineNotice)))
+      .when(this.machineList === null && !this.machineError, (el) => el.child(h_flex().py(14).gap(8).items_center().child(svg("mods/workspace-chrome/spinner.svg").size(12).text_color(t.working).spin(900)).child(div().text_size(12).text_color(t.dim).child("Reading machines…"))))
+      .when(this.machineList?.length === 0, (el) => el.child(div().py(14).text_size(12).text_color(t.dim).child("No other machines yet.")))
+      .when(Boolean(this.machineError), (el) => el.child(div().py(10).text_size(12).text_color(t.blocked).child(this.machineError)))
+      .when(Boolean(this.machineNotice), (el) => el.child(div().py(10).text_size(12).text_color(t.done ?? t.ansi2).child(this.machineNotice)))
       .child(h_flex().pt(16).child(this.button(t, "st-m-add", "Add a machine", () => openOverlay({ mod: "machine-add-flat", kind: "dialog", width: 560, frame: "none" }))));
   }
-
-  // Alerts ---------------------------------------------------------------
 
   alerts(t) {
     const sounds = this.person.sounds ?? {};
@@ -685,10 +734,8 @@ export default class Settings extends View {
       )
       .child(this.row(t, "An agent needs you", file(sounds.blocked), this.button(t, "st-play-blocked", "Play", () => playSound("blocked"))))
       .child(this.row(t, "An agent finished", file(sounds.done), this.button(t, "st-play-done", "Play", () => playSound("done"))))
-      .child(div().pt(12).text_size(12.5).line_height("18px").text_color(t.dim).child("Want your own sounds? Ask your agent to set sounds.done and sounds.blocked in settings.json to an MP3."));
+      .child(div().pt(12).text_size(12).line_height("18px").text_color(t.dim).child("Want your own sounds? Ask your agent to set sounds.done and sounds.blocked in settings.json to an MP3."));
   }
-
-  // Updates --------------------------------------------------------------
 
   updates(t) {
     const u = updates();
@@ -697,26 +744,24 @@ export default class Settings extends View {
       return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     };
     const checked = u.checked ? ` Checked at ${at(u.checked)}.` : "";
-    const result = u.checking ? "Checking\u2026" : u.checked
+    const result = u.checking ? "Checking…" : u.checked
       ? `Up to date.${checked}`
       : "No successful check. Check your connection and try again.";
-    // Pressed: "Checking\u2026" while it looks, then "Up to date" for a moment
-    // (a find changes the row instead). One per row: an element shows once.
     const asked = this.asked && Date.now() - this.asked < 3000;
     const check = (id) =>
       !u.checks
         ? null
         : u.checking && this.asked
-          ? div().px(12).py(5).text_size(13).text_color(t.dim).child("Checking\u2026")
+          ? div().px(12).py(5).text_size(12).text_color(t.dim).child("Checking…")
           : asked && u.checked && !u.checking
-            ? div().px(12).py(5).text_size(13).text_color(t.ansi2).child("\u2713 Up to date")
+            ? div().px(12).py(5).text_size(12).text_color(t.done ?? t.ansi2).child("✓ Up to date")
             : this.button(t, id, "Check now", (_e, cx) => {
                 this.asked = Date.now();
                 run("app.check_updates");
                 cx.notify();
               });
     const primary = (id, label, f) =>
-      div().id(id).px(12).py(5).rounded(0).cursor_pointer().bg(t.accent).text_color(t.accent_foreground).text_size(13).font_semibold().hover((s) => s.opacity(0.9)).on_click(f).child(label);
+      div().id(id).px(12).py(5).rounded(0).cursor_pointer().bg(t.accent).text_color(t.accent_foreground).text_size(12).font_semibold().hover((s) => s.opacity(0.9)).on_click(f).child(label);
     const app = !u.app.updates
       ? ["A build from source: it updates with git, not here.", null]
       : u.app.ready
@@ -724,9 +769,9 @@ export default class Settings extends View {
         : [result, check("st-check-app")];
     const c = u.core;
     const core = c.managed
-      ? [`Managed by ${c.managed}: update it there.`, null]
+      ? [`Managed by ${c.managed}: update it there.${c.ready ? ` ${c.ready} is available.` : ""}`, u.checks ? check("st-check-core") : null]
       : c.updating
-        ? ["Updating\u2026 your terminals keep running.", null]
+        ? ["Updating… your terminals keep running.", null]
         : c.error
           ? [`The update failed: ${c.error}`, primary("st-core-retry", "Try again", () => run("app.update_core"))]
           : c.ready
@@ -743,21 +788,17 @@ export default class Settings extends View {
       .child(div().h(18))
       .child(this.heading(t, "herdr-core"))
       .child(this.row(t, `herdr-core ${c.version ?? ""}`, core[0], core[1] ?? div()))
-      .child(div().pt(12).text_size(12.5).line_height("18px").text_color(t.dim).child("Herdr looks for both every hour and tells you in the corner. herdr-core runs your terminals, so they keep running through its updates."));
+      .child(div().pt(12).text_size(12).line_height("18px").text_color(t.dim).child("Herdr looks for both every hour and tells you in the corner. herdr-core runs your terminals, so they keep running through its updates."));
   }
 
-
-  // Privacy --------------------------------------------------------------
-
-  // A report as it goes out, one line per line of JSON.
   report(t, id, title, about, report) {
     const lines = JSON.stringify(report, null, 2).split("\n");
     return v_flex()
       .w_full()
       .pt(14)
       .gap(4)
-      .child(div().text_size(13.5).text_color(t.foreground).child(title))
-      .when(Boolean(about), (el) => el.child(div().text_size(12.5).text_color(t.dim).child(about)))
+      .child(div().text_size(13).text_color(t.foreground).child(title))
+      .when(Boolean(about), (el) => el.child(div().text_size(12).text_color(t.dim).child(about)))
       .child(
         v_flex()
           .id(id)
@@ -805,14 +846,12 @@ export default class Settings extends View {
         ),
       );
     if (!this.showData) return body;
-    if (!s?.enabled) return body.child(div().pt(14).text_size(13).text_color(t.dim).child("Nothing is collected or sent while it's off."));
+    if (!s?.enabled) return body.child(div().pt(14).text_size(12).text_color(t.dim).child("Nothing is collected or sent while it's off."));
     return body
       .children(s.queued.map((r, i) => this.report(t, `st-tq-${i}`, `Waiting to send: ${r.day}`, "Sent as is, soon.", r)))
       .when(Boolean(s.draft), (el) => el.child(this.report(t, "st-td", "Today so far", "A draft: it changes until the day ends (UTC), then goes out once.", s.draft)))
       .when(Boolean(s.last_sent), (el) => el.child(this.report(t, "st-tl", `Last sent: ${s.last_sent.report.day}`, `Sent ${at(s.last_sent.at)}.`, s.last_sent.report)));
   }
-
-  // ----------------------------------------------------------------------
 
   render(cx) {
     const t = theme();
@@ -825,7 +864,7 @@ export default class Settings extends View {
       .gap(2)
       .border_r(1)
       .border_color(t.border)
-      .child(div().px(10).pt(6).pb(12).text_size(16).font_semibold().text_color(t.foreground).child("Settings"))
+      .child(div().px(10).pt(6).pb(12).text_size(14).font_semibold().text_color(t.foreground).child("Settings"))
       .children(
         SECTIONS.map((s) => {
           const on = s.id === this.section;
@@ -837,8 +876,8 @@ export default class Settings extends View {
             .items_center()
             .rounded(0)
             .cursor_pointer()
-            .bg(on ? t.raised : "#00000000")
-            .hover((st) => st.bg(t.raised))
+            .bg(on ? t.selected : "#00000000")
+            .when(!on, (el) => el.hover((st) => st.bg(t.hover)))
             .on_click((_e, cx) => {
               this.section = s.id;
               this.picking = null;
@@ -848,20 +887,26 @@ export default class Settings extends View {
               cx.notify();
             })
             .child(svg(I(s.icon)).size(15).text_color(on ? t.accent : t.dim))
-            .child(div().flex_1().text_size(13.5).text_color(on ? t.foreground : t.muted).child(s.title))
+            .child(div().flex_1().text_size(13).text_color(on ? t.foreground : t.muted).child(s.title))
             .when(s.id === "updates" && waiting, (el) => el.child(div().w(7).h(7).rounded(0).bg(t.accent)));
         }),
       );
     return h_flex()
-      .id("settings")
+      .id("settings-flat")
       .track_focus(this.handle)
+      .when(Boolean(this.picking), (el) => el.on_action("overlay.close", (_e, cx) => {
+        this.picking = null;
+        this.handle.focus();
+        cx.stop_propagation();
+        cx.notify();
+      }))
       .w_full()
       .h(620)
       .min_h(0)
-      .items_start()
       .bg(t.popover)
       .border_1()
-      .border_color(t.border)
+      .border_color(t.frame ?? t.input)
+      .items_start()
       .on_key_down((e, cx) => {
         const k = e.key;
         if (this.machineEdit) {
@@ -882,8 +927,6 @@ export default class Settings extends View {
       })
       .child(nav.h_full().child(div().flex_1()).child(this.button(t, "st-feedback", "Send feedback", () => { closeOverlay(props()?.overlay); run("app.feedback"); })))
       .child(
-        // A bar that always shows: the pages are taller than the dialog and
-        // people should see that they scroll.
         div()
           .relative()
           .flex_1()
@@ -894,8 +937,6 @@ export default class Settings extends View {
               .id("st-body")
               .size_full()
               .overflow_y_scroll()
-              // Padding inside, not on the scroll area: there it counts as
-              // content and a page that fits still shows a bar.
               .child(
                 div()
                   .px(28)

@@ -5,6 +5,11 @@
     "version": "0.1.13"
   },
   "type": "row",
+  "theme": {
+    "light": "lok-light",
+    "dark": "lok-dark"
+  },
+  "toast": "toast-flat",
   "children": [
     {
       "id": "sidebar",
@@ -59,7 +64,7 @@
             }
           },
           "size": {
-            "px": 44
+            "px": 64
           }
         }
       ],

@@ -9,15 +9,6 @@
 # Rust (fish gets this via conf.d/rustup.fish)
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
-# magpie agy wrapper (same as bash/fish)
-function agy {
-  if [ -x /usr/bin/magpie ]; then
-    /usr/bin/magpie agy run "$@"
-  else
-    command agy "$@"
-  fi
-}
-
 # ---- Ported from ~/.config/fish/config.fish ----------------------------------
 # quickshell/end-4 terminal colours live in ~/.zshenv, so they run before the
 # p10k instant prompt preamble instead of being reported as console output.

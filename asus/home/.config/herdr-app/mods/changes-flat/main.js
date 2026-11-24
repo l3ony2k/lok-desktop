@@ -13,6 +13,7 @@ const key = () => JSON.stringify(location());
 // the folder watch would see it, and every refresh would start the next one.
 const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
 const countLines = (text) => text ? text.split("\n").length - Number(text.endsWith("\n")) : 0;
+const untab = (text) => text.replace(/[^\t]*\t/g, (s) => s.slice(0, -1).padEnd((s.length - 1) - (s.length - 1) % 4 + 4));
 
 // Numbers each diff line once, so a frame only draws the rows on screen.
 function diffRows(lines) {
@@ -21,9 +22,9 @@ function diffRows(lines) {
     const match = /^@@ -(\d+)(?:,\d+)? \+(\d+)/.exec(line);
     if (match) { old = +match[1]; next = +match[2]; return { kind: "@", text: line }; }
     const kind = line[0];
-    if (kind === "-") return { kind, number: old++, text: line.slice(1) || " " };
-    if (kind === "+") return { kind, number: next++, text: line.slice(1) || " " };
-    if (kind === " ") { old++; return { kind, number: next++, text: line.slice(1) || " " }; }
+    if (kind === "-") return { kind, number: old++, text: untab(line.slice(1)) || " " };
+    if (kind === "+") return { kind, number: next++, text: untab(line.slice(1)) || " " };
+    if (kind === " ") { old++; return { kind, number: next++, text: untab(line.slice(1)) || " " }; }
     return { kind: "", text: line };
   });
 }
@@ -187,7 +188,10 @@ export default class Changes extends View {
       .child(v_flex().id("changes-list").flex_none().h(Math.min(200, Math.max(44, this.files.length * 28 + 12))).overflow_y_scrollbar().p(6).border_b(1).border_color(t.border).children(this.files.map((f) => {
         const parts = f.path.split("/"), name = parts.pop();
         const meta = this.open === f.path ? t.muted : t.dim;
-        return h_flex().id(`change-${f.path}`).h(28).flex_none().px(8).gap(8).items_center().rounded(0).cursor_pointer().when(this.open === f.path, (e) => e.bg(t.selected)).hover((s) => s.bg(t.hover)).on_click((_e, cx) => this.pick(f.path, cx))
+        return h_flex().id(`change-${f.path}`).h(28).flex_none().px(8).gap(8).items_center().rounded(0).cursor_pointer()
+          .when(this.open === f.path, (e) => e.bg(t.selected))
+          .when(this.open !== f.path, (e) => e.hover((s) => s.bg(t.hover)))
+          .on_click((_e, cx) => this.pick(f.path, cx))
           .child(div().w(14).text_size(11).text_color(f.status === "A" ? (t.add ?? t.ansi2) : f.status === "D" ? (t.del ?? t.ansi1) : f.status === "U" ? t.blocked : t.muted).child(f.status))
           .child(h_flex().flex_1().min_w(0).child(div().text_color(meta).truncate().child(parts.length ? parts.join("/") + "/" : "")).child(div().max_w(260).min_w(0).truncate().child(name)))
           .when(f.add > 0, (e) => e.child(div().text_size(11).text_color(t.add ?? t.ansi2).child(`+${f.add}`))).when(f.del > 0, (e) => e.child(div().text_size(11).text_color(t.del ?? t.ansi1).child(`−${f.del}`)));

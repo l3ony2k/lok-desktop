@@ -1,11 +1,15 @@
 {
-  "theme": "end-4",
+  "theme": {
+    "light": "lok-light",
+    "dark": "lok-dark"
+  },
   "zoom": 1,
   "sounds": {
     "enabled": true
   },
   "font_ligatures": false,
   "minimum_contrast": 1,
-  "font": "PaperMono Nerd Font Mono",
-  "ui_font": "PaperMono Nerd Font Mono"
+  "font": "IoskeleyMonoTerm Nerd Font",
+  "ui_font": "IoskeleyMonoTerm Nerd Font",
+  "telemetry": false
 }

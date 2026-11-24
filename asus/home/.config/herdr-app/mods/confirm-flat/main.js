@@ -34,7 +34,7 @@ export default class ConfirmFlat extends View {
         else return;
         cx.stop_propagation();
       })
-      .w_full().min_h(0).p(16).gap(12).bg(t.popover).border_1().border_color(t.border).text_color(t.foreground)
+      .w_full().min_h(0).p(16).gap(12).bg(t.popover).border_1().border_color(t.frame ?? t.input).text_color(t.foreground)
       .child(h_flex().items_center()
         .child(div().flex_1().text_size(13).font_semibold().child(p.title ?? "Are you sure?"))
         .child(div().text_size(11).text_color(t.dim).child("Esc")))

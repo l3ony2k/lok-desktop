@@ -21,11 +21,5 @@ export NVM_DIR="$HOME/.nvm"
 # Added by Antigravity CLI installer
 export PATH="/home/leon/.local/bin:$PATH"
 
-# >>> magpie agy >>>
-function agy {
-  if [ -x '/usr/bin/magpie' ]; then '/usr/bin/magpie' agy run "$@"; else command agy "$@"; fi
-}
-# <<< magpie agy <<<
-
 # TypeSafe (fast-jev-compaction) key — sourced from a 600 file, not stored here
 [ -r "$HOME/.config/typesafe.env" ] && . "$HOME/.config/typesafe.env"

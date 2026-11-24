@@ -67,7 +67,7 @@ case "${1:-}" in
     for p in "${MANIFEST[@]}"; do
       [ -e "$p" ] || { echo "missing: ~/$p"; continue; }
       mkdir -p "$STORE/$(dirname "$p")"
-      rsync -a --delete --exclude '*.bak*' --exclude '__pycache__' --exclude '*.d.ts' --exclude node_modules --exclude cached_layouts "$p" "$STORE/$(dirname "$p")/"
+      rsync -a --delete --exclude '*.bak*' --exclude '__pycache__' --exclude '*.d.ts' --exclude node_modules --exclude cached_layouts --exclude .state "$p" "$STORE/$(dirname "$p")/"
       [ -f "$STORE/$p" ] && redact "$STORE/$p"
     done
     echo "pulled into $STORE -- review with git diff, then commit" ;;
@@ -75,7 +75,7 @@ case "${1:-}" in
     for p in "${MANIFEST[@]}"; do
       [ -e "$p" ] || { echo "missing on machine: ~/$p"; continue; }
       [ -e "$STORE/$p" ] || { echo "not in repo: ~/$p"; continue; }
-      if [ -d "$p" ]; then diff -rq -x '*.bak*' -x __pycache__ -x '*.d.ts' -x node_modules -x cached_layouts "$p" "$STORE/$p" >/dev/null || echo "differs: ~/$p/"
+      if [ -d "$p" ]; then diff -rq -x '*.bak*' -x __pycache__ -x '*.d.ts' -x node_modules -x cached_layouts -x .state "$p" "$STORE/$p" >/dev/null || echo "differs: ~/$p/"
       else
         case "$p" in */mihomo-update-sub) continue ;; esac   # stored copy is redacted
         cmp -s "$p" "$STORE/$p" || echo "differs: ~/$p"

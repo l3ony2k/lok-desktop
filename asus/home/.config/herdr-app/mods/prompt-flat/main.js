@@ -44,7 +44,7 @@ export default class PromptFlat extends View {
       .when(primary, el => el.font_semibold()).cursor_pointer()
       .hover(s => s.opacity(0.88)).on_click(action).child(text);
     return v_flex().id("prompt-flat").track_focus(this.handle).on_key_down((e, cx) => this.key(e, cx))
-      .w_full().min_h(0).p(16).bg(t.popover).border_1().border_color(t.border).text_color(t.foreground)
+      .w_full().min_h(0).p(16).bg(t.popover).border_1().border_color(t.frame ?? t.input).text_color(t.foreground)
       .child(h_flex().items_center()
         .child(div().flex_1().text_size(13).font_semibold().child(p.title ?? ""))
         .child(div().text_size(11).text_color(t.dim).child("Esc")))

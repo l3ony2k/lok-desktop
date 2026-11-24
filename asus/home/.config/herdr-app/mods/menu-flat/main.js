@@ -32,10 +32,15 @@ function items(p, git) {
       const parent = term?.parent && all.find((t) => t.address === term.parent);
       // Once they go to the program, Shift+right-click still opens this menu.
       const toProgram = term?.labels?.["herdr.right-click"] === "program";
+      const inTab = panes().some((pane) => pane.pane === tg.pane);
       return [
-        ["Split right", "pane.split", { direction: "right", pane: tg.pane }],
-        ["Split down", "pane.split", { direction: "down", pane: tg.pane }],
-        ["Zoom", "pane.zoom", { pane: tg.pane }],
+        ...(inTab
+          ? [
+              ["Split right", "pane.split", { direction: "right", pane: tg.pane }],
+              ["Split down", "pane.split", { direction: "down", pane: tg.pane }],
+              ["Zoom", "pane.zoom", { pane: tg.pane }],
+            ]
+          : []),
         ...(term
           ? [
               toProgram
@@ -44,7 +49,7 @@ function items(p, git) {
             ]
           : []),
         ...(parent ? [[`Send back to ${parent.name || parent.address}`, "terminal.park", { terminal: term.address }]] : []),
-        ["Close pane", "pane.close", { pane: tg.pane }],
+        ...(inTab ? [["Close pane", "pane.close", { pane: tg.pane }]] : []),
       ];
     }
     case "tab":
@@ -92,7 +97,7 @@ function pretty(keys) {
 function shortcut(name, args) {
   // `pane.split:right` binds pane.split with { direction: "right" }. Our own
   // key commands open the square dialogs; the hint still names the command.
-  const alias = { "tab.rename": "tabs-flat.rename", "space.rename": "spaces-flat.rename", "tab.close": "tabs-flat.close" }[name];
+  const alias = { "tab.rename": "tabs-flat.rename", "space.rename": "spaces-flat.rename", "tab.close": "tabs-flat.close", "app.help": "mod.open:help-flat" }[name];
   const value = args && Object.values(args)[0];
   const k = keys().find((b) => b.section === "global" && (b.action === name || b.action === alias || b.action === `${name}:${value}`));
   return k ? pretty(k.keys) : "";
@@ -168,6 +173,7 @@ export default class Menu extends View {
     closeOverlay(props()?.overlay);
     const [, cmd, args] = it;
     if (cmd === "worktree") return openOverlay({ mod: "worktree-flat", kind: "dialog", frame: "none", ...(args.action === "open" ? { width: 560, height: 480 } : { width: 440, height: 260 }), props: args });
+    if (cmd === "app.help") return openOverlay({ mod: "help-flat", kind: "dialog", width: 580, height: 0.75, frame: "none" });
     if (cmd === "tab.rename") return renameTab(args);
     if (cmd === "space.rename") return renameSpace(args);
     if (cmd === "tab.close") return closeTab(args);
@@ -187,7 +193,7 @@ export default class Menu extends View {
       .min_h(0)
       .p(5)
       .bg(t.popover)
-      .when(bare, (el) => el.size_full().border_1().border_color(t.border))
+      .when(bare, (el) => el.size_full().border_1().border_color(t.frame ?? t.input))
       .text_size(13)
       .on_key_down((e, cx) => {
         if (e.key === "down") this.at = (this.at + 1) % list.length;
@@ -198,8 +204,9 @@ export default class Menu extends View {
         cx.notify();
       })
       .children(
-        list.map((it, i) =>
-          v_flex()
+        list.map((it, i) => {
+          const on = i === this.at;
+          return v_flex()
             .when(i > 0 && (it[1].endsWith(".close") || it[1] === "app.help" || (it[1] === "app.theme" && list[i - 1][1] !== "app.theme")), el => el.child(div().mx(7).my(4).h(1).bg(t.border)))
             .child(h_flex()
             .id(`mi-${i}`)
@@ -210,13 +217,13 @@ export default class Menu extends View {
             .items_center()
             .justify_between()
             .text_color(t.foreground)
-            .when(i === this.at, (el) => el.bg(t.selected))
-            .hover((s) => s.bg(t.hover))
+            .when(on, (el) => el.bg(t.selected))
+            .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
             .on_click((_e, cx) => this.choose(i, cx))
             .child(svg(menuIcon(it[1], it[2])).size(14).flex_none().text_color(t.muted))
             .child(div().flex_1().min_w(0).truncate().child(it[0]))
-            .child(div().flex_none().text_size(11).text_color(t.dim).child(shortcut(it[1], it[2])))),
-        ),
+            .child(div().flex_none().text_size(11).text_color(t.dim).child(shortcut(it[1], it[2]))));
+        }),
       );
   }
 }

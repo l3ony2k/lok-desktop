@@ -23,7 +23,7 @@ const GROUPS = ["Recent", "Tab", "Pane", "Space", "Layout", "Terminal", "Agent",
 // The palette's names for commands: [command, args, group, title, keywords].
 const NAMED = [
   ["tab.new", {}, "Tab", "New tab", "tab agent new task"],
-  ["mod.open", { name: "picker" }, "Tab", "Go to space or tab…", "switch jump find"],
+  ["mod.open", { name: "picker-flat" }, "Tab", "Go to space or tab…", "switch jump find"],
   ["tab.rename", {}, "Tab", "Rename tab", "tab"],
   ["tab.close", {}, "Tab", "Close tab", "tab kill"],
   ["tab.next", {}, "Tab", "Next tab", "tab"],
@@ -52,7 +52,7 @@ const NAMED = [
   ["window.maximize", {}, "Window", "Maximize window", "restore"],
   ["window.close", {}, "Window", "Close window", "quit"],
   ["mod.open", { name: "settings-flat" }, "App", "Settings", "preferences options config look font theme sound"],
-  ["app.help", {}, "App", "Keys", "keybindings shortcuts help"],
+  ["mod.open", { name: "help-flat" }, "App", "Keys", "keybindings shortcuts help"],
   ["app.welcome", {}, "App", "Welcome", "intro start onboarding"],
   ["app.whats_new", {}, "App", "What's new", "release changes news update"],
   ["app.reset", {}, "App", "Reset to the default screen", "escape hatch broken restore"],
@@ -60,7 +60,7 @@ const NAMED = [
   ["app.zoom_out", {}, "App", "Zoom out", "smaller font size"],
   ["app.zoom_reset", {}, "App", "Reset zoom", "font size"],
   ["app.quit", {}, "App", "Quit Herdr", "exit"],
-  ...["graphite", "ink", "moss", "atom-one-dark"].map((n) => ["app.theme", { name: n }, "App", `Theme: ${n.replace(/-/g, " ")}`, "colors look"]),
+  ...["lok-dark", "lok-light", "graphite", "ink", "moss", "atom-one-dark"].map((n) => ["app.theme", { name: n }, "App", `Theme: ${n.replace(/-/g, " ")}`, "colors look"]),
 ];
 
 // Commands that act on something you point at (ids, terminals): not for a list.
@@ -322,7 +322,7 @@ export default class Palette extends View {
           .cursor_pointer()
           .text_size(13)
           .when(on, (el) => el.bg(t.selected))
-          .hover((s) => s.bg(t.hover))
+          .when(!on, (el) => el.hover((s) => s.bg(t.hover)))
           .on_click(() => this.go(r.e))
           .child(div().flex_1().min_w(0).child(this.title(t, r.e.title, r.hits, on)))
           .when(Boolean(this.query), (el) => el.child(div().text_size(11).text_color(t.dim).child(r.e.group)))
@@ -338,7 +338,7 @@ export default class Palette extends View {
       .gap(10)
       .bg(t.popover)
       .border_1()
-      .border_color(t.border)
+      .border_color(t.frame ?? t.input)
       .on_key_down((e, cx) => {
         const k = e.key;
         if (k === "escape") return this.close();

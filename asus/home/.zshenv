@@ -10,3 +10,5 @@ if [[ -o interactive && -t 1 && -f ~/.local/state/quickshell/user/generated/term
   # the fastfetch banner vanished. Close it here instead of touching the ii generator.
   printf '\e\\'
 fi
+
+export GOPATH="$HOME/.local/share/go"
