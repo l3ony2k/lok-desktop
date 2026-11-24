@@ -249,5 +249,5 @@ Notes
     It reports build-only dependencies as orphans; that is what broke
     quickshell's build chain. Use 'pacman -Qtdq' output only after
     confirming each entry is not a makedepends in
-    ~/dots-hyprland/sdata/dist-arch/*/PKGBUILD.
+    ~/.dotfiles/sdata/dist-arch/*/PKGBUILD.
 EOF

@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-exec '/home/leon/.cache/orca/appimage/launcher/orca-ide' "$@"

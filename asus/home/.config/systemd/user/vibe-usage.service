@@ -1,0 +1,15 @@
+[Unit]
+Description=VibeCafe Usage Tracker
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/leon/.nvm/versions/node/v26.13.0/bin/npx --yes @vibe-cafe/vibe-usage@latest daemon
+Restart=on-failure
+RestartSec=60
+Environment=NODE_ENV=production
+Environment="PATH=/home/leon/.nvm/versions/node/v26.13.0/bin:/usr/local/bin:/usr/bin:/bin"
+WorkingDirectory=/home/leon
+
+[Install]
+WantedBy=default.target

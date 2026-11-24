@@ -51,55 +51,63 @@ can touch and how to check it afterwards.
 - sudo broken: log in as root over SSH from the Mac (`ssh asus-root`) and restore
   /root/hibfix-backup-20261108/pam.d-sudo.before-fingerprint.
 
-## B. dots-hyprland update (private fork, set up 2026-11-08)
+## B. dots-hyprland: merging upstream end-4 (rewritten 2026-11-24)
 
-~/dots-hyprland: `origin` = github.com/l3ony2k/dots-hyprland-asus (PRIVATE),
-`upstream` = end-4/dots-hyprland. `main` = upstream + this machine's commits
-("asus: this machine's dotfile customisations", "asus: system config snapshot…").
-`./setup exp-update` pulls `origin`, so the customisations install with it.
+`~/.dotfiles` is the fork: `origin` = github.com/l3ony2k/dots-hyprland-asus (PRIVATE),
+`upstream` = end-4/dots-hyprland. The configs we edit are **symlinked** into it
+(`asus/links.sh`), so the repo *is* the live config: merging upstream updates the running
+desktop directly, and there is never anything to copy back.
 
-### Sync with upstream and update
-    cd ~/dots-hyprland
+**Never run** `./setup exp-update`, `exp-merge`, `install-files` or a plain `./setup install`:
+they copy end-4's files over the symlinks (exp-update `rm -rf`s `~/.config/hypr` first). A guard
+in `setup` refuses them while the links exist. Dependencies only: `./setup install --skip-allfiles`.
+
+### 1. See what upstream changed (an agent can do this and summarise)
+    cd ~/.dotfiles && git status            # must be clean: commit or stash first
     git fetch upstream
-    git rebase upstream/main          # conflicts = upstream touched a file we customised
-    git push --force-with-lease origin main
-    ./setup exp-update -s --non-interactive keep
-Remaining "conflicts" after that are only generated/unused files kept local on
-purpose: matugen colours (hypr/hyprland/colors.lua, hyprlock/colors.conf,
-fuzzel_theme.ini, kdeglobals) and fish files.
+    git log --oneline HEAD..upstream/main          # new upstream commits
+    git diff --stat HEAD...upstream/main           # files they touch
+    git diff HEAD...upstream/main -- sdata/        # dependency / PKGBUILD changes
+Summarise: fixes, features, which touched files we also changed
+(`git diff --name-only $(git merge-base HEAD upstream/main) HEAD -- dots/` = our edited files).
 
-### When you change a dots-owned file on the machine
-Copy it into dots/ and commit, otherwise the next exp-update reports a conflict:
-    cp ~/.config/<path> ~/dots-hyprland/dots/.config/<path>
-    cd ~/dots-hyprland && git commit -am "asus: <what>" && git push
+### 2. Merge everything (not cherry-picks)
+    git tag pre-merge-$(date +%Y%m%d)
+    git merge upstream/main
+Default is to take the whole upstream; don't hand-pick parts. Skipped upstream commits pile up
+and every later merge gets harder. If an upstream change is unwanted, merge anyway and undo or
+gate it (`Appearance.lok`) in a follow-up commit, so git records the decision. Exceptions: hold
+the merge while upstream is mid-refactor; `git cherry-pick` a single urgent fix (the later full
+merge recognises it). Conflicts: keep upstream's new logic, re-apply the lok styling on top.
 
-### Upstream changes that touch our custom behaviour (watch on rebase)
-- Overview.qml: Super-tap = search box only; F4 (XF86LaunchA) = full overview.
-  Since upstream 457ef250 Super-tap calls `qs ipc call search toggle` (release
-  bind), so our IpcHandler `search.toggle()` sets showOverviewWidget = false.
+### 3. Check (the shell reloads by itself; Hyprland: `hyprctl reload`)
+- `~/.local/bin/ii-restart --check` prints nothing, then Ctrl+Super+R.
+- `hyprctl configerrors` empty; `asus/links.sh status` all ok.
+- lok rules for new upstream code: `grep -rn "border.width" ~/.config/quickshell/ii --include=*.qml | grep -v "lok\|LokFrame\|: 0"`
+  (in lok they must be `LokFrame`; Qt's border drops sides at the 1.333 scale); new `layer.enabled`
+  gated with `!Appearance.lok`; new long-running `Process` commands wrapped in
+  `setpriv --pdeathsig TERM` (check `ps -eo ppid,cmd | awk '$1==1' | grep -E "nmcli|gdbus|inhibit|cava"` after two restarts).
+- Keybinds: `custom/keybinds.lua` unbinds the dots' `SUPER + SUPER_L/R` (search is Super+Space)
+  and `CTRL + SUPER + R` (→ `ii-restart`) by name; if upstream renamed those binds, both fire.
+- If `sdata/` changed: `./setup install --skip-allfiles` (deps + services only).
+- Screenshot the bar, sidebars, a popup in dark and light.
+- Broken and no quick fix: `git reset --hard pre-merge-<date>` (Quickshell reloads the old tree).
+
+### 4. Publish
+    git push origin main
+(Rebase + force-push is no longer used: merge commits keep the history of what we decided.)
+
+### When you change a config
+- Symlinked file (anything `asus/links.sh status` lists): just edit it, then `git commit` in ~/.dotfiles.
+- Program-written file (`asus/home-sync.sh` MANIFEST): `asus/home-sync.sh pull`, review, commit.
+- System file: copy into `asus/system/` (`asus/system-diff.sh pull` refreshes tracked ones), commit.
+- Always also write an ops-log entry (`~/.local/share/claude/asus-arch-ops/`).
+
+### Upstream changes that touch our custom behaviour (watch when merging)
+- Overview.qml: F4 (XF86LaunchA) = full overview; search = Super+Space (2026-11-20).
 - hyprland/general.lua: local `scale = 1.25` (custom/general.lua overrides the monitor anyway).
 - lock/pam/fprintd.conf: rust-fp PAM line (see fingerprint entry).
-
-### After an update
-1. `qs -c ii kill` and check `pgrep -a -x qs` shows one instance (kill the old PID).
-2. Scripted customisations if needed: `python3 ~/.local/share/ii-customizations/fonts-and-icons/apply.py`,
-   `ii-rounding-customize`, `system-font --apply` (close Brave first).
-3. `~/.local/share/claude/asus-arch-ops/audit.sh`.
-4. Test Super-tap, Super+key (no search), F4, power button, Ctrl+RightAlt VT switch, lock-screen fingerprint.
-
-### lok / ii checks after merging upstream (added 2026-11-15)
-- `~/.local/bin/ii-restart --check` — qmllints every ii file for what stops the config loading
-  (`[syntax]`, properties shadowing a FINAL base member). Must print nothing. Then restart with
-  Ctrl+Super+R (it refuses and keeps the running shell if anything changed would not load).
-- `grep -rn "border.width" ~/.config/quickshell/ii --include=*.qml | grep -v "lok\|LokFrame\|: 0"` —
-  new upstream borders: in lok they must be a `LokFrame` (Qt's border drops the right/bottom side
-  at the 1.333 scale). Same for new `layer.enabled` (gate with `!Appearance.lok`).
-- Super-tap: `custom/keybinds.lua` unbinds the dots' `SUPER + SUPER_L` / `SUPER_R` by name. If
-  upstream renames or moves that bind, both fire (search opens and closes) — re-check the unbind.
-- Ctrl+Super+R: same, `custom/keybinds.lua` unbinds `CTRL + SUPER + R` and binds `ii-restart`.
-- Long-running `Process` commands added upstream (monitors, `sleep infinity`, `gdbus monitor`):
-  wrap them in `setpriv --pdeathsig TERM` or they orphan on every restart. Check with
-  `ps -eo ppid,cmd | awk '$1==1' | grep -E "nmcli|gdbus|inhibit|cava"` after two restarts.
+- regionSelector: the lok colour loupe is a separate `LokColorLoupe.qml`; `CursorGuide.qml` is upstream.
 
 ## C. Login screen sessions (greetd / tuigreet, set up 2026-11-16)
 

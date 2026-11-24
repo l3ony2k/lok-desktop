@@ -7,7 +7,7 @@ import pathlib
 home = pathlib.Path.home()
 targets = [
     home / ".config/quickshell/ii/services/PolkitService.qml",
-    home / "dots-hyprland/dots/.config/quickshell/ii/services/PolkitService.qml",
+    home / ".dotfiles/dots/.config/quickshell/ii/services/PolkitService.qml",
 ]
 
 REPL = [

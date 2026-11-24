@@ -5,7 +5,7 @@ PipeWire id inside onVolumeChanged. Idempotent; works on v1-patched files."""
 import pathlib
 home = pathlib.Path.home()
 for p in [home/".config/quickshell/ii/services/Audio.qml",
-          home/"dots-hyprland/dots/.config/quickshell/ii/services/Audio.qml"]:
+          home/".dotfiles/dots/.config/quickshell/ii/services/Audio.qml"]:
     s = p.read_text()
     if "lastSinkId" in s:
         print("already v2", p); continue

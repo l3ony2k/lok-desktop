@@ -12,7 +12,7 @@ import pathlib
 home = pathlib.Path.home()
 MARK = "sink-change grace"
 for p in [home/".config/quickshell/ii/services/Audio.qml",
-          home/"dots-hyprland/dots/.config/quickshell/ii/services/Audio.qml"]:
+          home/".dotfiles/dots/.config/quickshell/ii/services/Audio.qml"]:
     if not p.exists():
         print("missing", p); continue
     s = p.read_text()

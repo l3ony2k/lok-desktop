@@ -8,7 +8,7 @@
 import pathlib
 home = pathlib.Path.home()
 for p in [home/".config/quickshell/ii/modules/ii/lock/LockSurface.qml",
-          home/"dots-hyprland/dots/.config/quickshell/ii/modules/ii/lock/LockSurface.qml"]:
+          home/".dotfiles/dots/.config/quickshell/ii/modules/ii/lock/LockSurface.qml"]:
     s = p.read_text()
     if "ASUS smooth confirm" in s:
         print("already", p); continue

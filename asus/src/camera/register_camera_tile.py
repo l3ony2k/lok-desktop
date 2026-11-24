@@ -15,7 +15,7 @@ import sys
 
 src = pathlib.Path(sys.argv[1])  # folder with the three QML files
 home = pathlib.Path.home()
-roots = [home / ".config/quickshell/ii", home / "dots-hyprland/dots/.config/quickshell/ii"]
+roots = [home / ".config/quickshell/ii", home / ".dotfiles/dots/.config/quickshell/ii"]
 
 for r in roots:
     if not r.exists():

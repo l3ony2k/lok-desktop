@@ -15,3 +15,10 @@ __pycache__/
 
 # Emacs auto backup file
 *~
+
+# asus: generated at runtime inside symlinked ~/.config/hypr (matugen / apply-lok.sh)
+/dots/.config/hypr/custom/colors.lua
+/dots/.config/hypr/custom/lok.lua
+/dots/.config/hypr/custom/hyprlock-colors.conf
+*.bak-*
+/asus/home/.config/herdr-app/mods/*/gpui-kit.d.ts

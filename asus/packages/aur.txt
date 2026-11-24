@@ -1,0 +1,11 @@
+115-life-bin
+autojump
+brave-origin-bin
+clash-geoip
+fcitx5-vinput-bin
+fw-ectool-git
+magpie-bin
+mihomo
+slack-desktop
+upnote-appimage
+workflowy

@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# ssh-lan-toggle — allow/deny SSH (tcp/22) from a private network range via ufw.
+#
+# Installed as /usr/local/bin/ssh-lan-toggle, root-owned 0755. Invoked through
+# sudo -n from the quickshell quick toggle, so it must never require input.
+#
+#   status          print state=on|off, range=..., active=<from>, sshd=<state>
+#   on              enable sshd and allow tcp/22 from the configured range
+#   off             remove every rule this helper created
+#   set <cidr>      persist <cidr> and re-apply if currently on
+#   check <cidr>    validate <cidr> without changing anything
+#
+# Only private/loopback/link-local/CGNAT ranges are accepted, so a typo can
+# never expose SSH to the internet.
+
+set -euo pipefail
+
+readonly CONF=/etc/ssh-lan-toggle.conf
+readonly PORT=22
+readonly TAG=ssh-lan-toggle
+readonly UFW=/usr/bin/ufw
+readonly DEFAULT_RANGE=192.168.0.0/16
+# Root password login exists only while LAN access is on. `prohibit-password`
+# is OpenSSH's default, so without this drop-in `ssh root@…` is key-only.
+readonly ROOT_LOGIN_CONF=/etc/ssh/sshd_config.d/50-ssh-lan-root-login.conf
+readonly SHADOW=/etc/shadow
+
+die() { printf 'error: %s\n' "$*" >&2; exit 1; }
+
+read_range() {
+    local r=""
+    if [[ -r $CONF ]]; then
+        r=$(tr -d '[:space:]' < "$CONF" || true)
+    fi
+    printf '%s\n' "${r:-$DEFAULT_RANGE}"
+}
+
+validate_range() {
+    local r=${1:-}
+    [[ -n $r ]] || return 1
+    python3 -I - "$r" 2>/dev/null <<'PY'
+import ipaddress, sys
+try:
+    net = ipaddress.ip_network(sys.argv[1], strict=False)
+except ValueError:
+    sys.exit(1)
+allowed = [ipaddress.ip_network(x) for x in (
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16",
+    "127.0.0.0/8",
+    "169.254.0.0/16",
+    "100.64.0.0/10",   # CGNAT, includes Tailscale's 100.64.0.0/10
+)]
+if not any(net.subnet_of(a) for a in allowed):
+    sys.exit(1)
+PY
+}
+
+# Lines of `ufw status numbered` that belong to us, e.g.
+#   [ 3] 22/tcp    ALLOW IN    192.168.1.0/24    # ssh-lan-toggle
+our_rule_numbers() {
+    "$UFW" status numbered 2>/dev/null \
+        | awk -F'[][]' '/# *ssh-lan-toggle/ {gsub(/ /, "", $2); print $2}' \
+        | sort -rn
+}
+
+remove_rules() {
+    local n
+    # Descending order: ufw renumbers after each delete.
+    for n in $(our_rule_numbers); do
+        "$UFW" --force delete "$n" >/dev/null 2>&1 || true
+    done
+}
+
+active_from() {
+    "$UFW" status 2>/dev/null \
+        | awk '/# *ssh-lan-toggle/ {sub(/#.*/, ""); n = split($0, a, /[ \t]+/); if (n) print a[n]}' \
+        | paste -sd, -
+}
+
+root_login_enabled() {
+    [[ -f $ROOT_LOGIN_CONF ]]
+}
+
+# Is root's shadow password usable (not `!`, `*`, or empty)?
+root_password_state() {
+    local field
+    field=$(awk -F: '$1 == "root" {print $2}' "$SHADOW" 2>/dev/null || true)
+    if [[ -z $field || $field == '!'* || $field == '*'* ]]; then
+        echo "locked"
+    else
+        echo "set"
+    fi
+}
+
+reload_sshd() {
+    systemctl reload sshd.service >/dev/null 2>&1 \
+        || systemctl restart sshd.service >/dev/null 2>&1 \
+        || true
+}
+
+enable_root_login() {
+    mkdir -p /etc/ssh/sshd_config.d
+    cat > "$ROOT_LOGIN_CONF" <<'EOF'
+# Written by ssh-lan-toggle while LAN SSH access is enabled.
+# Removed again when the toggle is switched off.
+PermitRootLogin yes
+EOF
+    chmod 0644 "$ROOT_LOGIN_CONF"
+    if ! sshd -t 2>/dev/null; then
+        rm -f "$ROOT_LOGIN_CONF"
+        die "sshd rejected the root-login drop-in; rolled back"
+    fi
+    reload_sshd
+}
+
+disable_root_login() {
+    local removed=0
+    if [[ -f $ROOT_LOGIN_CONF ]]; then
+        rm -f "$ROOT_LOGIN_CONF"
+        removed=1
+    fi
+    if [[ $removed -eq 1 ]]; then
+        reload_sshd
+    fi
+}
+
+cmd_status() {
+    local range from
+    range=$(read_range)
+    if [[ -n $(our_rule_numbers) ]]; then
+        printf 'state=on\n'
+    else
+        printf 'state=off\n'
+    fi
+    printf 'range=%s\n' "$range"
+    from=$(active_from)
+    printf 'active=%s\n' "$from"
+    if systemctl is-active --quiet sshd.service; then
+        printf 'sshd=active\n'
+    else
+        printf 'sshd=inactive\n'
+    fi
+    if root_login_enabled; then
+        printf 'rootlogin=yes\n'
+    else
+        printf 'rootlogin=no\n'
+    fi
+    printf 'rootpw=%s\n' "$(root_password_state)"
+}
+
+cmd_on() {
+    local range
+    range=$(read_range)
+    validate_range "$range" || die "refusing range outside private networks: $range"
+
+    # Re-apply from a clean slate so a changed range never leaves a stale rule.
+    remove_rules
+    systemctl enable --now sshd.service >/dev/null 2>&1 || true
+    "$UFW" allow from "$range" to any port "$PORT" proto tcp comment "$TAG" >/dev/null \
+        || die "ufw could not add the rule (is ufw installed and enabled?)"
+    enable_root_login
+    cmd_status
+}
+
+cmd_off() {
+    remove_rules
+    disable_root_login
+    cmd_status
+}
+
+cmd_set() {
+    local range=${1:-}
+    validate_range "$range" || die "not a private-range IPv4 CIDR: ${range:-<empty>}"
+    printf '%s\n' "$range" > "$CONF"
+    chmod 0644 "$CONF"
+    # Only touch the firewall if access is currently on.
+    if [[ -n $(our_rule_numbers) ]]; then
+        cmd_on >/dev/null
+    fi
+    cmd_status
+}
+
+cmd_check() {
+    local range=${1:-}
+    validate_range "$range" || die "not a private-range IPv4 CIDR: ${range:-<empty>}"
+    printf '%s\n' "$range"
+}
+
+[[ -x $UFW ]] || die "$UFW not found"
+[[ $EUID -eq 0 ]] || die "must run as root (via sudo)"
+
+case "${1:-status}" in
+    status)  cmd_status ;;
+    on)      cmd_on ;;
+    off)     cmd_off ;;
+    set)     shift; cmd_set "${1:-}" ;;
+    check)   shift; cmd_check "${1:-}" ;;
+    *)       die "usage: $0 {status|on|off|set <cidr>|check <cidr>}" ;;
+esac

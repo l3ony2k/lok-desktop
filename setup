@@ -65,6 +65,21 @@ esac
 if [[ -f "${SUBCMD_DIR}/options.sh" ]];
   then source "${SUBCMD_DIR}/options.sh"
 fi
+#####################################################################################
+# asus guard: on this machine ~/.config/quickshell/ii, ~/.config/hypr and other configs are
+# symlinks into this repo (asus/links.sh). end-4's file-copy step would overwrite them with
+# copies (exp-update even rm -rf's ~/.config/hypr), so refuse it here. Update by merging
+# upstream into this repo instead (asus/RUNBOOK-updates.md, section B).
+if [[ -L "$HOME/.config/quickshell/ii" ]]; then
+  case ${SUBCMD_NAME} in
+    exp-update|exp-merge|install-files|uninstall)
+      printf "\033[31m[asus] '%s' would overwrite the symlinked configs. See asus/RUNBOOK-updates.md.\033[0m\n" "${SUBCMD_NAME}"; exit 1;;
+    install)
+      if [[ "${SKIP_ALLFILES}" != true ]]; then
+        printf "\033[31m[asus] use './setup install --skip-allfiles' (configs are symlinked, see asus/RUNBOOK-updates.md).\033[0m\n"; exit 1
+      fi;;
+  esac
+fi
 case ${SUBCMD_NAME} in
   install)
     for function in ${print_os_group_id_functions[@]}; do

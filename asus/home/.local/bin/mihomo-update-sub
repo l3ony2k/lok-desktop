@@ -6,7 +6,8 @@
 # below is local policy and must survive every refresh.
 set -euo pipefail
 
-SUB_URL="${MIHOMO_SUB_URL:?set MIHOMO_SUB_URL}"  # real URL kept off git
+SUB_URL="${MIHOMO_SUB_URL:-$(cat "$HOME/.config/mihomo/sub-url" 2>/dev/null)}"  # URL lives in ~/.config/mihomo/sub-url (600, not in git)
+[ -n "$SUB_URL" ] || { echo "no subscription URL: put it in ~/.config/mihomo/sub-url" >&2; exit 1; }
 TARGET=/etc/mihomo/config.yaml
 
 tmp=$(mktemp -d)

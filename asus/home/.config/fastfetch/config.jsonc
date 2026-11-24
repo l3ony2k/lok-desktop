@@ -1,0 +1,132 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "builtin",
+        "padding": {
+            "top": 0,
+            "left": 1,
+            "right": 3
+        }
+    },
+    "display": {
+        "bar": {
+            "width": 8
+        }
+    },
+    "modules": [
+        {
+            "type": "custom",
+            "format": "\u001b[90m┌─────────────────────────Hardware─────────────────────────┐"
+        },
+        {
+            "type": "host",
+            "format": "{name}",
+            "key": "{icon} Host",
+            "keyColor": "green"
+        },
+        {
+            "type": "command",
+            "key": "│ ├",
+            "keyColor": "green",
+            "text": "fastfetch --config none --format json -s cpu 2>/dev/null | tr -d '\\n' | sed -E 's/.*\"cpu\": *\"([^\"]*)\".*\"physical\": *([0-9]+).*\"max\": *([0-9.]+).*/\\1|\\2|\\3/' | awk -F'|' '{n=$1; gsub(/\\((R|TM|r|tm)\\)/,\"\",n); sub(/ CPU.*$/,\"\",n); sub(/ @.*$/,\"\",n); gsub(/  +/,\" \",n); sub(/^ +/,\"\",n); s=sprintf(\"%.1f\",$3/1000); sub(/\\.0$/,\"\",s); printf \"CPU:  %s (%sC)%s\\n\", n, $2, ($3>0 ? \" @ \" s \"GHz\" : \"\")}'"
+        },
+        {
+            "type": "memory",
+            "percent": {
+                "type": 3,
+                "green": 30,
+                "yellow": 80
+            },
+            "format": "RAM:  {percentage-bar} {used} / {total} ({percentage})",
+            "key": "│ ├󰍛",
+            "keyColor": "green"
+        },
+        {
+            "type": "disk",
+            "percent": {
+                "type": 3,
+                "green": 30,
+                "yellow": 80
+            },
+            "format": "SSD:  {size-percentage-bar} {size-used} / {size-total} ({size-percentage})",
+            "key": "│ ├󰍛",
+            "keyColor": "green",
+            "folders": "/"
+        },
+        {
+            "type": "swap",
+            "percent": {
+                "type": 3,
+                "green": 30,
+                "yellow": 80
+            },
+            "format": "Swap: {percentage-bar} {used} / {total} ({percentage})",
+            "key": "└ └󰍛",
+            "keyColor": "green"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[90m└──────────────────────────────────────────────────────────┘"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[90m┌─────────────────────────Software─────────────────────────┐"
+        },
+        {
+            "type": "os",
+            "key": "{icon} OS",
+            "keyColor": "yellow"
+        },
+        {
+            "type": "kernel",
+            "format": "Kernel:    {sysname} {release}",
+            "key": "│ ├",
+            "keyColor": "yellow"
+        },
+        {
+            "type": "localip",
+            "format": "Local IP:  {ipv4}",
+            "key": "│ ├",
+            "keyColor": "yellow"
+        },
+        {
+            "type": "packages",
+            "format": "Packages:  {all}",
+            "key": "│ ├󰏖",
+            "keyColor": "yellow"
+        },
+        {
+            "type": "shell",
+            "format": "Shell:     {exe-name} {version}",
+            "key": "└ └",
+            "keyColor": "yellow"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[90m└──────────────────────────────────────────────────────────┘"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[90m┌───────────────────────System Status──────────────────────┐"
+        },
+        {
+            "type": "uptime",
+            "key": "  Uptime",
+            "keyColor": "magenta"
+        },
+        {
+            "type": "loadavg",
+            "key": "  Load  ",
+            "keyColor": "magenta"
+        },
+        {
+            "type": "datetime",
+            "key": "  DateTime",
+            "keyColor": "magenta"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[90m└──────────────────────────────────────────────────────────┘"
+        }
+    ]
+}

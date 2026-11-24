@@ -36,7 +36,7 @@ def patch(paths, pairs, append=None):
 
 idle = [
     home / ".config/quickshell/ii/services/Idle.qml",
-    home / "dots-hyprland/dots/.config/quickshell/ii/services/Idle.qml",
+    home / ".dotfiles/dots/.config/quickshell/ii/services/Idle.qml",
 ]
 patch(idle, [
     ("import Quickshell.Wayland\n", "import Quickshell.Wayland\nimport Quickshell.Io\n"),
@@ -59,7 +59,7 @@ patch(idle, [
 
 keybinds = [
     home / ".config/hypr/custom/keybinds.lua",
-    home / "dots-hyprland/dots/.config/hypr/custom/keybinds.lua",
+    home / ".dotfiles/dots/.config/hypr/custom/keybinds.lua",
 ]
 patch(keybinds, [], append=(
     "-- Lid (2026-11-08, coffee-lid): with the Quickshell coffee toggle on, logind\n"
