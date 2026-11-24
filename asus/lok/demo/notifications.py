@@ -7,7 +7,7 @@ def n(i, app, icon, s, b, mins, actions=()):
 print(json.dumps([
     n(1, "Calendar", "x-office-calendar", "Design review in 10 min", "Room 3 · lok bar & sidebar polish", 3,
       [{"identifier": "open", "text": "Open"}, {"identifier": "snooze", "text": "Snooze"}]),
-    n(2, "Builds", "utilities-terminal", "Build passed", "dots-hyprland-asus · main · 2m 14s", 12),
+    n(2, "Builds", "utilities-terminal", "Build passed", "lok-desktop · main · 2m 14s", 12),
     n(3, "Mail", "mail-unread", "Weekly digest", "3 new issues in end-4/dots-hyprland", 26),
     n(4, "Mail", "mail-unread", "Release notes", "Quickshell 0.3 is out", 41),
     n(5, "Updates", "system-software-update", "12 updates available", "Run pacman -Syu when convenient", 58)], indent=2))

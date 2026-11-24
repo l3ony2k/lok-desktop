@@ -14,8 +14,7 @@ A greyscale, square, thin-line style on top of end-4's ii. Switch it with `appea
     `7jmgey` (https://wallhaven.cc/w/7jmgey, 3840x2160, purple on dark). Wallhaven names files `wallhaven-<id>` and
     the id is unique. `-lok` is the greyscale version. `-lok-light` (2026-11-24) puts it on the light base with
     `v' = 226 - (v - 18) * 0.85` per pixel, where 226 is the lok-dots-light background.
-- Back to the previous look: the tag `pre-lok-style-2026-11-12` with `asus/snapshots/2026-11-12-pre-lok/restore.sh`,
-  or set the style to `material`.
+- Back to the previous look: set the style to `material`, or check out the tag `pre-lok-style-2026-11-12`.
 
 ## Gallery
 

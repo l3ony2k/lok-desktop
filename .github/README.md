@@ -37,7 +37,7 @@ that switch.
 | Selection | A raised fill and a bright 1 px edge, plus a 2 px status strip on quick toggle tiles. Hovering a selected item leaves it as it was. |
 | Hover | One step up the grey ramp. No ripple and no frame change; a press fills at once. |
 | Shape | Zero radius on everything: buttons, sliders, workspace dots, windows. |
-| Type and icons | Ioskeley Mono (Medium for UI text). Icons are [Tabler](https://tabler.io/icons) outline glyphs packed into a font with Material Symbols ligatures, so all 415 icon names in ii map to a line icon and the originals stay one switch away. |
+| Type and icons | [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) (Medium for UI text). Icons are [Tabler](https://tabler.io/icons) outline glyphs packed into a font with Material Symbols ligatures, so all 415 icon names in ii map to a line icon and the originals stay one switch away. |
 | Motion | Short ease-out curves with no overshoot. |
 | Wallpaper | A dot grid and the ASCII hands of [wallhaven 7jmgey](https://wallhaven.cc/w/7jmgey), each in a dark and a light version that follow the mode. |
 
@@ -112,7 +112,6 @@ asus/
   packages/            pacman.txt and aur.txt
   src/                 local builds: fingerprint, e820-hibfix, battery-limit, camera tile patches
   lok/                 the style: icon font and builder, wallpapers, Plasma theme, screenshots, demo/
-  ops/, snapshots/     write-ups of the bigger investigations; the pre-lok restore point
 ```
 
 ## Updating
@@ -131,12 +130,11 @@ git push origin main
 ```
 
 Checks after a merge and the list of upstream files we patch are in `asus/RUNBOOK-updates.md`. To go back to the
-look from before lok, set the style to `material`, or use the tag `pre-lok-style-2026-11-12` with
-`asus/snapshots/2026-11-12-pre-lok/restore.sh`.
+look from before lok, set the style to `material`, or check out the tag `pre-lok-style-2026-11-12`.
 
 ## Credits
 
 - [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland): illogical-impulse, which all of this builds on (GPL-3.0).
-- [Tabler Icons](https://tabler.io/icons) (MIT), Ioskeley Mono, [Quickshell](https://quickshell.outfoxxed.me/).
+- [Tabler Icons](https://tabler.io/icons) (MIT), [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono), [Quickshell](https://quickshell.outfoxxed.me/).
 - [rust-fp](https://github.com/kaukauk/rust-fp) and [crosec-rs](https://github.com/ChocolateLoverRaj/crosec-rs) for the fingerprint stack.
 - The ASCII hands wallpaper is [wallhaven 7jmgey](https://wallhaven.cc/w/7jmgey).

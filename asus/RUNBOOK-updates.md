@@ -53,7 +53,7 @@ can touch and how to check it afterwards.
 
 ## B. dots-hyprland: merging upstream end-4 (rewritten 2026-11-24)
 
-`~/.dotfiles` is the fork: `origin` = github.com/l3ony2k/dots-hyprland-asus (PRIVATE),
+`~/.dotfiles` is the fork: `origin` = github.com/l3ony2k/lok-desktop,
 `upstream` = end-4/dots-hyprland. The configs we edit are **symlinked** into it
 (`asus/links.sh`), so the repo *is* the live config: merging upstream updates the running
 desktop directly, and there is never anything to copy back.

@@ -22,3 +22,7 @@ __pycache__/
 /dots/.config/hypr/custom/hyprlock-colors.conf
 *.bak-*
 /asus/home/.config/herdr-app/mods/*/gpui-kit.d.ts
+
+# personal notes and the pre-lok restore point stay on the machine, out of git
+/asus/ops/
+/asus/snapshots/

@@ -51,7 +51,7 @@ dark)
   shot dark-caffeine 1.2; key 1:1 1:0; sleep 0.5; ipc sidebarRight close; sleep 0.5
   ipc privacy simulate mic active; ipc privacy simulate camera active; pops dark
   ipc search toggle; sleep 1; ydotool type kitty >/dev/null; shot dark-search 1.2; layer "overview|search" && key 1:1 1:0; sleep 0.5
-  notify-send -a Builds -i utilities-terminal "Screenshots ready" "dots-hyprland-asus · 14 images · lok"; shot dark-notif 1.0
+  notify-send -a Builds -i utilities-terminal "Screenshots ready" "lok-desktop · 14 images · lok"; shot dark-notif 1.0
   ipc osdVolume trigger; shot dark-osd 0.4; ipc osdVolume hide; sleep 0.4
   ipc session open; shot dark-session 1.0; ipc session close; sleep 0.5
   for m in none small large; do cfg ".windowGaps.mode=\"$m\""; sleep 2.5; shot "dark-gaps-$m" 0.5; done

@@ -23,6 +23,7 @@ fontforge
 fuse2
 fzf
 git
+git-filter-repo
 git-lfs
 github-cli
 greetd

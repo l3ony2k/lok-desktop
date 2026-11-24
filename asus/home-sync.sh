@@ -36,9 +36,20 @@ MANIFEST=(
   .config/systemd/user/herdr-end4-theme.path .config/systemd/user/herdr-end4-theme.service
   .config/systemd/user/sleep-lock-delay.service .config/systemd/user/vibe-usage.service
   # fonts not shipped by a package (Ioskeley Mono is downloaded by asus/install.sh instead: 90 MB)
-  .local/share/fonts/lok-icons .local/share/fonts/paper-mono-nerd-font
+  .local/share/fonts/lok-icons
 )
 
+
+# Personal values that must not reach git. The live file keeps them; the stored copy gets them blanked.
+scrub() { # $1 = file to scrub, $2 = path it stands for (default $1)
+  case "${2:-$1}" in
+    */illogical-impulse/config.json)
+      local t; t=$(mktemp); jq '.bar.weather.city = ""' "$1" > "$t" && cat "$t" > "$1"; rm -f "$t" ;;
+  esac
+}
+same_scrubbed() { # live stored -> 0 if equal after scrubbing the live copy
+  local t r; t=$(mktemp); cp "$1" "$t"; scrub "$t" "$2"; cmp -s "$t" "$2"; r=$?; rm -f "$t"; return $r
+}
 
 case "${1:-}" in
   pull)
@@ -46,6 +57,7 @@ case "${1:-}" in
       [ -e "$p" ] || { echo "missing: ~/$p"; continue; }
       mkdir -p "$STORE/$(dirname "$p")"
       rsync -a --delete --exclude '*.bak*' --exclude '__pycache__' --exclude '*.d.ts' --exclude node_modules --exclude cached_layouts --exclude .state "$p" "$STORE/$(dirname "$p")/"
+      [ -f "$STORE/$p" ] && scrub "$STORE/$p"
     done
     # package lists for asus/install.sh (local builds and end-4's own meta packages excluded)
     mkdir -p "$HERE/packages"
@@ -58,7 +70,7 @@ case "${1:-}" in
       [ -e "$STORE/$p" ] || { echo "not in repo: ~/$p"; continue; }
       if [ -d "$p" ]; then diff -rq -x '*.bak*' -x __pycache__ -x '*.d.ts' -x node_modules -x cached_layouts -x .state "$p" "$STORE/$p" >/dev/null || echo "differs: ~/$p/"
       else
-        cmp -s "$p" "$STORE/$p" || echo "differs: ~/$p"
+        same_scrubbed "$p" "$STORE/$p" || echo "differs: ~/$p"
       fi
     done ;;
   restore)

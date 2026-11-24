@@ -18,7 +18,7 @@ re-run.
   `boot/loader/loader.conf` are the reference.
 - Log in to GitHub (`gh auth login`), then:
 
-      git clone --recurse-submodules https://github.com/l3ony2k/dots-hyprland-asus.git ~/.dotfiles
+      git clone --recurse-submodules https://github.com/l3ony2k/lok-desktop.git ~/.dotfiles
       cd ~/.dotfiles
       git remote add upstream https://github.com/end-4/dots-hyprland.git
       git config merge.ours.driver true    # keeps this fork's README on upstream merges
@@ -37,6 +37,7 @@ already symlinked it runs `./setup install --skip-allfiles` instead. Answer its 
 ## 3. `home` — program-written configs
 `asus/home-sync.sh restore` copies the `MANIFEST` files (KDE, ii `config.json`, fcitx5 profile,
 herdr settings, GTK, lok fonts, user units, the patched 3-finger-drag PKGBUILD) into `$HOME`.
+The stored ii `config.json` has an empty weather city; set yours in ii Settings, Weather.
 It backs up whatever it overwrites to `~/.local/state/home-sync/`.
 
 ## 4. `links` — hand-edited configs
@@ -60,8 +61,8 @@ new profile name: edit the two LibreWolf lines in `links.sh` (or rename the prof
 `toolkit.legacyUserProfileCustomizations.stylesheets = true` in `about:config`.
 
 ## 5. `fonts`, `services`
-- `fonts` downloads Ioskeley Mono Term Nerd Font (kitty) from its GitHub release; Paper Mono
-  Nerd Font and the lok icon font come with step 3. Then `fc-cache`.
+- `fonts` downloads Ioskeley Mono Term Nerd Font (kitty) from its GitHub release
+  (https://github.com/ahatem/IoskeleyMono); the lok icon font comes with step 3. Then `fc-cache`.
 - `services` enables the user units (sleep-lock-delay, vibe-usage) and the system units this
   machine runs (greetd, keyd, mihomo, tailscaled, ufw, power-profiles-daemon, ...), skipping
   any whose package isn't installed.
