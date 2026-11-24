@@ -107,6 +107,9 @@ merge recognises it). Conflicts: keep upstream's new logic, re-apply the lok sty
 - Overview.qml: F4 (XF86LaunchA) = full overview; search = Super+Space (2026-11-20).
 - hyprland/general.lua: local `scale = 1.25` (custom/general.lua overrides the monitor anyway).
 - lock/pam/fprintd.conf: rust-fp PAM line (see fingerprint entry).
+- sdata/dist-arch/illogical-impulse-fonts-themes/PKGBUILD: `fish` removed from depends (pkgrel bumped).
+  If upstream bumps it, keep fish out, rebuild with makepkg and `pacman -U`. fish is not installed;
+  ii's update/change-password commands (config.json) and custom/variables.lua fallbacks use zsh.
 - regionSelector: the lok colour loupe is a separate `LokColorLoupe.qml`; `CursorGuide.qml` is upstream.
 
 ## C. Login screen sessions (greetd / tuigreet, set up 2026-11-16)

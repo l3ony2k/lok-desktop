@@ -29,10 +29,9 @@ machine as of the last commit. Review `pacman.txt` first on different hardware: 
 laptop-specific packages (sof-firmware, keyd, ...).
 
 ## 2. `end4` — illogical-impulse
-Runs end-4's `./setup install`: its dependency meta-packages (`illogical-impulse-*`, quickshell),
+Runs end-4's `./setup install --skip-fish` (this machine uses zsh only; fish is not installed): its dependency meta-packages (`illogical-impulse-*`, quickshell),
 permissions/services, and a first copy of every dots file. On a machine where the configs are
-already symlinked it runs `./setup install --skip-allfiles` instead. Answer its prompts; skip
-the parts you don't want (fish, plasma integration).
+already symlinked it runs `./setup install --skip-allfiles` instead. Answer its prompts.
 
 ## 3. `home` — program-written configs
 `asus/home-sync.sh restore` copies the `MANIFEST` files (KDE, ii `config.json`, fcitx5 profile,

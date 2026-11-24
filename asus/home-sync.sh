@@ -14,7 +14,6 @@ MANIFEST=(
   # Hand-edited configs are symlinked by asus/links.sh instead -- don't list them here too.
   # ii runtime config (ii rewrites it on every settings change)
   .config/illogical-impulse/config.json .config/system-fonts/config.json
-  .config/fish/functions/qs.fish .config/fish/conf.d/nvm.fish .config/fish/conf.d/rustup.fish
   .local/share/claude/hibernate-fix/apply.sh .local/share/claude/hibernate-fix/verify.sh
   # KDE Plasma session: KWin, shortcuts, input, power, lock, wallet -> Secret Service, panel layout
   .config/kwinrc .config/kglobalshortcutsrc .config/kcminputrc .config/kscreenlockerrc .config/plasmarc

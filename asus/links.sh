@@ -31,7 +31,6 @@ LINKS=(
   ".config/fuzzel/fuzzel.ini|dots/.config/fuzzel/fuzzel.ini"
   ".config/fontconfig/fonts.conf|dots/.config/fontconfig/fonts.conf"
   ".config/matugen/config.toml|dots/.config/matugen/config.toml"
-  ".config/fish/config.fish|dots/.config/fish/config.fish"
   # --- shell / git ---
   # zsh reads these from $ZDOTDIR = ~/.config/zsh (set in /etc/zsh/zshenv, see asus/system)
   ".config/zsh/.zshrc|asus/home/.config/zsh/.zshrc"

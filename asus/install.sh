@@ -30,9 +30,9 @@ st_end4() {
   # First install: let end-4 copy every dots file (the ones we symlink are replaced by `links` next).
   # Later runs must never copy files over the symlinks again, so they skip that step.
   if [ -L "$HOME/.config/quickshell/ii" ]; then
-    ./setup install --skip-allfiles
+    ./setup install --skip-allfiles --skip-fish
   else
-    ./setup install
+    ./setup install --skip-fish
   fi
 }
 
