@@ -220,7 +220,7 @@ PanelWindow {
         screenshotDir: root.screenshotDir
         screenshotPath: root.screenshotPath
         onExited: (exitCode, exitStatus) => {
-            root.screenshotReady = true;
+            root.screenshotReady = (exitCode === 0);
             if (root.enableContentRegions) imageDetectionProcess.running = true;
             root.preparationDone = !checkRecordingProc.running;
         }
@@ -345,15 +345,17 @@ PanelWindow {
             root.shiftHeld = (event.modifiers & Qt.ShiftModifier) !== 0 || event.key === Qt.Key_Shift;
             if (event.key === Qt.Key_Escape) {
                 root.dismiss();
-            } else if (event.key === Qt.Key_C && root.phase === RegionSelection.Phase.Select) {
-                cursorGuide.pickColor();
-            } else if (event.key === Qt.Key_Left && root.phase === RegionSelection.Phase.Select) {
+            } else if (!Appearance.lok || root.phase !== RegionSelection.Phase.Select) {
+                return; // lok only: colour pick (C) and 1 px nudging (arrows)
+            } else if (event.key === Qt.Key_C) {
+                lokLoupe.item?.pickColor();
+            } else if (event.key === Qt.Key_Left) {
                 root.movePointerByPixels(-1, 0);
-            } else if (event.key === Qt.Key_Right && root.phase === RegionSelection.Phase.Select) {
+            } else if (event.key === Qt.Key_Right) {
                 root.movePointerByPixels(1, 0);
-            } else if (event.key === Qt.Key_Up && root.phase === RegionSelection.Phase.Select) {
+            } else if (event.key === Qt.Key_Up) {
                 root.movePointerByPixels(0, -1);
-            } else if (event.key === Qt.Key_Down && root.phase === RegionSelection.Phase.Select) {
+            } else if (event.key === Qt.Key_Down) {
                 root.movePointerByPixels(0, 1);
             }
         }
@@ -369,8 +371,9 @@ PanelWindow {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        cursorShape: Qt.BlankCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        // lok draws its own pixel-snapped crosshair while selecting
+        cursorShape: (Appearance.lok && root.phase === RegionSelection.Phase.Select) ? Qt.BlankCursor : Qt.CrossCursor
+        acceptedButtons: Appearance.lok ? (Qt.LeftButton | Qt.RightButton | Qt.MiddleButton) : (Qt.LeftButton | Qt.RightButton)
         hoverEnabled: true
 
         onEntered: {
@@ -388,7 +391,7 @@ PanelWindow {
                 root.pointerInitialized = true;
             }
             if (mouse.button === Qt.MiddleButton) {
-                cursorGuide.pickColor();
+                lokLoupe.item?.pickColor();
                 return;
             }
             root.dragStartX = root.pointerX;
@@ -434,11 +437,13 @@ PanelWindow {
             root.dragDiffY = mouse.y - root.dragStartY;
             root.points.push({ x: mouse.x, y: mouse.y });
         }
-        onWheel: (wheel) => {
+        onWheel: (wheel) => { // lok: loupe zoom
+            const loupe = lokLoupe.item;
+            if (!loupe) { wheel.accepted = false; return; }
             if (wheel.angleDelta.y > 0) {
-                cursorGuide.zoomScale = Math.min(24.0, cursorGuide.zoomScale + 2.0);
+                loupe.zoomScale = Math.min(24, loupe.zoomScale + 2);
             } else if (wheel.angleDelta.y < 0) {
-                cursorGuide.zoomScale = Math.max(4.0, cursorGuide.zoomScale - 2.0);
+                loupe.zoomScale = Math.max(4, loupe.zoomScale - 2);
             }
         }
 
@@ -470,71 +475,61 @@ PanelWindow {
             }
         }
 
-        // Crisp 1-physical-pixel aligned crosshair (replaces system cursor)
+        // lok: 1-device-px crosshair at the sampled pixel (replaces the system cursor while selecting).
+        // Fixed black/white: it sits over arbitrary screen content.
         Item {
             id: customCrosshair
             z: 9998
-            visible: root.phase === RegionSelection.Phase.Select && (mouseArea.containsMouse || root.pointerInitialized)
-            readonly property real snapX: Math.floor(root.pointerX * root.monitorScale) / root.monitorScale
-            readonly property real snapY: Math.floor(root.pointerY * root.monitorScale) / root.monitorScale
+            visible: Appearance.lok && root.phase === RegionSelection.Phase.Select && (mouseArea.containsMouse || root.pointerInitialized)
             readonly property real px: 1.0 / root.monitorScale
-            x: snapX
-            y: snapY
+            x: Math.floor(root.pointerX * root.monitorScale) / root.monitorScale
+            y: Math.floor(root.pointerY * root.monitorScale) / root.monitorScale
 
-            Rectangle {
-                x: -8
-                y: -customCrosshair.px
-                width: 16 + customCrosshair.px
-                height: customCrosshair.px * 3
-                color: Qt.rgba(0, 0, 0, 0.7)
-            }
-            Rectangle {
-                x: -customCrosshair.px
-                y: -8
-                width: customCrosshair.px * 3
-                height: 16 + customCrosshair.px
-                color: Qt.rgba(0, 0, 0, 0.7)
-            }
-            Rectangle {
-                x: -7
-                y: 0
-                width: 14 + customCrosshair.px
-                height: customCrosshair.px
-                color: "#ffffff"
-            }
-            Rectangle {
-                x: 0
-                y: -7
-                width: customCrosshair.px
-                height: 14 + customCrosshair.px
-                color: "#ffffff"
+            Rectangle { x: -11 * customCrosshair.px; y: -customCrosshair.px; width: 23 * customCrosshair.px; height: 3 * customCrosshair.px; color: "#b3000000" }
+            Rectangle { x: -customCrosshair.px; y: -11 * customCrosshair.px; width: 3 * customCrosshair.px; height: 23 * customCrosshair.px; color: "#b3000000" }
+            Rectangle { x: -10 * customCrosshair.px; y: 0; width: 21 * customCrosshair.px; height: customCrosshair.px; color: "#ffffff" }
+            Rectangle { x: 0; y: -10 * customCrosshair.px; width: customCrosshair.px; height: 21 * customCrosshair.px; color: "#ffffff" }
+        }
+
+        // lok: magnifier loupe + colour pick, bottom-right of the crosshair (flips at screen edges)
+        Loader {
+            id: lokLoupe
+            z: 9999
+            active: Appearance.lok
+            visible: root.phase === RegionSelection.Phase.Select && !root.dragging
+            readonly property real offset: 15 // 20 device px at 1.333
+            function snap(v) { return Math.round(v * root.monitorScale) / root.monitorScale; }
+            x: snap((root.pointerX + offset + width > root.width)
+                ? Math.max(0, root.pointerX - offset - width)
+                : root.pointerX + offset)
+            y: snap((root.pointerY + offset + height > root.height)
+                ? Math.max(0, root.pointerY - offset - height)
+                : root.pointerY + offset)
+            sourceComponent: LokColorLoupe {
+                action: root.action
+                screenshotPath: root.screenshotPath
+                screenshotReady: root.screenshotReady
+                mouseX: root.pointerX
+                mouseY: root.pointerY
+                monitorScale: root.monitorScale
+                screenWidth: root.width
+                screenHeight: root.height
+                shiftHeld: root.shiftHeld
+                onColorPicked: (colorText) => {
+                    Quickshell.clipboardText = colorText;
+                    root.dismiss();
+                }
             }
         }
 
-        // Square lok color picker magnifier at bottom-right of crosshair
+        // The thing to the bottom-right with an icon
         CursorGuide {
-            id: cursorGuide
             z: 9999
-            visible: root.phase === RegionSelection.Phase.Select && !root.dragging
-            readonly property real offset: 14
-            x: (root.pointerX + offset + implicitWidth > root.width)
-                ? Math.max(0, root.pointerX - offset - implicitWidth)
-                : root.pointerX + offset
-            y: (root.pointerY + offset + implicitHeight > root.height)
-                ? Math.max(0, root.pointerY - offset - implicitHeight)
-                : root.pointerY + offset
+            visible: root.phase === RegionSelection.Phase.Select && !Appearance.lok
+            x: root.dragging ? root.regionX + root.regionWidth : mouseArea.mouseX
+            y: root.dragging ? root.regionY + root.regionHeight : mouseArea.mouseY
             action: root.action
             selectionMode: root.selectionMode
-            screenshotPath: root.screenshotPath
-            screenshotReady: root.screenshotReady
-            mouseX: root.pointerX
-            mouseY: root.pointerY
-            monitorScale: root.monitorScale
-            shiftHeld: root.shiftHeld
-            onColorPicked: (colorText) => {
-                Quickshell.clipboardText = colorText;
-                root.dismiss();
-            }
         }
 
         // Window regions

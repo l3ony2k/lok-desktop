@@ -19,7 +19,6 @@ MANIFEST=(
   # (.zshrc and fastfetch/config.jsonc are symlinks into the separate dotfiles repo)
   # ii runtime config, ii customisation scripts, hyprlock wrapper, helper scripts
   .config/illogical-impulse/config.json .local/share/ii-customizations
-  .local/share/hyprpicker-lok/hyprpicker-lok.patch
   .local/bin/hyprlock .local/bin/ii-lock-park .local/bin/ii-net-tiles-customize .local/bin/ii-rounding-customize
   .local/bin/system-font .local/bin/watch-hypr-fullscreen-color.sh .local/bin/dots-cleanup.sh
   .local/bin/mihomo-update-sub

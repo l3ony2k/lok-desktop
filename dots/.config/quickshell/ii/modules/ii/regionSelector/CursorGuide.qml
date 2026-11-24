@@ -8,215 +8,108 @@ Item {
     property var action
     property var selectionMode
 
-    property string screenshotPath: ""
-    property bool screenshotReady: false
-    property real mouseX: 0
-    property real mouseY: 0
-    property real monitorScale: 1.0
-    property bool shiftHeld: false
-    property real zoomScale: 10.0
-
-    signal colorPicked(string colorText)
-
-    property int sampledR: 0
-    property int sampledG: 0
-    property int sampledB: 0
-
-    readonly property int physWidth: Math.max(1, Math.round(root.parent ? root.parent.width * root.monitorScale : 2560))
-    readonly property int physHeight: Math.max(1, Math.round(root.parent ? root.parent.height * root.monitorScale : 1600))
-    readonly property int physX: Math.max(0, Math.min(physWidth - 1, Math.floor(root.mouseX * root.monitorScale)))
-    readonly property int physY: Math.max(0, Math.min(physHeight - 1, Math.floor(root.mouseY * root.monitorScale)))
-
-    function toHex(n) {
-        const s = Math.max(0, Math.min(255, n)).toString(16).toUpperCase();
-        return s.length < 2 ? "0" + s : s;
+    property string description: switch (root.action) {
+    case RegionSelection.SnipAction.Copy:
+    case RegionSelection.SnipAction.Edit:
+        return Translation.tr("Copy region (LMB) or annotate (RMB)");
+    case RegionSelection.SnipAction.Search:
+        return Translation.tr("Search with Google Lens");
+    case RegionSelection.SnipAction.CharRecognition:
+        return Translation.tr("Recognize text");
+    case RegionSelection.SnipAction.Record:
+    case RegionSelection.SnipAction.RecordWithSound:
+        return Translation.tr("Record region");
+    }
+    property string materialSymbol: switch (root.action) {
+    case RegionSelection.SnipAction.Copy:
+    case RegionSelection.SnipAction.Edit:
+        return "content_cut";
+    case RegionSelection.SnipAction.Search:
+        return "image_search";
+    case RegionSelection.SnipAction.CharRecognition:
+        return "document_scanner";
+    case RegionSelection.SnipAction.Record:
+    case RegionSelection.SnipAction.RecordWithSound:
+        return "videocam";
+    default:
+        return "";
     }
 
-    readonly property string hexText: `#${toHex(sampledR)}${toHex(sampledG)}${toHex(sampledB)}`
-    readonly property string rgbText: `rgb(${sampledR}, ${sampledG}, ${sampledB})`
-    readonly property string displayColorText: root.shiftHeld ? root.rgbText : root.hexText
-    readonly property color sampledColor: Qt.rgba(sampledR / 255, sampledG / 255, sampledB / 255, 1)
-
-    function pickColor() {
-        root.colorPicked(root.displayColorText);
+    property bool showDescription: true
+    function hideDescription() {
+        root.showDescription = false
     }
-
-    readonly property string screenshotUrl: root.screenshotReady && root.screenshotPath !== "" ? `file://${root.screenshotPath}` : ""
-
-    onScreenshotUrlChanged: {
-        if (screenshotUrl !== "") {
-            loupeCanvas.unloadImage(screenshotUrl);
-            loupeCanvas.loadImage(screenshotUrl);
-            pixelSampler.unloadImage(screenshotUrl);
-            pixelSampler.loadImage(screenshotUrl);
+    Timer {
+        id: descTimeout
+        interval: 1000
+        running: true
+        onTriggered: {
+            root.hideDescription()
         }
     }
-    onPhysXChanged: {
-        loupeCanvas.requestPaint();
-        pixelSampler.requestPaint();
-    }
-    onPhysYChanged: {
-        loupeCanvas.requestPaint();
-        pixelSampler.requestPaint();
-    }
-    onZoomScaleChanged: loupeCanvas.requestPaint()
-
-    Component.onDestruction: {
-        if (screenshotUrl !== "") {
-            loupeCanvas.unloadImage(screenshotUrl);
-            pixelSampler.unloadImage(screenshotUrl);
-        }
+    onActionChanged: {
+        root.showDescription = true
+        descTimeout.restart()
     }
 
-    // Dedicated 1x1 sampler: reads the exact physical pixel under the crosshair,
-    // fully decoupled from the magnifier transform, so the sampled value can
-    // never drift relative to the preview centre.
-    Canvas {
-        id: pixelSampler
-        width: 1
-        height: 1
-        renderTarget: Canvas.Image
-        onImageLoaded: requestPaint()
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.clearRect(0, 0, 1, 1);
-            if (root.screenshotUrl === "" || !isImageLoaded(root.screenshotUrl)) return;
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(root.screenshotUrl, root.physX, root.physY, 1, 1, 0, 0, 1, 1);
-            const d = ctx.getImageData(0, 0, 1, 1).data;
-            root.sampledR = d[0];
-            root.sampledG = d[1];
-            root.sampledB = d[2];
-        }
-    }
+    property int margins: 8
+    implicitWidth: content.implicitWidth + margins * 2
+    implicitHeight: content.implicitHeight + margins * 2
 
-    readonly property real loupeInnerSize: 132
-    readonly property real colorBorderWidth: 4
-    readonly property real pixelBoxSize: Math.max(2, root.zoomScale / root.monitorScale)
-
-    implicitWidth: Math.max(loupeFrame.width, labelBox.width)
-    implicitHeight: loupeFrame.height + 4 + labelBox.height
-
-    // Outer hairline + sampled color square border (lok sharp style)
     Rectangle {
-        id: loupeFrame
-        anchors.top: parent.top
-        anchors.left: parent.left
-        width: root.loupeInnerSize + root.colorBorderWidth * 2 + 2
-        height: root.loupeInnerSize + root.colorBorderWidth * 2 + 2
-        radius: 0
-        color: Qt.rgba(0, 0, 0, 0.45)
+        id: content
+        anchors.centerIn: parent
 
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: 1
-            radius: 0
-            color: root.sampledColor
+        property real padding: 8
+        implicitHeight: 38
+        implicitWidth: root.showDescription ? contentRow.implicitWidth + padding * 2 : implicitHeight
+        clip: true
 
-            Rectangle {
-                id: loupeInner
-                anchors.fill: parent
-                anchors.margins: root.colorBorderWidth
-                radius: 0
-                color: "#141414"
-                clip: true
+        // lok: a framed floating surface (colAccent is the text colour in lok, which made
+        // this a blank white pill with white text on it)
+        topLeftRadius: Appearance.lok ? 0 : 6
+        bottomLeftRadius: Appearance.lok ? 0 : implicitHeight - topLeftRadius
+        bottomRightRadius: bottomLeftRadius
+        topRightRadius: bottomLeftRadius
 
-                Canvas {
-                    id: loupeCanvas
-                    anchors.fill: parent
-                    onImageLoaded: requestPaint()
-                    onPaint: {
-                        const ctx = getContext("2d");
-                        ctx.clearRect(0, 0, width, height);
-                        if (root.screenshotUrl === "" || !isImageLoaded(root.screenshotUrl)) return;
+        color: Appearance.lok ? Appearance.colors.colLokDialog : Appearance.colors.colAccent
+        LokFrame { visible: Appearance.lok; z: 1 }
 
-                        const pxRatio = root.zoomScale / root.monitorScale;
-                        const srcSpan = width / pxRatio;
-                        let sx = (root.physX + 0.5) - srcSpan * 0.5;
-                        let sy = (root.physY + 0.5) - srcSpan * 0.5;
-                        let sw = srcSpan;
-                        let sh = srcSpan;
+        Behavior on topLeftRadius {
+            animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+        }
+        Behavior on implicitWidth {
+            animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
+        }
 
-                        let dx = 0;
-                        let dy = 0;
-                        let dw = width;
-                        let dh = height;
+        Row {
+            id: contentRow
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: parent.left
+                leftMargin: content.padding
+            }
+            spacing: 12
 
-                        if (sx < 0) {
-                            const cut = -sx;
-                            dx += cut * pxRatio;
-                            dw -= cut * pxRatio;
-                            sw -= cut;
-                            sx = 0;
-                        }
-                        if (sy < 0) {
-                            const cut = -sy;
-                            dy += cut * pxRatio;
-                            dh -= cut * pxRatio;
-                            sh -= cut;
-                            sy = 0;
-                        }
-                        if (sx + sw > root.physWidth) {
-                            const cut = (sx + sw) - root.physWidth;
-                            dw -= cut * pxRatio;
-                            sw -= cut;
-                        }
-                        if (sy + sh > root.physHeight) {
-                            const cut = (sy + sh) - root.physHeight;
-                            dh -= cut * pxRatio;
-                            sh -= cut;
-                        }
+            MaterialSymbol {
+                anchors.verticalCenter: parent.verticalCenter
+                iconSize: 22
+                color: Appearance.colors.colOnPrimary
+                animateChange: true
+                text: root.materialSymbol
+            }
 
-                        ctx.imageSmoothingEnabled = false;
-                        if (sw > 0 && sh > 0 && dw > 0 && dh > 0) {
-                            ctx.drawImage(root.screenshotUrl, sx, sy, sw, sh, dx, dy, dw, dh);
-                        }
-                    }
-                }
-
-                // Center 1-pixel sampling box (black outer + white inner 1px strokes)
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: root.pixelBoxSize + 4
-                    height: root.pixelBoxSize + 4
-                    radius: 0
-                    color: "transparent"
-                    border.width: 1
-                    border.color: Qt.rgba(0, 0, 0, 0.9)
-
-                    Rectangle {
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        radius: 0
-                        color: "transparent"
-                        border.width: 1
-                        border.color: Qt.rgba(1, 1, 1, 0.95)
-                    }
+            FadeLoader {
+                id: descriptionLoader
+                anchors.verticalCenter: parent.verticalCenter
+                shown: root.showDescription
+                sourceComponent: StyledText {
+                    color: Appearance.colors.colOnPrimary
+                    text: root.description
+                    anchors.right: parent.right
+                    anchors.rightMargin: 6
                 }
             }
-        }
-    }
-
-    // Bottom color value box (lok sharp style)
-    Rectangle {
-        id: labelBox
-        anchors.top: loupeFrame.bottom
-        anchors.topMargin: 4
-        anchors.left: loupeFrame.left
-        width: Math.max(loupeFrame.width, labelText.implicitWidth + 14)
-        height: 26
-        radius: 0
-        color: Qt.rgba(0, 0, 0, 0.85)
-        border.width: 1
-        border.color: Qt.rgba(1, 1, 1, 0.22)
-
-        StyledText {
-            id: labelText
-            anchors.centerIn: parent
-            font.family: Appearance.font.family.monospace
-            font.pixelSize: 13
-            color: "#ffffff"
-            text: root.displayColorText
         }
     }
 }
