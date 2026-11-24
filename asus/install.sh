@@ -44,6 +44,11 @@ st_home() {
 st_links() {
   say "links: symlink the hand-edited configs into \$HOME (asus/links.sh)"
   bash "$A/links.sh" apply
+  # zsh finds its files in ~/.config/zsh only if /etc/zsh/zshenv sets ZDOTDIR
+  if ! grep -q ZDOTDIR /etc/zsh/zshenv 2>/dev/null; then
+    echo "!! zsh config is in ~/.config/zsh: install the ZDOTDIR line first:"
+    echo "   sudo install -Dm644 $A/system/etc/zsh/zshenv /etc/zsh/zshenv"
+  fi
 }
 
 st_fonts() {

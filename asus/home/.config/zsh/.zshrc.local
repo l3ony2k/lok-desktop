@@ -1,16 +1,16 @@
 # Machine-specific zsh settings for this Arch/Hyprland machine.
 # NOT tracked in git (the shared config is symlinked from ~/.dotfiles).
-# Loaded last by ~/.zshrc, so anything here overrides the shared config.
+# Loaded last by $ZDOTDIR/.zshrc, so anything here overrides the shared config.
 
 # ---- Ported from ~/.bashrc on 2026-11-06 -------------------------------------
 # TypeSafe (fast-jev-compaction) key — sourced from a 600 file, not stored here
 [ -r "$HOME/.config/typesafe.env" ] && source "$HOME/.config/typesafe.env"
 
 # Rust (fish gets this via conf.d/rustup.fish)
-[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+path=("$CARGO_HOME/bin" ${path:#$CARGO_HOME/bin})
 
 # ---- Ported from ~/.config/fish/config.fish ----------------------------------
-# quickshell/end-4 terminal colours live in ~/.zshenv, so they run before the
+# quickshell/end-4 terminal colours live in $ZDOTDIR/.zshenv, so they run before the
 # p10k instant prompt preamble instead of being reported as console output.
 
 # Hyprland/quickshell helpers

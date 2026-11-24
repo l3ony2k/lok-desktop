@@ -7,7 +7,7 @@
 # This lives in conf.d because dots-hyprland installs ~/.config/fish with
 # `rsync --delete` but excludes conf.d, so it survives updates.
 
-set -gx NVM_DIR $HOME/.nvm
+set -gx NVM_DIR $HOME/.local/share/nvm
 set -l node_root $NVM_DIR/versions/node
 
 if test -d $node_root
@@ -15,7 +15,7 @@ if test -d $node_root
     set -l default_alias (string trim -- (cat $NVM_DIR/alias/default 2>/dev/null))
     set -l chosen
 
-    # ~/.nvm/alias/default can be an exact version ("v20.11.0"), a major
+    # $NVM_DIR/alias/default can be an exact version ("v20.11.0"), a major
     # version ("20"), or an alias like "lts/*" that we cannot resolve here.
     set -l v (string replace -r '^v' '' -- $default_alias)
     if test -n "$v"; and string match -qr '^[0-9][0-9.]*$' -- $v

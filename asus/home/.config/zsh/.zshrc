@@ -1,6 +1,6 @@
-# ~/.zshrc — ASUS (Arch + Hyprland). Symlinked from ~/.dotfiles/asus/home/.zshrc.
+# $ZDOTDIR/.zshrc (~/.config/zsh) — ASUS (Arch + Hyprland). Symlinked from ~/.dotfiles/asus/home/.config/zsh/.zshrc.
 # Forked on 2026-11-24 from the MacBook/VPS dotfiles repo; the two now evolve separately.
-# Machine-local extras that should stay out of git go in ~/.zshrc.local.
+# Machine-local extras that should stay out of git go in $ZDOTDIR/.zshrc.local.
 
 # ---- Startup banner ---------------------------------------------------------
 # Must run before the p10k instant prompt, otherwise p10k warns about console output.
@@ -18,7 +18,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # ---- oh-my-zsh ----------------------------------------------------------------
-export ZSH="$HOME/.oh-my-zsh"
+export ZSH="$HOME/.local/share/oh-my-zsh"
+ZSH_COMPDUMP="$HOME/.cache/zsh/zcompdump-$ZSH_VERSION"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 export ZSH_COMPDUMP="$ZSH/cache/.zcompdump-$HOST"   # must be set before oh-my-zsh.sh
 typeset -U path fpath   # keep PATH entries unique (enforced again at the end)
@@ -56,7 +57,7 @@ export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"   # install.sh generates this locale on Linux
 
 # ---- Prompt -------------------------------------------------------------------
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ ! -f $ZDOTDIR/.p10k.zsh ]] || source $ZDOTDIR/.p10k.zsh
 
 # ---- Aliases ------------------------------------------------------------------
 # Ubuntu ships bat as "batcat"; macOS/Homebrew calls it "bat".
@@ -70,7 +71,7 @@ alias mv='mv -iv'
 alias cp='cp -iv'
 
 # ---- Language tooling (each block is skipped if not installed) ----------------
-export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="${NVM_DIR:-$HOME/.local/share/nvm}"
 [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
 [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
 
@@ -126,7 +127,7 @@ if (( $+commands[yazi] )); then
 fi
 
 # ---- Machine-specific settings (not in git) -----------------------------------
-[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+[[ -f $ZDOTDIR/.zshrc.local ]] && source $ZDOTDIR/.zshrc.local
 
 # `export PATH=...` lines bypass typeset -U; re-assigning the array drops the duplicates.
 path=($path)

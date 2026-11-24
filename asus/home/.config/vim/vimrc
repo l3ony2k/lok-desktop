@@ -1,0 +1,4 @@
+" XDG: keep viminfo out of $HOME. Having a user vimrc turns defaults.vim off, so load it first.
+unlet! skip_defaults_vim
+source $VIMRUNTIME/defaults.vim
+set viminfofile=~/.local/state/vim/viminfo

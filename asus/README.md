@@ -33,6 +33,16 @@ this machine needs. The MacBook/VPS dotfiles repo (`dotfiles-sg-vps`) is not use
 A new file: hand-edited → add it to `LINKS` and run `links.sh apply --adopt`; program-written →
 add it to `MANIFEST` and run `home-sync.sh pull`. Never both.
 
+## A tidy $HOME (XDG)
+
+Programs that support it keep their files in the XDG dirs instead of `~/.<name>`:
+`asus/home/.config/environment.d/50-xdg-home.conf` (read by systemd --user, zsh, bash and
+Hyprland's `custom/env.lua`) sets `CARGO_HOME`, `RUSTUP_HOME`, `NVM_DIR`, `NPM_CONFIG_CACHE`,
+`GTK2_RC_FILES`, `ICEAUTHORITY`; `/etc/zsh/zshenv` sets `ZDOTDIR=~/.config/zsh`; histories are
+in `~/.local/state/{zsh,bash,vim}`. A new variable goes in that one file. Left in `~` on purpose:
+`.ssh`, `.var` (Flatpak), bash's own rc files, `.claude`/`.codex`/`.dsh`/`.omp` (vibe-usage and
+magpie expect them there), `.gnupg`, `.pki`, `.Xauthority`, `.dmrc`, `.claude.json`.
+
 ## Secrets (never in this repo)
 
 `~/.ssh`, `~/.config/mihomo/sub-url` (Mihomo subscription URL, read by `mihomo-update-sub`),

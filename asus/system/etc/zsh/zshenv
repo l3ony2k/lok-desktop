@@ -1,0 +1,5 @@
+# Keep zsh's dotfiles in ~/.config/zsh instead of $HOME (asus, 2026-11-24; copy in ~/.dotfiles/asus/system).
+# Only when that directory exists, so other users (root) keep the default ~.
+if [[ -z $ZDOTDIR && -d $HOME/.config/zsh ]]; then
+  export ZDOTDIR=$HOME/.config/zsh
+fi

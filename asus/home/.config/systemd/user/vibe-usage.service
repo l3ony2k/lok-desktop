@@ -4,11 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/leon/.nvm/versions/node/v26.13.0/bin/npx --yes @vibe-cafe/vibe-usage@latest daemon
+ExecStart=/home/leon/.local/share/nvm/versions/node/v26.13.0/bin/npx --yes @vibe-cafe/vibe-usage@latest daemon
 Restart=on-failure
 RestartSec=60
 Environment=NODE_ENV=production
-Environment="PATH=/home/leon/.nvm/versions/node/v26.13.0/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/home/leon/.local/share/nvm/versions/node/v26.13.0/bin:/usr/local/bin:/usr/bin:/bin"
 WorkingDirectory=/home/leon
 
 [Install]

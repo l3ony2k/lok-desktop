@@ -14,7 +14,7 @@ MANIFEST=(
   # Hand-edited configs are symlinked by asus/links.sh instead -- don't list them here too.
   # ii runtime config (ii rewrites it on every settings change)
   .config/illogical-impulse/config.json .config/system-fonts/config.json
-  .config/fish/functions/qs.fish .config/fish/conf.d/nvm.fish
+  .config/fish/functions/qs.fish .config/fish/conf.d/nvm.fish .config/fish/conf.d/rustup.fish
   .local/share/claude/hibernate-fix/apply.sh .local/share/claude/hibernate-fix/verify.sh
   # KDE Plasma session: KWin, shortcuts, input, power, lock, wallet -> Secret Service, panel layout
   .config/kwinrc .config/kglobalshortcutsrc .config/kcminputrc .config/kscreenlockerrc .config/plasmarc
@@ -29,7 +29,7 @@ MANIFEST=(
   # input method: fcitx5 writes these itself
   .config/fcitx5/conf .config/fcitx5/profile
   # apps: flags, launchers, toolkit settings
-  .config/brave-origin-flags.conf .config/spotify-launcher.conf .config/gtk-3.0/settings.ini .config/gtk-4.0/settings.ini
+  .config/brave-origin-flags.conf .config/spotify-launcher.conf .config/gtk-2.0/gtkrc .config/gtk-3.0/settings.ini .config/gtk-4.0/settings.ini
   .local/share/applications/onekey-wallet.desktop
   .local/share/applications/workflowy.desktop .local/share/workflowy-nomenu/launch.sh
   # herdr: app-written settings/keys/layouts (its *-flat mods and themes are symlinked)

@@ -42,7 +42,15 @@ It backs up whatever it overwrites to `~/.local/state/home-sync/`.
 ## 4. `links` — hand-edited configs
 `asus/links.sh apply` replaces the copies end-4 just made (and any shell files) with symlinks
 into this repo: `~/.config/quickshell/ii`, `~/.config/hypr`, kitty/foot/fuzzel/fontconfig/matugen,
-`~/.zshrc` & co., `~/.gitconfig`, `~/.local/bin` helpers, rime patches, herdr mods, LibreWolf CSS.
+zsh (`~/.config/zsh/`), git (`~/.config/git/config`), vim, `~/.config/environment.d/50-xdg-home.conf`,
+`~/.local/bin` helpers, rime patches, herdr mods, LibreWolf CSS.
+
+$HOME is kept tidy with the XDG dirs: zsh needs `ZDOTDIR` from `/etc/zsh/zshenv`
+(`sudo install -Dm644 asus/system/etc/zsh/zshenv /etc/zsh/zshenv`, the stage reminds you), and
+`50-xdg-home.conf` moves cargo/rustup (`~/.local/share/cargo`, `rustup`), nvm
+(`~/.local/share/nvm`), the npm cache, GTK2 rc and ICEauthority. Log out and back in after this
+stage, then install rustup / nvm (they pick the locations up from the environment): e.g.
+`rustup default stable`, and the nvm install script followed by `nvm install 26`.
 Anything identical is replaced silently (backup in `~/.local/state/dotfiles-links/`); anything
 that differs is listed as DIFFERS and left alone — inspect it, then `apply --force` (repo wins)
 or `apply --adopt` (keep the live one, then `git diff`).
@@ -72,7 +80,7 @@ new profile name: edit the two LibreWolf lines in `links.sh` (or rename the prof
 `asus/install.sh system` (= `asus/system-diff.sh`) lists each tracked system file as same /
 DIFFERS / missing. Nothing is written; copy by hand with `sudo install -m644 asus/system/<path> /<path>`.
 
-- Safe to copy as-is: `etc/keyd/cros.conf` (Chromebook keys), `etc/systemd/logind.conf.d/*`,
+- Safe to copy as-is: `etc/zsh/zshenv` (ZDOTDIR, needed by step 4), `etc/keyd/cros.conf` (Chromebook keys), `etc/systemd/logind.conf.d/*`,
   `etc/systemd/sleep.conf.d/*`, `etc/tmpfiles.d/*`, `etc/sysctl.d/*`, `etc/vconsole.conf`,
   `etc/fonts/local.conf`, `etc/greetd/` (see `etc/greetd/README-sessions.md`; recreate the two
   session symlinks), `etc/ufw/user*.rules`, `etc/conf.d/wireless-regdom`, `usr/local/bin/*`
