@@ -1,5 +1,11 @@
 # ASUS CX54 (SCREEBO) — this machine's dotfiles
 
+![lok desktop: bar, three tiled windows with 1 px frames](lok/screenshots/hero-dark.webp)
+
+![the same desktop, dark and light](lok/screenshots/dark-light.webp)
+
+More screenshots (sidebars, popups, colour pick, gaps, vertical bar): [lok/README.md](lok/README.md#gallery).
+
 This private repo (`github.com/l3ony2k/dots-hyprland-asus`) is **the** dotfiles repo of the
 ASUS laptop. It lives at `~/.dotfiles`. It is a fork of
 [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (`upstream`): the illogical-impulse

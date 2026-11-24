@@ -1,0 +1,7 @@
+lok — notes
+- [x] square corners everywhere
+- [x] 1 px hairlines via LokFrame
+- [ ] light theme pass on popups
+- ship README screenshots
+
+ideas: caffeine timer presets, privacy dots
