@@ -53,7 +53,7 @@ st_fonts() {
     tmp=$(mktemp -d)
     curl -fL -o "$tmp/f.zip" https://github.com/ahatem/IoskeleyMono/releases/latest/download/IoskeleyMono-Term-NerdFont.zip
     mkdir -p "$d"; bsdtar -xf "$tmp/f.zip" -C "$tmp"
-    find "$tmp" -path '*Normal*' -name 'IoskeleyMonoTermNerdFont-*.ttf' -exec cp {} "$d/" \;
+    find "$tmp" -path '*Normal*' -name 'IoskeleyMonoTermNerdFont*.ttf' -exec cp {} "$d/" \;
     rm -rf "$tmp"
   fi
   fc-cache -f >/dev/null && echo "font cache rebuilt"
