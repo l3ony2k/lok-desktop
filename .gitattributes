@@ -1,0 +1,2 @@
+# this fork keeps its own landing page; upstream README edits never conflict (needs: git config merge.ours.driver true)
+.github/README.md merge=ours

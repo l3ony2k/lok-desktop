@@ -21,6 +21,7 @@ re-run.
       git clone --recurse-submodules https://github.com/l3ony2k/dots-hyprland-asus.git ~/.dotfiles
       cd ~/.dotfiles
       git remote add upstream https://github.com/end-4/dots-hyprland.git
+      git config merge.ours.driver true    # keeps this fork's README on upstream merges
 
 ## 1. `packages` — repo and AUR packages
 Installs `asus/packages/pacman.txt` with pacman and `asus/packages/aur.txt` with yay (bootstraps

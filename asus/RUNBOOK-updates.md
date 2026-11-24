@@ -110,6 +110,8 @@ merge recognises it). Conflicts: keep upstream's new logic, re-apply the lok sty
 - sdata/dist-arch/illogical-impulse-fonts-themes/PKGBUILD: `fish` removed from depends (pkgrel bumped).
   If upstream bumps it, keep fish out, rebuild with makepkg and `pacman -U`. fish is not installed;
   ii's update/change-password commands (config.json) and custom/variables.lua fallbacks use zsh.
+- .github/README.md is this fork's landing page; `.gitattributes` keeps ours on every merge (`merge=ours`,
+  which needs `git config merge.ours.driver true` in the clone, set by RESTORE step 0).
 - regionSelector: the lok colour loupe is a separate `LokColorLoupe.qml`; `CursorGuide.qml` is upstream.
 
 ## C. Login screen sessions (greetd / tuigreet, set up 2026-11-16)
