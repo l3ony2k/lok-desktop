@@ -31,7 +31,6 @@ MANIFEST=(
   .config/brave-origin-flags.conf .config/spotify-launcher.conf .config/gtk-2.0/gtkrc .config/gtk-3.0/settings.ini .config/gtk-4.0/settings.ini
   .local/share/applications/onekey-wallet.desktop
   .local/share/applications/windows-11.desktop
-  .local/share/applications/steam.desktop
   .local/share/applications/workflowy.desktop .local/share/workflowy-nomenu/launch.sh
   # herdr: app-written settings/keys/layouts (its *-flat mods and themes are symlinked)
   .config/herdr-app/settings.json .config/herdr-app/keys.json .config/herdr-app/layouts

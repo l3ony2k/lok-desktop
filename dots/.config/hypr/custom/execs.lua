@@ -12,5 +12,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hyprctl setcursor McMojave-cursors 40")
     hl.exec_cmd("gsettings set org.gnome.desktop.interface cursor-theme McMojave-cursors")
     hl.exec_cmd("gsettings set org.gnome.desktop.interface cursor-size 40")
+    -- X11 apps under XWayland are unscaled (force_zero_scaling); Xft.dpi 128 = 96 x 1.333
+    -- lets apps that read it (Steam, Chromium/Electron on X11) draw at the screen scale.
+    hl.exec_cmd("echo Xft.dpi: 128 | xrdb -merge")
 
 end)
