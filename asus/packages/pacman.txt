@@ -41,6 +41,7 @@ inetutils
 intel-media-driver
 intel-ucode
 keyd
+libayatana-appindicator
 libcamera
 libcamera-ipa
 libcamera-tools
