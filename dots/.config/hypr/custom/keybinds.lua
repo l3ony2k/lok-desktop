@@ -7,7 +7,9 @@ hl.bind("CTRL+SUPER+ALT+Slash", hl.dsp.exec_cmd("xdg-open ~/.config/hypr/custom/
 -- keyd leaves it untouched, so bind it here to the same toggle as the
 -- four-finger pinch gesture. Super+zoom still emits Super+F3 for apps.
 hl.bind("XF86FullScreen", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }),
-    { description = "Window: Fullscreen (F3 key)" })
+    { description = "Window: Fullscreen (F3 key)", dont_inhibit = true })
+-- dont_inhibit: F3 still toggles fullscreen while a VM viewer has grabbed the
+-- keyboard (otherwise every key, F3 included, goes to the guest).
 
 -- Chromebook F4 position is the overview/scale key (KEY_SCALE / XF86LaunchA).
 -- Opens the full overview; Super-tap only opens the search box.

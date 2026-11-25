@@ -1,5 +1,6 @@
 7zip
 alsa-utils
+aria2
 base
 base-devel
 bat
@@ -8,8 +9,13 @@ bluez-utils
 btop
 btrfs-progs
 bun
+cabextract
+cdrtools
+chntpw
 dkms
+dnsmasq
 easyeffects
+edk2-ovmf
 efibootmgr
 evtest
 fastfetch
@@ -43,6 +49,7 @@ libpulse
 librewolf
 libva-intel-driver
 libva-utils
+libvirt
 libvpl
 lightdm
 lightdm-gtk-greeter
@@ -57,6 +64,7 @@ nnn
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji
+obsidian
 papirus-icon-theme
 pipewire
 pipewire-alsa
@@ -65,11 +73,13 @@ pipewire-libcamera
 plasma-browser-integration
 plasma-meta
 power-profiles-daemon
+qemu-desktop
 rex
 smartmontools
 sof-firmware
 spotify-launcher
 sudo
+swtpm
 tailscale
 telegram-desktop
 terminus-font
@@ -81,8 +91,11 @@ ttf-liberation
 ttf-sarasa-gothic
 ufw
 vim
+virt-manager
+virt-viewer
 vpl-gpu-rt
 vulkan-intel
+wimlib
 wireless-regdb
 wpa_supplicant
 wqy-microhei

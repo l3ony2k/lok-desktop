@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Windows 11
+Comment=Open the win11 VM (starts it if needed). Right Ctrl+Right Alt releases the keyboard, F3 toggles fullscreen.
+Icon=virt-viewer
+Exec=sh -c "virsh -c qemu:///system domstate win11 | grep -q running || virsh -c qemu:///system start win11; exec virt-viewer --connect qemu:///system --wait --hotkeys=toggle-fullscreen=F11,release-cursor=Control_R+Alt_R --auto-resize=always win11"
+Categories=System;Emulator;
