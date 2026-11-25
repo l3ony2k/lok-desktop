@@ -28,6 +28,7 @@ fd
 fontforge
 fuse2
 fzf
+gamemode
 git
 git-filter-repo
 git-lfs
@@ -41,6 +42,9 @@ inetutils
 intel-media-driver
 intel-ucode
 keyd
+lib32-gamemode
+lib32-mesa
+lib32-vulkan-intel
 libayatana-appindicator
 libcamera
 libcamera-ipa
@@ -79,6 +83,7 @@ rex
 smartmontools
 sof-firmware
 spotify-launcher
+steam
 sudo
 swtpm
 tailscale
