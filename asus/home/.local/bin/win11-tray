@@ -40,12 +40,33 @@ menu.append(Gtk.SeparatorMenuItem())
 item(menu, "Open", lambda: run("gtk-launch", "windows-11"))
 pause = item(menu, "Pause", lambda: None)
 menu.append(Gtk.SeparatorMenuItem())
-item(menu, "Shut down", lambda: run(*VIRSH, "shutdown", DOMAIN, "--mode", "agent,acpi"))
-item(menu, "Restart", lambda: run(*VIRSH, "reboot", DOMAIN, "--mode", "agent,acpi"))
-item(menu, "Force power off", lambda: run(*VIRSH, "destroy", DOMAIN))
+item(menu, "Shut down", lambda: power("shutdown", "shutting down", "Windows is shutting down. The icon goes away when it is off."))
+item(menu, "Restart", lambda: power("reboot", "restarting", "Windows is restarting."))
+item(menu, "Force power off", lambda: power("destroy", "powering off", None))
 menu.show_all()
 ind.set_menu(menu)
 ind.set_secondary_activate_target(menu.get_children()[2])  # middle click opens the viewer
+
+
+pending = None
+
+
+def power(action, label, message):
+    global pending
+    args = [*VIRSH, action, DOMAIN] + ([] if action == "destroy" else ["--mode", "agent,acpi"])
+    run(*args)
+    pending = label
+    status.set_label(f"Windows 11 · {label}…")
+    if message:
+        run("notify-send", "-a", "Windows 11", "-i", "win11-vm", "Windows 11", message)
+    if action == "reboot":
+        GLib.timeout_add_seconds(60, clear_pending)
+
+
+def clear_pending():
+    global pending
+    pending = None
+    return False
 
 
 def toggle_pause():
@@ -58,7 +79,7 @@ pause.connect("activate", lambda *_: toggle_pause())
 def refresh():
     s = state()
     paused = s == "paused"
-    status.set_label("Windows 11 · paused" if paused else "Windows 11 · running")
+    status.set_label(f"Windows 11 · {pending}…" if pending else "Windows 11 · paused" if paused else "Windows 11 · running")
     pause.set_label("Resume" if paused else "Pause")
     return True
 
