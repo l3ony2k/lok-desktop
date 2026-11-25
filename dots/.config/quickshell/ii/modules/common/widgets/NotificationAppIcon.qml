@@ -16,6 +16,11 @@ MaterialShape { // App icon
     property var image: ""
     readonly property string safeAppIcon: root.appIcon ?? ""
     readonly property string safeImage: root.image ?? ""
+    // Apps such as Brave send the app icon as a file URL, which iconPath() would treat as a theme
+    // icon name and render as "image-missing". Use file paths directly.
+    readonly property string appIconSource: root.safeAppIcon.startsWith("file://") ? root.safeAppIcon
+        : root.safeAppIcon.startsWith("/") ? "file://" + root.safeAppIcon
+        : Quickshell.iconPath(root.safeAppIcon, "image-missing")
     readonly property bool isVinputGenericIcon: root.appName === "fcitx5-vinput" &&
         (safeAppIcon === "" || safeAppIcon === "dialog-information" || safeAppIcon === "dialog-error")
     readonly property bool useMaterialSymbol: safeImage === "" && (safeAppIcon === "" || root.isVinputGenericIcon)
@@ -64,7 +69,7 @@ MaterialShape { // App icon
             id: appIconImage
             implicitSize: root.appIconSize
             asynchronous: true
-            source: Quickshell.iconPath(root.safeAppIcon, "image-missing")
+            source: root.appIconSource
         }
     }
     Loader {
@@ -102,7 +107,7 @@ MaterialShape { // App icon
                 sourceComponent: IconImage {
                     implicitSize: root.smallAppIconSize
                     asynchronous: true
-                    source: Quickshell.iconPath(root.safeAppIcon, "image-missing")
+                    source: root.appIconSource
                 }
             }
         }

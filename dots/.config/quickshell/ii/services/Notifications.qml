@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs.modules.common.functions
 import qs
 import QtQuick
 import Quickshell
@@ -167,6 +168,7 @@ Singleton {
                 "time": Date.now(),
             });
 			root.list = [...root.list, newNotifObject];
+            root.persistImages(newNotifObject);
 
             // Popup
             if (!root.popupInhibited) {
@@ -182,6 +184,52 @@ Singleton {
             root.notify(newNotifObject);
             // console.log(notifToString(newNotifObject));
             notifFileView.setText(stringifyList(root.list));
+        }
+    }
+
+    // Chromium/Brave put notification images in a temp dir under /tmp and delete it when they quit,
+    // so saved notifications end up pointing at missing files. They also send the image as a bare
+    // path, which arrives as "image://icon//tmp/..." (an icon name, not a file). Normalise those to
+    // file URLs and copy temp images into our cache so they outlive the sender.
+    readonly property string imageCacheDir: FileUtils.trimFileProtocol(`${Directories.cache}/notifications/images`)
+    function localPath(src) {
+        if (!src) return "";
+        if (src.startsWith("image://icon//")) return src.slice("image://icon/".length);
+        if (src.startsWith("file://")) return decodeURIComponent(src.slice("file://".length));
+        if (src.startsWith("/")) return src;
+        return "";
+    }
+    function persistImages(notif) {
+        ["appIcon", "image"].forEach((field) => {
+            const path = root.localPath(notif[field]);
+            if (path === "") return;
+            const temp = path.startsWith("/tmp/") || path.startsWith("/run/") || path.startsWith("/dev/shm/");
+            if (!temp) {
+                if (notif[field].startsWith("image://icon//")) notif[field] = "file://" + path;
+                return;
+            }
+            const ext = (path.match(/\.[A-Za-z0-9]{1,5}$/) || [""])[0];
+            const dest = `${root.imageCacheDir}/${notif.notificationId}-${field}${ext}`;
+            imageCopyComponent.createObject(root, { "notif": notif, "field": field, "src": path, "dest": dest });
+        });
+    }
+    Component {
+        id: imageCopyComponent
+        Process {
+            id: copyProc
+            required property var notif
+            required property string field
+            required property string src
+            required property string dest
+            command: ["install", "-D", "-m", "644", "--", src, dest]
+            running: true
+            onExited: (exitCode) => {
+                if (exitCode === 0 && copyProc.notif) {
+                    copyProc.notif[copyProc.field] = "file://" + copyProc.dest;
+                    notifFileView.setText(root.stringifyList(root.list));
+                }
+                copyProc.destroy();
+            }
         }
     }
 
