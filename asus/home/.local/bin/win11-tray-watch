@@ -1,0 +1,18 @@
+#!/bin/bash
+# Shows the win11 tray icon only while the VM exists as a running/paused qemu process.
+# libvirt keeps /run/libvirt/qemu/<domain>.pid for exactly that time; checking it needs no libvirt connection.
+DOMAIN=${1:-win11}
+PIDFILE=/run/libvirt/qemu/$DOMAIN.pid
+tray=""
+trap '[ -n "$tray" ] && kill "$tray" 2>/dev/null; exit 0' TERM INT
+while :; do
+  pid=$(cat "$PIDFILE" 2>/dev/null)
+  if [ -n "$pid" ] && [ -d "/proc/$pid" ]; then
+    if [ -z "$tray" ] || ! kill -0 "$tray" 2>/dev/null; then
+      "$HOME/.local/bin/win11-tray" "$DOMAIN" & tray=$!
+    fi
+  elif [ -n "$tray" ]; then
+    kill "$tray" 2>/dev/null; wait "$tray" 2>/dev/null; tray=""
+  fi
+  sleep 3
+done

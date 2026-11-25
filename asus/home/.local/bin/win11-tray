@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Tray icon for the win11 libvirt VM. Started by win11-tray-watch while the VM runs."""
+import subprocess
+import sys
+
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AyatanaAppIndicator3", "0.1")
+from gi.repository import AyatanaAppIndicator3 as AI, GLib, Gtk
+
+DOMAIN = sys.argv[1] if len(sys.argv) > 1 else "win11"
+VIRSH = ["virsh", "-c", "qemu:///system"]
+
+
+def run(*args):
+    subprocess.Popen(list(args), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+def state():
+    r = subprocess.run(VIRSH + ["domstate", DOMAIN], capture_output=True, text=True)
+    return r.stdout.strip()
+
+
+def item(menu, label, cb):
+    mi = Gtk.MenuItem(label=label)
+    mi.connect("activate", lambda *_: cb())
+    menu.append(mi)
+    return mi
+
+
+ind = AI.Indicator.new("win11-vm", "win11-vm", AI.IndicatorCategory.SYSTEM_SERVICES)
+ind.set_title("Windows 11 VM")
+ind.set_status(AI.IndicatorStatus.ACTIVE)
+
+menu = Gtk.Menu()
+status = Gtk.MenuItem(label="Windows 11 · running")
+status.set_sensitive(False)
+menu.append(status)
+menu.append(Gtk.SeparatorMenuItem())
+item(menu, "Open", lambda: run("gtk-launch", "windows-11"))
+pause = item(menu, "Pause", lambda: None)
+menu.append(Gtk.SeparatorMenuItem())
+item(menu, "Shut down", lambda: run(*VIRSH, "shutdown", DOMAIN, "--mode", "agent,acpi"))
+item(menu, "Restart", lambda: run(*VIRSH, "reboot", DOMAIN, "--mode", "agent,acpi"))
+item(menu, "Force power off", lambda: run(*VIRSH, "destroy", DOMAIN))
+menu.show_all()
+ind.set_menu(menu)
+ind.set_secondary_activate_target(menu.get_children()[2])  # middle click opens the viewer
+
+
+def toggle_pause():
+    run(*VIRSH, "resume" if state() == "paused" else "suspend", DOMAIN)
+
+
+pause.connect("activate", lambda *_: toggle_pause())
+
+
+def refresh():
+    s = state()
+    paused = s == "paused"
+    status.set_label("Windows 11 · paused" if paused else "Windows 11 · running")
+    pause.set_label("Resume" if paused else "Pause")
+    return True
+
+
+# The menu text only has to be right when it opens; a slow refresh keeps idle cost near zero.
+refresh()
+GLib.timeout_add_seconds(5, refresh)
+Gtk.main()

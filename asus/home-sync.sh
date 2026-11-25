@@ -35,7 +35,7 @@ MANIFEST=(
   # herdr: app-written settings/keys/layouts (its *-flat mods and themes are symlinked)
   .config/herdr-app/settings.json .config/herdr-app/keys.json .config/herdr-app/layouts
   .config/systemd/user/herdr-end4-theme.path .config/systemd/user/herdr-end4-theme.service
-  .config/systemd/user/sleep-lock-delay.service .config/systemd/user/vibe-usage.service
+  .config/systemd/user/sleep-lock-delay.service .config/systemd/user/vibe-usage.service .config/systemd/user/win11-tray.service
   # fonts not shipped by a package (Ioskeley Mono is downloaded by asus/install.sh instead: 90 MB)
   .local/share/fonts/lok-icons
 )

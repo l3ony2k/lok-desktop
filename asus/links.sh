@@ -64,6 +64,9 @@ LINKS=(
   ".local/bin/lid-coffee|asus/home/.local/bin/lid-coffee"
   ".local/bin/power-key-session|asus/home/.local/bin/power-key-session"
   ".local/bin/sleep-lock-delay|asus/home/.local/bin/sleep-lock-delay"
+  ".local/bin/win11-tray|asus/home/.local/bin/win11-tray"
+  ".local/bin/win11-tray-watch|asus/home/.local/bin/win11-tray-watch"
+  ".local/share/icons/hicolor/scalable/apps/win11-vm.svg|asus/home/.local/share/icons/hicolor/scalable/apps/win11-vm.svg"
   ".local/share/ii-customizations|asus/home/.local/share/ii-customizations"
   # --- input method (hand-written rime patches and candidate themes) ---
   ".local/share/fcitx5/rime/default.custom.yaml|asus/home/.local/share/fcitx5/rime/default.custom.yaml"

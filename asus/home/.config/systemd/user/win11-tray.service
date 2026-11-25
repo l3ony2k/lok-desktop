@@ -1,0 +1,12 @@
+[Unit]
+Description=Tray icon for the Windows 11 VM while it runs
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/win11-tray-watch win11
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

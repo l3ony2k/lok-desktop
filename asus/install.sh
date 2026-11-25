@@ -67,7 +67,7 @@ st_fonts() {
 st_services() {
   say "services: user units"
   systemctl --user daemon-reload
-  for u in sleep-lock-delay.service vibe-usage.service; do
+  for u in sleep-lock-delay.service vibe-usage.service win11-tray.service; do
     [ -f "$HOME/.config/systemd/user/$u" ] && systemctl --user enable --now "$u" || true
   done
   say "services: system units this machine enables (only those whose package is installed)"
