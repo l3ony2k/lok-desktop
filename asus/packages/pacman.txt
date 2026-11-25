@@ -29,6 +29,7 @@ fontforge
 fuse2
 fzf
 gamemode
+gamescope
 git
 git-filter-repo
 git-lfs
